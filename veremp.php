@@ -254,6 +254,7 @@ if (isset($_SESSION['loggedin']))
 	//Conexion Mysql
 	$sql = json_decode($_SESSION['sql']);
 	$conexion = new mysqli($sql->host_db, $sql->user_db, $sql->pass_db, $sql->db_name);
+	//Vista Datos personales
 	if($funcion == 'Datos_personales' || $funcion == 'Admin')
 	{
 		//Mostrar datos personales
@@ -261,6 +262,7 @@ if (isset($_SESSION['loggedin']))
 	}
 	if($tipo != 'Tecnico')
 	{
+		//Vista Partes
 		if($funcion == 'Partes'  || $funcion == 'Admin')
 		{
 			//Partes sin atender propios
@@ -412,6 +414,7 @@ if (isset($_SESSION['loggedin']))
 				</table><br />';
 			}
 		}
+		//Vista Agregar parte
 		if($funcion == 'Agregar_parte')
 		{
 			$_SESSION['mensaje'] = '
@@ -434,6 +437,7 @@ if (isset($_SESSION['loggedin']))
 				<input type="submit" name="Submit" value="Crear parte">
 			</form><br/>';
 		}
+		//Vista Partes ocultos
 		if($funcion == 'Ocultos')
 		{
 			$con = selectHiddenPartes($conexion, $user);
@@ -479,6 +483,7 @@ if (isset($_SESSION['loggedin']))
 			}
 		}	
 	}
+	//Vista Editar parte
 	if($funcion == 'Editar_parte')
 	{
 		$id_part = $_GET['id_part'];
@@ -514,6 +519,7 @@ if (isset($_SESSION['loggedin']))
 	}
 	if($tipo == 'Tecnico' || $tipo == 'Admin')
 	{
+		//Vista Partes
 		if($funcion == 'Partes' || $funcion == 'Admin')
 		{
 			//Partes abiertos no propios
@@ -638,6 +644,7 @@ if (isset($_SESSION['loggedin']))
 			$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 			</table><br />';
 		}
+		//Vista Estadísticas
 		if($funcion == 'Estadisticas' || $funcion == 'Admin')
 		{
 			$tiempo_medio = tiempoMedio($conexion, $user);
@@ -686,6 +693,7 @@ if (isset($_SESSION['loggedin']))
 				}
 			}
 		}
+		//Vista Lista de empleados
 		if($funcion == 'Lista')
 		{
 			//Lista de empleados
@@ -730,6 +738,7 @@ if (isset($_SESSION['loggedin']))
 					</table>';
 			}
 		}
+		//Vista Agregar empleado
 		if ($funcion == 'Agregar_empleado')
 		{
 			$_SESSION['mensaje'] = '
@@ -782,6 +791,7 @@ if (isset($_SESSION['loggedin']))
 				</form><br/>
 				<button name="Submit" id="Submit">Añadir empleado</button>';
 		}
+		//Vista Editar empleado
 		if($funcion == 'Editar_empleado')
 		{
 			$id_emp = $_GET['id_emp'];
@@ -817,6 +827,7 @@ if (isset($_SESSION['loggedin']))
 				</table>
 			</form>';			
 		}
+		//Vista Modificar parte
 		if($funcion == 'Modificar_parte')
 		{
 			$id_part = $_GET['id_part'];
