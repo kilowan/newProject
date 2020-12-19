@@ -73,12 +73,154 @@ if (isset($_SESSION['loggedin']))
 		}
 		return $_SESSION['time'];
 	}
-	function selectParte($conexion, $user)
+	function selectNewPartes($conexion, $user)
 	{
-		return $conexion->query("select P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
-		from parte P, Empleados E
-		where E.dni='$user->dni' and E.id=P.emp_crea and E.id=$user->id and P.tec_res is null");
+		//Partes sin atender propios
+		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
+		FROM parte P INNER JOIN Empleados E
+		ON AND E.id=P.emp_crea 
+		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NULL");
 	}
+	function selectOwnPartes($conexion, $user)
+	{
+		//Partes atendidos propios
+		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
+		FROM parte P INNER JOIN Empleados E
+		ON E.id=P.emp_crea 
+		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NOT NULL AND P.resuelto=0");
+	}
+	function selectOtherPartes($conexion, $user)
+	{
+		//Partes atendidos no propios
+		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
+		FROM parte P INNER JOIN  Empleados E
+		ON E.id=P.tec_res
+		WHERE E.dni='$user->dni' AND P.tec_res IS NOT NULL AND P.resuelto=0");
+	}
+	function selectNewOtherPartes($conexion, $user)
+	{
+		//Partes sin atender no propios
+		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2
+		FROM parte P, Empleados E
+		WHERE E.dni!='$user->dni' AND E.id=P.emp_crea AND P.tec_res IS NULL");
+	}
+	function countOldPartes($conexion, $user)
+	{
+		//Partes cerrados propios
+		$con = $conexion->query("SELECT COUNT(P.id_part)
+		FROM Empleados E INNER JOIN parte P
+		ON E.id=P.emp_crea
+		WHERE E.id=$user->id AND E.dni='$user->dni'");
+		return mysqli_num_rows($con);
+	}
+	function selectOldOtherPartes($conexion, $user)
+	{
+		//Partes cerrados	
+		return $conexion->query("SELECT T.tiempo, P.id_part, P.inf_part, P.not_tec, P.fecha_hora_creacion, P.fecha_resolucion, P.hora_resolucion, P.emp_crea
+		FROM Empleados E INNER JOIN parte P
+		ON E.id=P.tec_res
+		INNER JOIN tiempo_resolucion T
+		ON T.id_part=P.id_part
+		WHERE P.tec_res!=P.emp_crea and E.id=$user->id and E.dni='$user->dni'");
+	}
+	function selectOldPartes($conexion, $user)
+	{
+		return $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
+		FROM Empleados E INNER JOIN parte P
+		ON E.id=P.emp_crea
+		INNER JOIN tiempo_resolucion T
+		ON T.id_part=P.id_part
+		WHERE E.id=$user->id AND E.dni='$user->dni' AND P.oculto=0");
+	}
+	function countHiddenPartes($conexion, $user)
+	{
+		$con = $conexion->query("SELECT COUNT(*)
+		FROM parte 
+		WHERE oculto=1 AND emp_crea = $user->id");
+		return mysqli_num_rows($con);
+	}
+	function selectHiddenPartes($conexion, $user)
+	{
+		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec, not_tec
+		FROM parte P INNER JOIN Empleados E
+		ON P.emp_crea=E.id 
+		WHERE oculto='1' AND E.dni='$dni' 
+		GROUP BY P.id_part, P.inf_part, E.nombre, E.id 
+		ORDER BY P.id_part ASC");
+	}
+	function selectParte($conexion, $id_part)
+	{
+		return $conexion->query("SELECT *
+		FROM parte
+		WHERE id_part=$id_part AND tec_res is null");
+	}
+	function selectFullDataParte($conexion, $id_part)
+	{
+		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion 
+		FROM Empleados E INNER JOIN parte P 
+		ON E.id=P.emp_crea 
+		WHERE id_part=$id_part");
+	}
+	function selectEmpleado($conexion, $emp_crea)
+	{
+		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2
+		FROM Empleados E INNER JOIN parte P
+		ON P.emp_crea=E.id 
+		WHERE P.emp_crea=$emp_crea");
+	}
+	function selectEmpleadoNoAdmin($conexion)
+	{
+		$id_emp = $_GET['id_emp'];
+		return $conexion->query("select dni, nombre, apellido1, apellido2, tipo
+		from Empleados
+		where tipo not in ('Admin') and id=$id_emp");
+	}
+	function selectEmpleados($conexion)
+	{
+		//Lista de empleados no administradores.
+		return $conexion->query("select id, dni, nombre, apellido1, apellido2, tipo
+		from Empleados
+		where tipo not in ('Admin')");
+	}
+	function tiempoMedio($conexion, $user)
+	{
+		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec
+		FROM Tiempo_resolucion
+		WHERE tec_res=$user->id
+		GROUP BY nom_tec
+		ORDER BY ROUND(AVG(Tiempo),0) DESC");
+	}
+	function personalData($user)
+	{
+		return '
+		<br /><table>
+			<tr>
+				<th>Datos personales</th>
+			</tr>
+		</table><br />
+		<table>
+			<tr>
+				<th>ID</th>
+				<th>DNI</th>
+				<th>Nombre</th>
+				<th>Primer apellido</th>
+				<th>Segundo apellido</th>
+				<th>Tipo</th>
+			</tr>
+			<tr>
+				<td>'.$user->id.'</td>
+				<td>'.$user->dni.'</td>
+				<td>'.$user->name.'</td>
+				<td>'.$user->surname1.'</td>
+				<td>'.$user->surname2.'</td>
+				<td>'.$user->tipo.'</td>
+			</tr>
+		</table><br />';
+	}
+	/*function incidencesData()
+	{
+
+	}*/
 	//Datos previos
 	function check($GET, $SESSION)
 	{
@@ -115,40 +257,14 @@ if (isset($_SESSION['loggedin']))
 	if($funcion == 'Datos_personales' || $funcion == 'Admin')
 	{
 		//Mostrar datos personales
-		$_SESSION['mensaje'] = $_SESSION['mensaje'].'
-		<br /><table>
-			<tr>
-				<th>Datos personales</th>
-			</tr>
-		</table><br />
-		<table>
-			<tr>
-				<th>ID</th>
-				<th>DNI</th>
-				<th>Nombre</th>
-				<th>Primer apellido</th>
-				<th>Segundo apellido</th>
-				<th>Tipo</th>
-			</tr>
-			<tr>
-				<td>'.$id_emp.'</td>
-				<td>'.$dni.'</td>
-				<td>'.$nombre.'</td>
-				<td>'.$apellido1.'</td>
-				<td>'.$apellido2.'</td>
-				<td>'.$tipo.'</td>
-			</tr>
-		</table><br />';
+		$_SESSION['mensaje'] = $_SESSION['mensaje'].personalData($user);
 	}
 	if($tipo != 'Tecnico')
 	{
 		if($funcion == 'Partes'  || $funcion == 'Admin')
 		{
 			//Partes sin atender propios
-			$con = selectParte($conexion, $user);
-			/*$con = $conexion->query("select P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
-			from parte P, Empleados E
-			where E.dni='$dni' and E.id=P.emp_crea and E.id=$id_emp and P.tec_res is null");*/
+			$con = selectNewPartes($conexion, $user);
 			$table=$table.'</td></tr>';
 			if(mysqli_num_rows($con)>0)
 			{
@@ -195,9 +311,7 @@ if (isset($_SESSION['loggedin']))
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'</table><br />';
 			}			
 			//Partes atendidos propios
-			$con = $conexion->query("select P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
-			from parte P, Empleados E
-			where E.dni='$dni' and E.id=$id_emp and E.id=P.emp_crea and P.tec_res is not null and P.resuelto=0");
+			$con = selectOwnPartes($conexion, $user);
 			$table=$table.'</td></tr>';
 			if(mysqli_num_rows($con)>0)
 			{
@@ -231,11 +345,9 @@ if (isset($_SESSION['loggedin']))
 				}
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'</table><br />';
 			}
-			//Partes cerrados propios			
-			$con = $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
-			FROM parte P, Empleados E, tiempo_resolucion T
-			WHERE E.id=P.emp_crea and E.id=$id_emp and T.id_part=P.id_part and E.dni='$dni'");
-			if (mysqli_num_rows($con)>0)
+			//Partes cerrados propios
+			$num = countOldPartes($conexion, $user);
+			if ($num>0)
 			{
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 				<table>
@@ -244,9 +356,7 @@ if (isset($_SESSION['loggedin']))
 					</tr>
 				</table>';
 			}
-			$con = $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
-			FROM parte P, Empleados E, tiempo_resolucion T
-			WHERE E.id=P.emp_crea and E.id=$id_emp and T.id_part=P.id_part and E.dni='$dni' and P.oculto=0");			
+			$con = selectOldPartes($conexion, $user);	
 			if (mysqli_num_rows($con) > 0)
 			{			
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -289,9 +399,7 @@ if (isset($_SESSION['loggedin']))
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 				</table><br />';
 			}
-			$con = $conexion->query("SELECT * 
-			FROM parte 
-			WHERE oculto=1 AND emp_crea = $id_emp");
+			$con = countHiddenPartes($conexion, $user);
 			if (mysqli_num_rows($con) > 0 && $funcion != 'Admin')
 			{
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -328,9 +436,7 @@ if (isset($_SESSION['loggedin']))
 		}
 		if($funcion == 'Ocultos')
 		{
-			$con = $conexion->query("select P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec, not_tec
-			from parte P, Empleados E
-			where P.emp_crea=E.id and oculto='1' and E.dni='$dni' group by P.id_part, P.inf_part, E.nombre, E.id order by P.id_part asc");
+			$con = selectHiddenPartes($conexion, $user);
 			if(mysqli_num_rows($con)>0)
 			{
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -376,9 +482,7 @@ if (isset($_SESSION['loggedin']))
 	if($funcion == 'Editar_parte')
 	{
 		$id_part = $_GET['id_part'];
-		$con = $conexion->query("SELECT *
-		FROM parte
-		where id_part=$id_part and tec_res is null");
+		$con = selectParte($conexion, $id_part);
 		$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
 		$nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
 		$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -413,9 +517,7 @@ if (isset($_SESSION['loggedin']))
 		if($funcion == 'Partes' || $funcion == 'Admin')
 		{
 			//Partes abiertos no propios
-			$con = $conexion->query("select P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2
-			from parte P, Empleados E
-			where E.dni!='$dni' and E.id=P.emp_crea and P.tec_res is null");
+			$con = selectNewOtherPartes($conexion, $user);
 			$table=$table.'</td></tr>';
 			if(mysqli_num_rows($con)>0)
 			{
@@ -460,10 +562,8 @@ if (isset($_SESSION['loggedin']))
 				}
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'</table><br />';
 			}		
-			//Partes atendidos			
-			$con = $conexion->query("select P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
-			from parte P, Empleados E
-			where E.dni='$dni' and E.id=P.tec_res and P.tec_res is not null and P.resuelto=0");
+			//Partes atendidos
+			$con = selectOtherPartes($conexion, $user);	
 			$table=$table.'</td></tr>';
 			if(mysqli_num_rows($con)>0)
 			{
@@ -500,10 +600,8 @@ if (isset($_SESSION['loggedin']))
 				}
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'</table><br />';
 			}
-			//Partes cerrados			
-			$con = $conexion->query("SELECT T.tiempo, P.id_part, P.inf_part, P.not_tec, P.fecha_hora_creacion, P.fecha_resolucion, P.hora_resolucion, P.emp_crea
-			FROM parte P, Empleados E, tiempo_resolucion T
-			WHERE E.id=P.tec_res and P.tec_res!=P.emp_crea and E.id=$id_emp and T.id_part=P.id_part and E.dni='$dni'");
+			//Partes cerrados
+			$con = selectOldOtherPartes($conexion, $user);
 			if (mysqli_num_rows($con) > 0)
 			{
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -524,9 +622,7 @@ if (isset($_SESSION['loggedin']))
 				while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
 				{		
 					$emp_crea = $fila['emp_crea'];
-					$nom_emp = $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2
-					FROM Empleados E, parte P
-					WHERE P.emp_crea=E.id and P.emp_crea=$emp_crea");
+					$nom_emp = selectEmpleado($conexion, $emp_crea);
 					$filas = mysqli_fetch_array($nom_emp, MYSQLI_ASSOC);
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 						<tr>
@@ -544,11 +640,7 @@ if (isset($_SESSION['loggedin']))
 		}
 		if($funcion == 'Estadisticas' || $funcion == 'Admin')
 		{
-			$tiempo_medio = $conexion->query("select ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) as 'cantidad_partes', nom_tec
-			from Tiempo_resolucion
-			WHERE tec_res=$id_emp
-			group by nom_tec
-			order by ROUND(AVG(Tiempo),0) desc");
+			$tiempo_medio = tiempoMedio($conexion, $user);
 			if (mysqli_num_rows($tiempo_medio) > 0)
 			{
 				$fila2 = mysqli_fetch_array($tiempo_medio, MYSQLI_ASSOC);
@@ -596,9 +688,8 @@ if (isset($_SESSION['loggedin']))
 		}
 		if($funcion == 'Lista')
 		{
-			$con = $conexion->query("select id, dni, nombre, apellido1, apellido2, tipo
-			from Empleados
-			where tipo not in ('Admin')");
+			//Lista de empleados
+			$con = selectEmpleados($conexion);
 			//comprobación partes existentes no cerrados
 			if(mysqli_num_rows($con)>0)		
 			{
@@ -615,7 +706,7 @@ if (isset($_SESSION['loggedin']))
 							<th>Tipo de empleado</th>
 							<th colspan="3">--</th>
 						</tr>';
-				//recorrer datos de los partes
+				//recorrer datos de los empleados
 				while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
 				{
 					//insercion partes (html) 
@@ -694,9 +785,7 @@ if (isset($_SESSION['loggedin']))
 		if($funcion == 'Editar_empleado')
 		{
 			$id_emp = $_GET['id_emp'];
-			$con = $conexion->query("select dni, nombre, apellido1, apellido2, tipo
-			from Empleados
-			where tipo not in ('Admin') and id=$id_emp");
+			$con = selectEmpleadoNoAdmin($conexion);
 			$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
 			$nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
 			$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -732,9 +821,7 @@ if (isset($_SESSION['loggedin']))
 		{
 			$id_part = $_GET['id_part'];
 			//Extrae datos parte
-			$con = $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion from Empleados E, parte P 
-			WHERE E.id=P.emp_crea AND id_part=$id_part");
-			//Imprime datos del parte
+			$con = selectFullDataParte($conexion, $id_part);
 			$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
 			$_SESSION['mensaje'] = '
 			<div class="mod_parte">
