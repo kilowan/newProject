@@ -14,7 +14,7 @@ if (isset($_SESSION['loggedin']))
 	$id_emp = $user->id;
 	//$id_emp = $_SESSION['id'];
 	//borrar parte que cumpla condicion
-	deleteParte($conexion);
+	deleteParte($conexion, $id, $user);
 }
 mysqli_close($conexion);
 header('Location: partes.php');

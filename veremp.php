@@ -36,6 +36,79 @@ if (isset($_SESSION['loggedin']))
 		//Mostrar datos personales
 		$_SESSION['mensaje'] = $_SESSION['mensaje'].personalData($user);
 	}
+	if($funcion == 'Ver_parte')
+	{
+		$id_part = $_GET['id_part'];
+		$state = $_GET['state'];
+		$fila = selectIncidence($conexion, $id_part);
+		$_SESSION['mensaje'] = $_SESSION['mensaje'].'
+		<br /><table>
+			<tr>
+				<th>Ver Parte</th>
+			</tr>
+		</table><br />
+		<table>
+			<tr>
+				<td>Nº parte</td>
+				<td>'.checkInput($fila['id_part']).'</td>
+			</tr>
+			<tr>
+				<td>Empleado</td>
+				<td>'.checkInput($fila['emp_crea']).'</td>
+			</tr>
+			<tr>
+				<td>Información</td>
+				<td>'.checkInput($fila['inf_part']).'</td>
+			</tr>
+			<tr>
+				<td>Tecnico a cargo</td>
+				<td>'.checkInput($fila['tec_res']).'</td>
+			</tr>
+			<tr>
+				<td>Notas</td>
+				<td>'.checkInput($fila['not_tec']).'</td>
+			</tr>
+			<tr>
+				<td>Fecha de creación</td>
+				<td>'.checkInput($fila['fecha_hora_creacion']).'</td>
+			</tr>
+			<tr>
+				<td>Información</td>
+				<td>'.checkInput($fila['inf_part']).'</td>
+			</tr>
+			<tr>
+				<td>Piezas afectadas</td>
+				<td>'.checkInput($fila['pieza']).'</td>
+			</tr>
+			<tr>'.buttons($id_part, $state, $user, $fila['emp_crea']).'</tr>
+		</table>';
+	}
+	//Borrar parte no atendido
+	if($funcion == 'Borrar_parte')
+	{
+		$id_part = $_GET['id_part'];
+		$id_emp = $user->id;
+		deleteParte($conexion, $id_part, $user);
+		$_SESSION['funcion'] = 'Partes';
+	}
+	//Ocultar parte cerrado
+	if($funcion == 'Ocultar_parte')
+	{
+		$id_part = $_GET['id_part'];
+		hideParte($conexion, $user, $id_part);
+		/*$conexion->query("update parte set oculto=1 where id_part=$id_part");*/
+		$funcion = 'Partes';
+		//header('Location: veremp.php');
+	}
+	//Mostrar parte oculto
+	if($funcion == 'Mostrar_parte')
+	{
+		$id_part = $_GET['id_part'];
+		//$conexion->query("update parte set oculto=0 where id_part=$id_part");
+		showHiddenParte($conexion, $id_part);
+		$funcion = 'Partes';
+		//header('Location: veremp.php');
+	}
 	if($tipo != 'Tecnico')
 	{
 		//Vista Partes
@@ -70,7 +143,7 @@ if (isset($_SESSION['loggedin']))
 				{
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 					<tr>
-						<td>'.$fila['id_part'].'</td>
+						<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=0">'.$fila['id_part'].'</a></td>
 						<td>'.$fila['fecha_hora_creacion'].'</td>
 						<td>'.$fila['inf_part'].'</td>
 						<td>'.$fila['pieza'].'</td>';
@@ -78,7 +151,7 @@ if (isset($_SESSION['loggedin']))
 						{
 							$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 							<td>
-								<a href="funciones.php?id_part='.$fila['id_part'].'&funcion=Borrar_parte">Borrar</a>
+								<a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Borrar_parte">Borrar</a>
 							</td>
 							<td>
 								<a href="veremp.php?funcion=Editar_parte&id_emp='.$id_emp.'&dni='.$dni.'&id_part='.$fila['id_part'].'">Editar</a>
@@ -114,7 +187,7 @@ if (isset($_SESSION['loggedin']))
 					$id=$fila['id_part'];
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 					<tr>
-						<td>'.$fila['id_part'].'</td>
+					<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=1">'.$fila['id_part'].'</a></td>
 						<td>'.$fila['fecha_hora_creacion'].'</td>
 						<td>'.$fila['inf_part'].'</td>
 						<td>'.$fila['pieza'].'</td>
@@ -158,7 +231,7 @@ if (isset($_SESSION['loggedin']))
 				{
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 					<tr>
-						<td>'.$fila['id_part'].'</td>
+						<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=2">'.$fila['id_part'].'</a></td>
 						<td>'.$fila['fecha_hora_creacion'].'</td>
 						<td>'.$fila['inf_part'].'</td>
 						<td>'.$fila['pieza'].'</td>
@@ -169,7 +242,7 @@ if (isset($_SESSION['loggedin']))
 						{
 						$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 						<td>
-							<a href="funciones.php?id_part='.$fila['id_part'].'&funcion=Ocultar_parte">Ocultar</a>
+							<a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ocultar_parte">Ocultar</a>
 						</td>';
 						}
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -178,14 +251,14 @@ if (isset($_SESSION['loggedin']))
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 				</table><br />';
 			}
-			$con = countHiddenPartes($conexion, $user);
-			if ($con->num_rows > 0 && $funcion != 'Admin')
+			$data = countHiddenPartes($conexion, $user);
+			if ($data > 0 && $funcion != 'Admin')
 			{
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 				<table>
 					<tr>
 						<td colspan="8">
-							<a href="veremp.php?funcion=Ocultos&id_emp='.$id_emp.'&dni='.$dni.'">Ver ocultos</a>
+							<a href="veremp.php?funcion=Ocultos&id_emp='.$user->id.'&dni='.$user->dni.'">Ver ocultos</a>
 						</td>
 					</tr>
 				</table><br />';
@@ -243,7 +316,7 @@ if (isset($_SESSION['loggedin']))
 					//insercion partes (html)
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 					<tr>
-						<td>'.$fila['id_part'].'</td>
+						<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=3">'.$fila['id_part'].'</a></td>
 						<td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
 						<td>'.$fila['inf_part'].'</td>
 						<td>'.$fila['pieza'].'</td>
@@ -252,7 +325,7 @@ if (isset($_SESSION['loggedin']))
 						<td>'.$fila['not_tec'].'</td>
 						<td>'.$fila['nom_tec'].'</td>
 						<td>
-							<a href="funciones.php?id_part='.$fila['id_part'].'&funcion=Mostrar_parte">Mostrar</a>
+							<a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Mostrar_parte">Mostrar</a>
 						</td>				
 					</tr>';
 				}
@@ -270,7 +343,7 @@ if (isset($_SESSION['loggedin']))
 		$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 		<br /><table>
 			<tr>
-				<th>Editar empleado</th>
+				<th>Editar parte</th>
 			</tr>
 		</table><br />
 		<form action="funciones.php" method="post">
@@ -302,6 +375,10 @@ if (isset($_SESSION['loggedin']))
 			//Partes abiertos no propios
 			$con = selectNewOtherPartes($conexion, $user);
 			$table=$table.'</td></tr>';
+			if (!isset($_SESSION['mensaje']))
+			{
+				$_SESSION['mensaje'] = "";
+			}
 			if(mysqli_num_rows($con)>0)
 			{
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -323,7 +400,7 @@ if (isset($_SESSION['loggedin']))
 				{
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 					<tr>
-						<td>'.$fila['id_part'].'</td>
+						<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=0">'.$fila['id_part'].'</a></td>
 						<td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
 						<td>'.$fila['fecha_hora_creacion'].'</td>
 						<td>'.$fila['inf_part'].'</td>
@@ -370,7 +447,7 @@ if (isset($_SESSION['loggedin']))
 				{
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 					<tr>
-						<td>'.$fila['id_part'].'</td>
+						<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=1">'.$fila['id_part'].'</a></td>
 						<td>'.$fila['fecha_hora_creacion'].'</td>
 						<td>'.$fila['inf_part'].'</td>
 						<td>'.$fila['pieza'].'</td>
@@ -409,7 +486,7 @@ if (isset($_SESSION['loggedin']))
 					$filas = mysqli_fetch_array($nom_emp, MYSQLI_ASSOC);
 					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
 						<tr>
-							<td>'.$fila['id_part'].'</td>
+							<td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=2">'.$fila['id_part'].'</a></td>
 							<td>'.$filas['nombre'].' '.$filas['apellido1'].' '.$filas['apellido2'].'</td>
 							<td>'.$fila['inf_part'].'</td>
 							<td>'.$fila['not_tec'].'</td>
@@ -442,13 +519,38 @@ if (isset($_SESSION['loggedin']))
 					<tr>
 						<td>'.tiempo($fila2['tiempo_medio'], 0).'</td>
 						<td>'.$fila2['cantidad_partes'].'</td>
-					</tr>';
+					</tr>
+				</table><br />';
 			}
-			$_SESSION['mensaje'] = $_SESSION['mensaje'].'</table><br />';
-			$piez = $conexion->query("select pieza, count(pieza) as 'numeroP' 
-			from parte
-			where resuelto=1
-			group by pieza");
+			if($tipo == 'Admin')
+			{
+				$tiempo_medio_global = tiempoMedioAdmin($conexion);
+				if (mysqli_num_rows($tiempo_medio_global) > 0)
+				{
+					$_SESSION['mensaje'] = $_SESSION['mensaje'].'
+					<table>
+						<tr>
+							<th colspan="2">Estadisticas gobales</th>
+						</tr>
+					</table><br />
+					<table>
+						<tr>
+							<th>Tiempo medio</th>
+							<th>Nombre de empleado</th>
+						</tr>';
+					while($fila3 = mysqli_fetch_array($tiempo_medio_global, MYSQLI_ASSOC))
+					{
+						//insercion partes (html)
+						$_SESSION['mensaje'] = $_SESSION['mensaje'].'
+						<tr>
+							<td>'.tiempo($fila3['tiempo_medio'], 0).'</td>
+							<td>'.$fila3['nom_tec'].'</td>
+						</tr>';
+					}
+					$_SESSION['mensaje'] = $_SESSION['mensaje'].'</table><br />';
+				}
+			}
+			$piez = countPiezas($conexion);
 			if (mysqli_num_rows($piez) > 0)
 			{
 				$_SESSION['mensaje'] = $_SESSION['mensaje'].'
@@ -608,58 +710,14 @@ if (isset($_SESSION['loggedin']))
 				</table>
 			</form>';			
 		}
+		//Vista Atender parte
+		if ($funcion == 'Atender_parte') {
+			$_SESSION['mensaje'] = modParte($conexion);
+		}
 		//Vista Modificar parte
 		if($funcion == 'Modificar_parte')
 		{
-			$id_part = $_GET['id_part'];
-			//Extrae datos parte
-			$con = selectFullDataParte($conexion, $id_part);
-			$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
-			$_SESSION['mensaje'] = '
-			<div class="mod_parte">
-				<p>Formulario de edición</p>
-				<p>Nombre del empleado: <strong>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</strong></p>
-				<p>Información del parte: <strong>'.$fila['inf_part'].'</strong></p>
-				<p>Pieza afectada: <strong>'.$fila['pieza'].'</strong></p>
-				<p>Fecha de creacion: <strong>'.$fila['fecha_hora_creacion'].'</strong></p>
-				<p>Notas anteriores: <strong>'.$fila['not_tec'].'</strong></p>
-				
-				<form action="" method="post">
-					<label>Notas de resolución:</label><br/>
-					<textarea name="not_tec" rows="2" cols="40" required></textarea><br/>
-					
-				<p>Piezas afectadas:</p>
-				<p> 
-					<select name="pieza">
-						<option value="--" selectted="selected">--</option>
-						<optgroup label="Sobre la torre">
-							<option value="torre">La torre</option>
-							<option value="Placa base">La placa base</option>
-							<option value="HDD">El disco duro</option>
-							<option value="procesador">El procesador</option>
-							<option value="grafica">La grafica</option>
-							<option value="RAM">La memoria RAM</option>
-							<option value="lector">El lector</option>
-						</optgroup>
-						<optgroup label="perifericos">
-							<option value="pantalla">El monitor o proyector</option>
-							<option value="raton">El raton</option>
-							<option value="teclado">El teclado</option>
-							<option value="impresora">La impresora</option>
-						</optgroup>
-					<optgroup label="otros">
-						 <option value="regleta">La regleta</option>
-						 <option value="Router">El router</option>
-					</optgroup>
-					</select>
-				</p>
-				<input type="hidden" name="id_part" value="'.$id_part.'" />
-				<input type="hidden" name="id_emp" value="'.$fila['id'].'" />
-				<input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
-				<input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
-				</form>
-			</div>
-		</table><br />';
+			$_SESSION['mensaje'] = modParte($conexion);
 		}
 	}
 }

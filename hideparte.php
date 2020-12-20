@@ -14,7 +14,7 @@ if (isset($_SESSION['loggedin']))
 	$id_emp = $user->id;
 	//$id_emp = $_SESSION['id'];
 	//ocultar parte que cumpla condicion
-	hideParte($conexion);
+	hideParte($conexion, $user, $id_emp)
 }
 mysqli_close($conexion);
 header('Location: partes.php');

@@ -31,7 +31,8 @@ if (isset($_SESSION['loggedin']))
 	if($funcion == 'Ocultar_parte')
 	{
 		$id_part = $_GET['id_part'];
-		$conexion->query("update parte set oculto=1 where id_part=$id_part");
+		hideParte($conexion, $user, $id_part);
+		/*$conexion->query("update parte set oculto=1 where id_part=$id_part");*/
 		$_SESSION['funcion'] = 'Partes';
 		header('Location: veremp.php');
 	}
@@ -39,7 +40,8 @@ if (isset($_SESSION['loggedin']))
 	if($funcion == 'Mostrar_parte')
 	{
 		$id_part = $_GET['id_part'];
-		$conexion->query("update parte set oculto=0 where id_part=$id_part");
+		//$conexion->query("update parte set oculto=0 where id_part=$id_part");
+		showHiddenParte($conexion, $id_part);
 		$_SESSION['funcion'] = 'Ocultos';
 		header('Location: veremp.php');
 	}
@@ -49,7 +51,8 @@ if (isset($_SESSION['loggedin']))
 		$id_part = $_GET['id_part'];
 		$id_emp = $user->id;
 		//$id_emp = $_SESSION['id_emp'];
-		$conexion->query("delete from parte where id_part=$id_part and emp_crea=$id_emp and tec_res is null");
+		//$conexion->query("delete from parte where id_part=$id_part and emp_crea=$id_emp and tec_res is null");
+		deleteParte($conexion, $id_part, $user);
 		$_SESSION['funcion'] = 'Partes';
 		header('Location: veremp.php');
 	}

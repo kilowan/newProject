@@ -1,6 +1,6 @@
 <?php
 include 'classes.php';
-function tiempo($n, $i)
+    function tiempo($n, $i)
 	{
 		if($i == 0 && $n == 86400)
 		{
@@ -102,12 +102,20 @@ function tiempo($n, $i)
 	function countOldPartes($conexion, $user)
 	{
 		//Partes cerrados propios
-		$con = $conexion->query("SELECT COUNT(P.id_part)
+		$con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
 		FROM Empleados E INNER JOIN parte P
 		ON E.id=P.emp_crea
-		WHERE E.id=$user->id AND E.dni='$user->dni'");
-		return mysqli_num_rows($con);
-	}
+        WHERE E.id=$user->id AND E.dni='$user->dni'");
+        $result = $con->fetch_array(MYSQLI_ASSOC);
+        return $result['Partes'];
+    }
+    function countPiezas($conexion)
+    {
+        return $conexion->query("SELECT pieza, COUNT(pieza) AS 'numeroP' 
+        FROM parte
+        WHERE resuelto=1
+        GROUP BY pieza");
+    }
 	function selectOldOtherPartes($conexion, $user)
 	{
 		//Partes cerrados	
@@ -129,17 +137,18 @@ function tiempo($n, $i)
 	}
 	function countHiddenPartes($conexion, $user)
 	{
-		$con = $conexion->query("SELECT COUNT(*)
+		$con = $conexion->query("SELECT COUNT(*) AS Partes
 		FROM parte 
-		WHERE oculto=1 AND emp_crea = $user->id");
-		return mysqli_num_rows($con);
-	}
+        WHERE oculto=1 AND emp_crea = $user->id");
+        $result = $con->fetch_array(MYSQLI_ASSOC);
+        return $result['Partes'];
+    }
 	function selectHiddenPartes($conexion, $user)
 	{
 		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec, not_tec
 		FROM parte P INNER JOIN Empleados E
 		ON P.emp_crea=E.id 
-		WHERE oculto='1' AND E.dni='$dni' 
+		WHERE oculto='1' AND E.dni='$user->dni' 
 		GROUP BY P.id_part, P.inf_part, E.nombre, E.id 
 		ORDER BY P.id_part ASC");
 	}
@@ -184,33 +193,107 @@ function tiempo($n, $i)
 		WHERE tec_res=$user->id
 		GROUP BY nom_tec
 		ORDER BY ROUND(AVG(Tiempo),0) DESC");
-	}
+    }
+    function tiempoMedioAdmin($conexion)
+    {
+        return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
+        GROUP BY nom_tec");
+    }
+    function modParte($conexion)
+    {
+        $id_part = $_GET['id_part'];
+        //Extrae datos parte
+        $con = selectFullDataParte($conexion, $id_part);
+        $fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
+        return '
+        <div class="mod_parte">
+            <p>Formulario de edición</p>
+            <p>Nombre del empleado: <strong>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</strong></p>
+            <p>Información del parte: <strong>'.$fila['inf_part'].'</strong></p>
+            <p>Pieza afectada: <strong>'.$fila['pieza'].'</strong></p>
+            <p>Fecha de creacion: <strong>'.$fila['fecha_hora_creacion'].'</strong></p>
+            <p>Notas anteriores: <strong>'.$fila['not_tec'].'</strong></p>
+            
+            <form action="" method="post">
+                <label>Notas de resolución:</label><br/>
+                <textarea name="not_tec" rows="2" cols="40" required></textarea><br/>
+                
+            <p>Piezas afectadas:</p>
+            <p> 
+                <select name="pieza">
+                    <option value="--" selectted="selected">--</option>
+                    <optgroup label="Sobre la torre">
+                        <option value="torre">La torre</option>
+                        <option value="Placa base">La placa base</option>
+                        <option value="HDD">El disco duro</option>
+                        <option value="procesador">El procesador</option>
+                        <option value="grafica">La grafica</option>
+                        <option value="RAM">La memoria RAM</option>
+                        <option value="lector">El lector</option>
+                    </optgroup>
+                    <optgroup label="perifericos">
+                        <option value="pantalla">El monitor o proyector</option>
+                        <option value="raton">El raton</option>
+                        <option value="teclado">El teclado</option>
+                        <option value="impresora">La impresora</option>
+                    </optgroup>
+                <optgroup label="otros">
+                     <option value="regleta">La regleta</option>
+                     <option value="Router">El router</option>
+                </optgroup>
+                </select>
+            </p>
+            <input type="hidden" name="id_part" value="'.$id_part.'" />
+            <input type="hidden" name="id_emp" value="'.$fila['id'].'" />
+            <input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
+            <input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
+            </form>
+        </div>
+        </table><br />';
+    }
+    function buttons($id, int $state, $user, $maker)
+    {
+        $permissions = permissions($user);
+        //State
+        //0: New
+        //1: Attended
+        //2: Closed
+        //3: Hidden
+        $data = "";
+        if ($state == 0 && in_array(5, $permissions)&& $maker == $user->id) {
+            $data = $data.'
+            <td>
+                <a href="veremp.php?id_part='.$id.'&funcion=Borrar_parte">Borrar</a>
+            </td>
+            <td>
+                <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$dni.'&id_part='.$id.'">Editar</a>
+            </td>';
+        }
+        else if ($state == 0 && (in_array(2, $permissions) || in_array(9, $permissions)) && $maker != $user->id) {
+            $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Atender_parte&id_emp='.$user->id.'&dni='.$user->$dni.'&id_part='.$id.'">Atender</a></td>';
+        }
+        else if ($state == 1 && (in_array(4, $permissions) || in_array(10, $permissions)) && $maker != $user->id) {
+            $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->$dni.'&id_part='.$id.'">Modificar</a></td>';
+        }
+        else if ($state == 2 && in_array(7, $permissions)) {
+            $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Ocultar_parte">Ocultar</a></td>';
+        }
+        else if ($state == 3 && in_array(8, $permissions)) {
+            $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Mostrar_parte">Mostrar</a></td>';
+        }
+        return $data;
+    }
 	function personalData($user)
 	{
 		return '
-		<br /><table>
-			<tr>
-				<th>Datos personales</th>
-			</tr>
-		</table><br />
-		<table>
-			<tr>
-				<th>ID</th>
-				<th>DNI</th>
-				<th>Nombre</th>
-				<th>Primer apellido</th>
-				<th>Segundo apellido</th>
-				<th>Tipo</th>
-			</tr>
-			<tr>
-				<td>'.$user->id.'</td>
-				<td>'.$user->dni.'</td>
-				<td>'.$user->name.'</td>
-				<td>'.$user->surname1.'</td>
-				<td>'.$user->surname2.'</td>
-				<td>'.$user->tipo.'</td>
-			</tr>
-		</table><br />';
+        <br />'.htmlMaker("table", htmlMaker("tr", htmlMaker("th", "Datos personales"))).'<br />
+        
+            '.htmlMaker("table", htmlMaker("tr", htmlMaker("td", "Id Empleado").htmlMaker("td", $user->id))
+            .htmlMaker("tr", htmlMaker("td", "DNI").htmlMaker("td", $user->dni))
+            .htmlMaker("tr", htmlMaker("td", "Nombre").htmlMaker("td", $user->name))
+            .htmlMaker("tr", htmlMaker("td", "Primer apellido").htmlMaker("td", $user->surname1))
+            .htmlMaker("tr", htmlMaker("td", "Segundo apellido").htmlMaker("td", $user->surname2))
+            .htmlMaker("tr", htmlMaker("td", "Tipo").htmlMaker("td", $user->tipo))).'<br />';
 	}
 	function permissions($user)
 	{
@@ -308,50 +391,64 @@ function tiempo($n, $i)
 		}
 		return $data;
 	}
-    function htmlMaker($data, $tag)
+    function htmlMaker($tag, $data)
     {
         return '<'.$tag.'>'.$data.'</'.$tag.'>';
     }
-        
     function countOwnPartes($conexion, $dni)
     {
         //partes no ocultos propios (empleado)
-        $con = $conexion->query("SELECT COUNT(*) 
+        $con = $conexion->query("SELECT COUNT(*) AS Partes
         FROM parte 
         WHERE oculto=0 AND emp_crea = (SELECT id FROM Empleados WHERE dni = '$dni')");
-        return mysqli_num_rows($con);
+        $result = $con->fetch_array(MYSQLI_ASSOC);
+        return $result['Partes'];
+        //return mysqli_num_rows($con);
     }
     function countNewPartes($conexion)
     {
         //Partes sin atender (tecnico)
-        $con = $conexion->query("SELECT COUNT(P.id_part)
+        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
         FROM parte P INNER JOIN Empleados E 
         ON P.emp_crea=E.id 
         WHERE P.not_tec IS NULL 
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
         //return mysqli_num_rows($con);
-        return $con->num_rows;
+        //return $con->num_rows;
+        $result = $con->fetch_array(MYSQLI_ASSOC);
+        return $result['Partes'];
     }
     //Partes de un técnico
     function countPartes($conexion, $nombreCom)
     {
-        $con = $conexion->query("SELECT COUNT(P.id_part)
+        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
         FROM parte P INNER JOIN Empleados E 
         ON P.emp_crea=E.id 
         WHERE P.nom_tec='$nombreCom' 
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
         //return mysqli_num_rows($con);
-        return $con->num_rows;
+        //return $con->num_rows;
+        $result = $con->fetch_array(MYSQLI_ASSOC);
+        return $result['Partes'];
     }
     //Partes de un empleado
     function countAllPartes($conexion)
     {
-        $con = $conexion->query("SELECT COUNT(P.id_part)
+        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
         FROM parte P INNER JOIN Empleados E
         ON P.emp_crea=E.id
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        return $con->num_rows;
+        //return $con->num_rows;
         //return mysqli_num_rows($con);
+        $result = $con->fetch_array(MYSQLI_ASSOC);
+        return $result['Partes'];
+    }
+    function selectIncidence($conexion, $id)
+    {
+        $con = $conexion->query("SELECT * 
+        FROM parte
+        WHERE id_part=$id");
+        return $con->fetch_array(MYSQLI_ASSOC);
     }
     //OTHER
     function links($user, $nums)
@@ -402,6 +499,17 @@ function tiempo($n, $i)
         }
         return $nums;
     }
+    function checkInput($input)
+	{
+		if($input == "" || $input == null)
+		{
+			return "none";
+		}
+		else
+		{
+			return $input;
+		}
+	}
     function getEmployee($fila)
     {
         $user = new user;
@@ -413,13 +521,18 @@ function tiempo($n, $i)
         $user->id = $fila['id'];
         return $user;
     }
-    function deleteParte($conexion)
+    function hideParte($conexion, $user, $id)
     {
-        return $conexion->query("DELETE FROM parte WHERE id_part=$id AND emp_crea=$id_emp AND tec_res IS NULL");
+        return $conexion->query("update parte set oculto=1 where id_part=$id and emp_crea='$user->id' and resuelto=1");
     }
-    function hideParte($conexion)
+    function showHiddenParte($conexion, $id_part)
     {
-        return $conexion->query("update parte set oculto=1 where id_part=$id and emp_crea='$id_emp' and resuelto=1");
+        return $conexion->query("update parte set oculto=0 where id_part=$id_part");
     }
-
+    function deleteParte($conexion, $id_part, $user)
+    {
+        return $conexion->query("DELETE 
+        FROM parte 
+        WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
+    }
 ?>
