@@ -11,8 +11,9 @@ if (isset($_SESSION['loggedin']))
 	//$conexion = new mysqli($_SESSION['host_db'], $_SESSION['user_db'], $_SESSION['pass_db'], $_SESSION['db_name']);
 	$id = $_POST['id'];
 	//extraer datos parte
-	$con = $conexion->query("select E.nombre, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion from Empleados E, parte P where 
-	E.id=P.emp_crea and id_part=$id");
+	$con = selectFullDataParte($conexion, $id_part);
+	/*$con = $conexion->query("select E.nombre, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion from Empleados E, parte P where 
+	E.id=P.emp_crea and id_part=$id");*/
 	//imprime datos del parte
 	while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
 	{

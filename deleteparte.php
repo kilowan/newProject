@@ -2,6 +2,7 @@
 session_start();
 ?>
 <?php
+include 'functions.php';
 if (isset($_SESSION['loggedin']))
 {
 		//Conexion Mysql
@@ -13,7 +14,7 @@ if (isset($_SESSION['loggedin']))
 	$id_emp = $user->id;
 	//$id_emp = $_SESSION['id'];
 	//borrar parte que cumpla condicion
-	$conexion->query("delete from parte where id_part=$id and emp_crea=$id_emp and tec_res is null");
+	deleteParte($conexion);
 }
 mysqli_close($conexion);
 header('Location: partes.php');

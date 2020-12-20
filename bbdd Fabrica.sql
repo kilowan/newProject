@@ -33,6 +33,23 @@ create table parte (
     on delete cascade
     on update cascade
 );
+ CREATE TABLE Notes (
+    Id INT(50) PRIMARY KEY auto_increment,
+    employee INT(50) NOT NULL,
+    incidence INT(50) NOT NULL,
+    noteType VARCHAR(50) NOT NULL,
+    noteStr VARCHAR(200) NOT NULL,
+    CONSTRAINT notes_employee
+    FOREIGN KEY (employee)
+    REFERENCES Empleados (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+    CONSTRAINT notes_incidence
+    FOREIGN KEY (incidence)
+    REFERENCES parte (id_part)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+ );
 
 insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
 values ('12345678Z', MD5('1234'), 'Jose Javier', 'Valero', 'Fuentes', 'Tecnico');

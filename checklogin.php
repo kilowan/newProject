@@ -1,4 +1,5 @@
 <?php
+include 'classes.php';
 session_start();
 ?>
 <?php
@@ -9,27 +10,6 @@ if ($conexion->connect_error)
 }
 else
 {
-	//Declare objects
-	class sql
-	{
-		public $host_db = "";
-		public $user_db = "";
-		public $pass_db = "";
-		public $db_name = "";
-	}
-
-	class user
-	{
-		public $comName = "";
-		public $name = "";
-		public $surname1 = "";
-		public $surname2 = "";
-		public $dni = "";
-		public $tipo = "";
-		public $id = "";
-		public $username = "";
-		public $password = "";
-	}
 	$sql_data = new sql;
 	$sql_data->host_db = "localhost";
 	$sql_data->user_db = "Ad";

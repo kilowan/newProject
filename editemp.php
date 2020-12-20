@@ -9,9 +9,7 @@ if (isset($_SESSION['loggedin'])&& $_SESSION['tipo'] == 'Admin')
 	$conexion = new mysqli($sql->host_db, $sql->user_db, $sql->pass_db, $sql->db_name);
 	//$conexion = new mysqli($_SESSION['host_db'], $_SESSION['user_db'], $_SESSION['pass_db'], $_SESSION['db_name']);
 	$id = $_GET['id'];
-	$con = $conexion->query("select dni, nombre, apellido1, apellido2, tipo
-	from Empleados
-	where tipo not in ('Admin') and id=$id");
+	$con = selectEmpleadoNoAdmin($conexion);
 	$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
 	$nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
 	$_SESSION['mensaje'] = $_SESSION['mensaje'].'
