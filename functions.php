@@ -436,7 +436,6 @@ include 'classes.php';
         WHERE oculto=0 AND emp_crea = (SELECT id FROM Empleados WHERE dni = '$dni')");
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
-        //return mysqli_num_rows($con);
     }
     function countNewPartes($conexion)
     {
@@ -446,8 +445,6 @@ include 'classes.php';
         ON P.emp_crea=E.id 
         WHERE P.not_tec IS NULL 
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        //return mysqli_num_rows($con);
-        //return $con->num_rows;
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
     }
@@ -459,8 +456,6 @@ include 'classes.php';
         ON P.emp_crea=E.id 
         WHERE P.nom_tec='$nombreCom' 
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        //return mysqli_num_rows($con);
-        //return $con->num_rows;
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
     }
@@ -471,8 +466,6 @@ include 'classes.php';
         FROM parte P INNER JOIN Empleados E
         ON P.emp_crea=E.id
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        //return $con->num_rows;
-        //return mysqli_num_rows($con);
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
     }
@@ -924,7 +917,6 @@ include 'classes.php';
             if ($rows > 0)
             {
                 $fila2 = $tiempo_medio->fetch_array(MYSQLI_ASSOC);
-                //$fila2 = mysqli_fetch_array($tiempo_medio, MYSQLI_ASSOC);
                 $response = $response.headerData('Estadisticas', 'colspan="2"').'
                 <table>
                     <tr>
@@ -938,55 +930,6 @@ include 'classes.php';
                 </table><br />';
             }
         }
-        /*if(in_array(17, $permissions))
-        {
-            $tiempo_medio_global = tiempoMedioAdmin($conexion);
-            if (mysqli_num_rows($tiempo_medio_global) > 0)
-            {
-                $response = $response.'
-                <table>
-                    <tr>
-                        <th colspan="2">Estadisticas globales</th>
-                    </tr>
-                </table><br />
-                <table>
-                    <tr>
-                        <th>Tiempo medio</th>
-                        <th>Nombre de empleado</th>
-                    </tr>';
-                while($fila3 = mysqli_fetch_array($tiempo_medio_global, MYSQLI_ASSOC))
-                {
-                    //insercion partes (html)
-                    $response = $response.'
-                    <tr>
-                        <td>'.tiempo($fila3['tiempo_medio'], 0).'</td>
-                        <td>'.$fila3['nom_tec'].'</td>
-                    </tr>';
-                }
-                $response = $response.'</table><br />';
-            }
-        }*/
-        /*$piez = countPiezas($conexion);
-        if (mysqli_num_rows($piez) > 0)
-        {
-            $response = $response.'
-                <table>
-                    <tr>
-                        <th colspan="2">Piezas reportadas</th>
-                    </tr>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Nº de reportes</th>
-                    </tr>';
-            while($fila = mysqli_fetch_array($piez, MYSQLI_ASSOC))
-            {
-                $response = $response.'
-                    <tr>
-                        <td>'.$fila['pieza'].'</td>
-                        <td>'.$fila['numeroP'].'</td>
-                    </tr>';
-            }
-        }*/
         return $response;
     }
     function headerData(string $headerData, ?string $extraData = null)
@@ -1117,6 +1060,117 @@ include 'classes.php';
                 <input type="hidden" name="user" id="user"><br />
                 </form><br/>
                 <button name="Submit" id="Submit">Añadir empleado</button>';
+        }
+        return $response;
+    }
+    function mainStruture($funcion, $conexion, $user)
+    {
+        $response = "";
+        switch ($funcion) {
+            case 'Admin':
+                $id = $_GET['id_emp'];
+                $dni = $_GET['dni'];
+                $con = selectEmployee($conexion);
+                $result = $con->fetch_array(MYSQLI_ASSOC);
+                $userA = new user();
+                $userA->tipo = $result['tipo'];
+                $userA->name = $result['nombre'];
+                $userA->surname1 = $result['apellido1'];
+                $userA->surname2 = $result['apellido2'];
+                $userA->dni = $dni;
+                $userA->id = $id;
+                $response = $response.personalData($userA);
+                $response = $response.showPartes($conexion, $userA);
+                $response = $response.showStadistics($conexion, $userA);
+                $response = $response.showGlobalStatistics($userA, $conexion);
+                $response = $response.reportedPieces($conexion, $userA);
+                break;
+            case 'Datos_personales':
+                //Vista Datos personales
+                $response = $response.personalData($user);
+                break;
+    
+            case 'Ver_parte':
+                //Vista ver parte
+                $id_part = $_GET['id_part'];
+                $response = $response.showDetailParteView($conexion, $user, $id_part);
+                break;
+    
+            case 'Borrar_parte':
+                //Borrar parte no atendido
+                $id_part = $_GET['id_part'];
+                $id_emp = $user->id;
+                deleteParte($conexion, $id_part, $user);
+                $funcion = 'Partes';
+                break;
+    
+            case 'Ocultar_parte':
+                //Ocultar parte cerrado
+                $id_part = $_GET['id_part'];
+                hideParte($conexion, $user, $id_part);
+                $funcion = 'Partes';
+                break;
+    
+            case 'Mostrar_parte':
+                //Mostrar parte oculto
+                $id_part = $_GET['id_part'];
+                showHiddenParte($conexion, $id_part);
+                $funcion = 'Partes'; 
+                break;
+    
+            case 'Partes':
+                //Vista Partes
+                $response = $response.showPartes($conexion, $user);
+                break;
+    
+            case 'Agregar_parte':
+                //Vista Agregar parte
+                $response = $response.addParte($user);
+                break;
+    
+            case 'Ocultos':
+                //Vista Partes ocultos
+                $response = $response.showHiddenPartes($conexion, $user);
+                break;
+    
+            case 'Editar_parte':
+                //Vista Editar parte
+                $response = $response.editParte($conexion);
+                break;
+    
+            case 'Estadisticas':
+                //Vista Estadísticas
+                $response = $response.showStadistics($conexion, $user);
+                $response = $response.showGlobalStatistics($user, $conexion);
+                $response = $response.reportedPieces($conexion, $user);
+                break;
+    
+            case 'Lista':
+                //Vista Lista de empleados
+                $response = $response.employeeList($conexion, $user);
+                break;
+    
+            case 'Agregar_empleado':
+                //Vista Agregar empleado
+                $response = $response.addEmployee($user);
+                break;
+    
+            case 'Editar_empleado':
+                //Vista Editar empleado
+                $response = $response.editEmployee($conexion, $user);
+                break;
+    
+            case 'Atender_parte':
+                //Vista Atender parte
+                $response = $response.modParte($conexion, $user);
+                break;
+    
+            case 'Modificar_parte':
+                //Vista Modificar parte
+                $response = $response.modParte($conexion, $user);
+                break;
+            default:
+                break;
         }
         return $response;
     }
