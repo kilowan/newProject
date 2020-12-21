@@ -535,4 +535,301 @@ include 'classes.php';
         FROM parte 
         WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
     }
+    function readIncidences($con, $user)
+    {
+        $response = "";
+        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        {
+            $response = $response.'
+            <tr>
+                <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=0">'.$fila['id_part'].'</a></td>
+                <td>'.$fila['fecha_hora_creacion'].'</td>
+                <td>'.$fila['inf_part'].'</td>
+                <td>'.$fila['pieza'].'</td>
+                <td>
+                    <a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Borrar_parte">Borrar</a>
+                </td>
+                <td>
+                    <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$fila['id_part'].'">Editar</a>
+                </td>
+            </tr>';
+        }
+        return $response;
+    }
+    function readIncidences2($con)
+    {
+        $response = "";
+        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        {
+            $id=$fila['id_part'];
+            $response = $response.'
+            <tr>
+            <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=1">'.$fila['id_part'].'</a></td>
+                <td>'.$fila['fecha_hora_creacion'].'</td>
+                <td>'.$fila['inf_part'].'</td>
+                <td>'.$fila['pieza'].'</td>
+                <td>'.$fila['not_tec'].'</td>
+                <td>'.$fila['nom_tec'].'</td>			
+            </tr>';
+        }
+        return $response;
+    }
+    function readIncidence3($con)
+    {
+        $response = "";
+        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        {
+            $response = $response.'
+            <tr>
+                <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=2">'.$fila['id_part'].'</a></td>
+                <td>'.$fila['fecha_hora_creacion'].'</td>
+                <td>'.$fila['inf_part'].'</td>
+                <td>'.$fila['pieza'].'</td>
+                <td>'.$fila['not_tec'].'</td>
+                <td>'.$fila['nom_tec'].'</td>
+                <td>'.tiempo($fila['tiempo'], 0).'</td>
+                <td>
+                    <a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ocultar_parte">Ocultar</a>
+                </td>
+            </tr>';
+        }
+        return $response;
+    }
+    function readIncidence4($user, $con)
+    {
+        $response = "";
+        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        {
+            $response = $response.'
+            <tr>
+                <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=0">'.$fila['id_part'].'</a></td>
+                <td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
+                <td>'.$fila['fecha_hora_creacion'].'</td>
+                <td>'.$fila['inf_part'].'</td>
+                <td>'.$fila['pieza'].'</td>
+                <td>
+                    <a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$fila['id_part'].'">Atender</a>
+                </td>
+            </tr>';
+        }
+    }
+    function readIncidence5($con, $user)
+    {
+        $response = "";
+        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        {
+            $response = $response.'
+            <tr>
+                <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=1">'.$fila['id_part'].'</a></td>
+                <td>'.$fila['fecha_hora_creacion'].'</td>
+                <td>'.$fila['inf_part'].'</td>
+                <td>'.$fila['pieza'].'</td>
+                <td>'.$fila['not_tec'].'</td>
+                <td>'.$fila['nom_tec'].'</td>
+                <td>
+                    <a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$fila['id_part'].'">Modificar</a>
+                </td>
+            </tr>';
+        }
+        return $response;
+    }
+    function readIncidences6($con, $conexion)
+    {
+        $response = "";
+        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        {		
+            $emp_crea = $fila['emp_crea'];
+            $nom_emp = selectEmpleado($conexion, $emp_crea);
+            $filas = mysqli_fetch_array($nom_emp, MYSQLI_ASSOC);
+            $response = $response.'
+                <tr>
+                    <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=2">'.$fila['id_part'].'</a></td>
+                    <td>'.$filas['nombre'].' '.$filas['apellido1'].' '.$filas['apellido2'].'</td>
+                    <td>'.$fila['inf_part'].'</td>
+                    <td>'.$fila['not_tec'].'</td>
+                    <td>'.$fila['fecha_hora_creacion'].'</td>
+                    <td>'.tiempo($fila['tiempo'], 0).'</td>
+                </tr>';
+        }
+        return $response;
+    }
+    function showPartes($conexion, $user)
+    {
+        $permissions = permissions($user);
+        $response = "";
+        if (in_array(5, $permissions)) {
+            //Partes abiertos propios (empleado o admin)
+            $con = selectNewPartes($conexion, $user);
+            if ($con->num_rows>0) {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <th colspan="10">Partes propios abiertos</th>
+                    </tr>
+                </table><br />
+                <table>
+                    <tr>
+                        <th>Nº parte</th>
+                        <th>Fecha de creación</th>
+                        <th>Información</th>
+                        <th>Piezas afectadas</th>
+                        <th colspan="2">--</th>
+                    </tr>'.readIncidences($con, $user).'
+                </table><br />';
+            }
+        }
+        if (in_array(6, $permissions)) {
+            //Partes atendidos propios (empleado o admin)
+            $con = selectOwnPartes($conexion, $user);
+            if($con->num_rows>0)
+            {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <th colspan="10">Partes propios atendidos</th>
+                    </tr>
+                </table><br />
+                <table>
+                    <tr>
+                        <th>Nº parte</th>
+                        <th>Fecha de creación</th>
+                        <th>Información</th>
+                        <th>Piezas afectadas</th>
+                        <th>Notas técnico</th>
+                        <th>Tecnico a cargo</th>
+                    </tr>'.readIncidences2($con).'
+                </table><br />';
+            }
+        }
+        if (in_array(7, $permissions)) {
+            //Partes cerrados propios (empleado o admin)
+            $num = countOldPartes($conexion, $user);
+            if ($num>0)
+            {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <th colspan="10">Partes propios cerrados</th>
+                    </tr>
+                </table>';
+            }
+            $con = selectOldPartes($conexion, $user);	
+            if ($con->num_rows > 0)
+            {			
+                $response = $response.'<br />
+                <table>
+                    <tr>
+                        <th>Nº parte</th>
+                        <th>Fecha de creación</th>
+                        <th>Información</th>
+                        <th>Piezas afectadas</th>
+                        <th>Notas técnico</th>
+                        <th>Tecnico a cargo</th>
+                        <th>Tiempo de resolución</th>
+                        <th>--</th>
+                    </tr>'.readIncidence3($con).'
+                </table><br />';
+            }
+        }
+        if (in_array(8, $permissions)) {
+            //Partes propios ocultos (Empleado o Admin)
+            $data = countHiddenPartes($conexion, $user);
+            if ($data > 0)
+            {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <td colspan="8">
+                            <a href="veremp.php?funcion=Ocultos&id_emp='.$user->id.'&dni='.$user->dni.'">Ver ocultos</a>
+                        </td>
+                    </tr>
+                </table><br />';
+            }
+        }
+        if (in_array(2, $permissions) || in_array(9, $permissions)) {
+            //Partes abiertos no propios (Técnico o Admin)
+            $con = selectNewOtherPartes($conexion, $user);
+            if(mysqli_num_rows($con)>0)
+            {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <th colspan="10">Partes abiertos no propios (Técnico o Admin)</th>
+                    </tr>
+                </table><br />
+                <table>
+                    <tr>
+                        <th>Nº parte</th>
+                        <th>Empleado</th>
+                        <th>Fecha de creación</th>
+                        <th>Información</th>
+                        <th>Piezas afectadas</th>
+                        <th>--</th>
+                    </tr>';//readIncidence4($user, $con);
+                    while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+                    {
+                        $response = $response.'
+                        <tr>
+                            <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state=0">'.$fila['id_part'].'</a></td>
+                            <td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
+                            <td>'.$fila['fecha_hora_creacion'].'</td>
+                            <td>'.$fila['inf_part'].'</td>
+                            <td>'.$fila['pieza'].'</td>
+                            <td>
+                                <a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$fila['id_part'].'">Atender</a>
+                            </td>
+                        </tr>';
+                    }
+                    $response = $response.'</table><br />';
+            }
+        }
+        if (in_array(3, $permissions) || in_array(10, $permissions)) {
+            //Partes atendidos no propios (Técnico o Admin)
+            $con = selectOtherPartes($conexion, $user);
+            if(mysqli_num_rows($con)>0)
+            {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <th colspan="10">Partes atendidos</th>
+                    </tr>
+                </table><br />
+                <table>
+                    <tr>
+                        <th>Nº parte</th>
+                        <th>Fecha de creación</th>
+                        <th>Información</th>
+                        <th>Piezas afectadas</th>
+                        <th>Notas técnico</th>
+                        <th>Tecnico a cargo</th>
+                        <th>--</th>
+                    </tr>'.readIncidence5($con, $user).'
+                </table><br />';
+            }
+        }
+        if (in_array(4, $permissions) || in_array(11, $permissions)) {
+            //Partes cerrados no propios (Técnico o Admin)
+            $con = selectOldOtherPartes($conexion, $user);
+            if (mysqli_num_rows($con) > 0)
+            {
+                $response = $response.'
+                <table>
+                    <tr>
+                        <th>Partes cerrados</th>
+                    </tr>
+                </table><br />
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>Datos</th>
+                        <th>Datos técnico</th>
+                        <th>Fecha/ hora</th>
+                        <th>Tiempo de resolución</th>
+                    </tr>'.readIncidences6($con, $conexion).'
+                </table><br />';
+            }
+        }
+        return $response;
+    }
 ?>
