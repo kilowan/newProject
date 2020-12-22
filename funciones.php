@@ -26,30 +26,30 @@ if (isset($_SESSION['loggedin']))
 		$funcion = $_POST['funcion'];
 	}
 	//Ocultar parte cerrado
-	if($funcion == 'Ocultar_parte')
+	/*if($funcion == 'Ocultar_parte')
 	{
 		$id_part = $_GET['id_part'];
 		hideParte($conexion, $user, $id_part);
 		$_SESSION['funcion'] = 'Partes';
 		header('Location: veremp.php');
-	}
+	}*/
 	//Mostrar parte oculto
-	if($funcion == 'Mostrar_parte')
+	/*if($funcion == 'Mostrar_parte')
 	{
 		$id_part = $_GET['id_part'];
 		showHiddenParte($conexion, $id_part);
 		$_SESSION['funcion'] = 'Ocultos';
 		header('Location: veremp.php');
-	}
+	}*/
 	//Borrar parte no atendido
-	if($funcion == 'Borrar_parte')
+	/*if($funcion == 'Borrar_parte')
 	{
 		$id_part = $_GET['id_part'];
 		$id_emp = $user->id;
 		deleteParte($conexion, $id_part, $user);
 		$_SESSION['funcion'] = 'Partes';
 		header('Location: veremp.php');
-	}
+	}*/
 	if($funcion == 'Actualizar_parte')
 	{
 		$id_part = $_POST['id_part'];
@@ -79,6 +79,7 @@ if (isset($_SESSION['loggedin']))
 		{	
 			$conexion->query("insert into parte (emp_crea, resuelto, inf_part , pieza)
 			values ($id_emp, 0, '$descripcion', '$pieza')");
+			//$conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($id_emp, mysql_insert_id(), 'Empleado', '$descripcion');
 		}
 		else
 		{

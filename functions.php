@@ -280,7 +280,7 @@ include 'classes.php';
                 <a href="veremp.php?id_part='.$id.'&funcion=Borrar_parte">Borrar</a>
             </td>
             <td>
-                <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$dni.'&id_part='.$id.'">Editar</a>
+                <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Editar</a>
             </td>';
         }
         else if ($state == 0 && (in_array(2, $permissions) || in_array(9, $permissions)) && $maker != $user->id) {
@@ -691,6 +691,36 @@ include 'classes.php';
         }
         return $response;
     }
+    function getNotes($conexion, $id_part, $user)
+    {
+        $response = "";
+        $con = $conexion->query("SELECT * 
+        FROM notes
+        WHERE employee=$user->id AND incidence=$id_part");
+        if ($con->num_rows >0) {
+            $response = $response.'
+            <br /><table>
+                <tr>
+                    <th colspan="2">Notas del ténico</th>
+                </tr>
+            </table><br />
+            <table>
+                <tr>
+                    <th>Nota</th>
+                    <th>Fecha</th>
+                </tr>';
+            while ($result = $con->fetch_array(MYSQLI_ASSOC)) 
+            {
+                $response = $response.'
+                <tr>
+                    <td>'.$result['noteStr'].'</td>
+                    <td>'.$result['date'].'</td>
+                </tr>';
+            }
+            $response = $response.'</table><br />';
+        }
+        return $response;
+    }
     function showDetailParteView($conexion, $user, $id_part)
     {
         $id_part = $_GET['id_part'];
@@ -706,18 +736,14 @@ include 'classes.php';
 			<tr>
 				<td>Empleado</td>
 				<td>'.checkInput($fila['emp_crea']).'</td>
-			</tr>
-			<tr>
+            </tr>
+            <tr>
 				<td>Información</td>
 				<td>'.checkInput($fila['inf_part']).'</td>
-			</tr>
+            </tr>
 			<tr>
 				<td>Tecnico a cargo</td>
 				<td>'.checkInput($fila['tec_res']).'</td>
-			</tr>
-			<tr>
-				<td>Notas</td>
-				<td>'.checkInput($fila['not_tec']).'</td>
 			</tr>
 			<tr>
 				<td>Fecha de creación</td>
@@ -732,7 +758,7 @@ include 'classes.php';
 				<td>'.checkInput($fila['pieza']).'</td>
 			</tr>
 			<tr>'.buttons($id_part, $state, $user, $fila['emp_crea']).'</tr>
-		</table>';
+        </table>'.getNotes($conexion, $id_part, $user);
     }
     function addParte($user)
     {
@@ -784,7 +810,7 @@ include 'classes.php';
 		$nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
 		return '
 		<br />'.headerData('Editar parte').'
-		<form action="funciones.php" method="post">
+		<form action="veremp.php" method="post">
 			<input type="hidden" name="id_part" value="'.$fila['id_part'].'" />
 			<input type="hidden" name="funcion" value="Actualizar_parte" />
 			<table>
@@ -841,6 +867,31 @@ include 'classes.php';
             </form>';	
         }
         return $response;
+    }
+    function updateNotes($conexion, $user)
+    {
+        //$response = "";
+        $id_part = $_POST['id_part'];
+		$inf_part = $_POST['inf_part'];
+        //$id_emp = $user->id;
+        /*$con = $conexion->query("SELECT * FROM notes WHERE employee=$id_emp AND incidence=$id_part")
+        $con->num_rows
+         */
+        //if($inf_part != '')
+        //if($con->num_rows >0)
+		//{
+        $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
+        /*$conexion->query("UPDATE parte SET inf_part='$inf_part' 
+        WHERE id_part=$id_part AND emp_crea=$id_emp");
+        $_SESSION['funcion'] = 'Partes';*/
+			//header('Location: veremp.php');
+		//}
+		//else
+		//{
+			//$response = $response.'<p class="respuesta">Inserción no satisfactoria</p>';
+		//}
+        //header('Location: menu.php');
+        //return $response;
     }
     function showGlobalStatistics($user_data, $conexion)
     {
@@ -1101,21 +1152,21 @@ include 'classes.php';
                 $id_part = $_GET['id_part'];
                 $id_emp = $user->id;
                 deleteParte($conexion, $id_part, $user);
-                $funcion = 'Partes';
+                $_SESSION['funcion'] = 'Partes';
                 break;
     
             case 'Ocultar_parte':
                 //Ocultar parte cerrado
                 $id_part = $_GET['id_part'];
                 hideParte($conexion, $user, $id_part);
-                $funcion = 'Partes';
+                $_SESSION['funcion'] = 'Partes';
                 break;
     
             case 'Mostrar_parte':
                 //Mostrar parte oculto
                 $id_part = $_GET['id_part'];
                 showHiddenParte($conexion, $id_part);
-                $funcion = 'Partes'; 
+                $_SESSION['funcion'] = 'Partes'; 
                 break;
     
             case 'Partes':
@@ -1168,6 +1219,9 @@ include 'classes.php';
             case 'Modificar_parte':
                 //Vista Modificar parte
                 $response = $response.modParte($conexion, $user);
+                break;
+            case 'Actualizar_parte':
+                updateNotes($conexion, $user);
                 break;
             default:
                 break;
