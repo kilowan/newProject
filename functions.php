@@ -167,17 +167,14 @@ include 'classes.php';
     }
 	function selectEmpleado($conexion, $emp_crea)
 	{
-		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2
-		FROM Empleados E INNER JOIN parte P
-		ON P.emp_crea=E.id 
-		WHERE P.emp_crea=$emp_crea");
+        return $conexion->query("SELECT nombre, apellido1, apellido2 FROM Empleados WHERE id = $emp_crea");
 	}
 	function selectEmpleadoNoAdmin($conexion)
 	{
 		$id_emp = $_GET['id_emp'];
-		return $conexion->query("select dni, nombre, apellido1, apellido2, tipo
-		from Empleados
-		where tipo not in ('Admin') and id=$id_emp");
+		return $conexion->query("SELECT *
+		FROM Empleados
+		WHERE tipo NOT IN ('Admin') AND id=$id_emp");
 	}
 	function selectEmpleados($conexion)
 	{
@@ -497,6 +494,7 @@ include 'classes.php';
         {
             $table = $table.'&nbsp<a class="link" href="veremp.php?funcion=Lista&id_emp='.$user->id.'&dni='.$user->dni.'">Lista empleados</a>';
         }
+        $table = $table.'<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>';
         return $table;
     }
     function structure($user, $conexion)
@@ -1227,5 +1225,38 @@ include 'classes.php';
                 break;
         }
         return $response;
+    }
+    function takeEmployee($emp_crea)
+    {
+        $sql_data = new sql;
+        $sql_data->host_db = "localhost";
+        $sql_data->user_db = "Ad";
+        $sql_data->pass_db = "1234";
+        $sql_data->db_name = "Fabrica";
+        $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
+        //$conexion = json_decode($_SESSION['sql']);
+        $con = $conexion->query("SELECT nombre, apellido1, apellido2, tipo, dni FROM Empleados WHERE id = $emp_crea");
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        $user = new user;
+        $user->name = $data['nombre'];
+        $user->surname1 = $data['apellido1'];
+        $user->surname2 = $data['apellido2'];
+        $user->dni = $data['dni'];
+        $user->tipo = $data['tipo'];
+        $user->id = $emp_crea;
+        return $user;
+    }
+	if (!isset($_GET['funcion'])) {
+        $funcion = "";
+    } else {
+        $funcion = $_GET['funcion'];
+    }
+    if ($_SERVER['REQUEST_METHOD'] == 'GET' && $funcion == 'GET')
+    {
+        $emp_crea = $_GET['id_emp'];
+        $user = takeEmployee($emp_crea);
+        header("HTTP/1.1 200 OK");
+        echo json_encode($user);
+        exit();
     }
 ?>

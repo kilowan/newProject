@@ -9,6 +9,10 @@ if (isset($_SESSION['loggedin']))
 	$user = json_decode($_SESSION['user']);
 	$table = '';
 	$nums = structure($user, $conexion);
+	if (!isset($_SESSION['mensaje']))
+	{
+		$_SESSION['mensaje'] = "";
+	}
 	$table = $table.'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 		"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -25,20 +29,14 @@ if (isset($_SESSION['loggedin']))
 						<img class="cierra" src="shutdown.png" alt="Cerrar sesión" />
 					</a>
 				</div>
-			 <div class="opciones">'.links($user, $nums).'
-			<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>
-		</div>
-	</div>';
-	if (isset($_SESSION['mensaje']))
-	{
-		$table = $table.'<div class="cuerpo">'.$_SESSION['mensaje'].'</div>';
-		$_SESSION['mensaje'] = "";
-	}
-	$table = $table.'<div class="Pie">
+			 <div class="opciones">'.links($user, $nums).'</div>
+			 <div class="cuerpo">'.$_SESSION['mensaje'].'</div>
+			 <div class="Pie">
 				<p>Trabajo realizado por Jose Javier Valero Fuentes y Juan Francisco Navarro Ramiro para el curso de ASIR 2º X</p>
 			</div>
 		</body>
 	</html>';
+	$_SESSION['mensaje'] = "";
 }
 else
 {
