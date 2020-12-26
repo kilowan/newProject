@@ -17,18 +17,24 @@ else
 	$sql_data->db_name = "Fabrica";
 	$_SESSION['sql'] = json_encode($sql_data);
 	$conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
+	$credentials = new credentials($_POST['username'], $_POST['password']);
+	$_SESSION['credentials'] = json_encode($credentials);
 	$user_info = new user;
-	$user_info->dni = $_POST['username'];
-	$user_info->name = $_POST['username'];
-	$user_info->username = $_POST['username'];
-	$user_info->password = MD5($_POST['password']);
-	$_SESSION['dni'] = $_POST['username'];
-	$_SESSION['password'] = MD5($_POST['password']);
-	$username = $_POST['username'];
-	$password = $_SESSION['password'];
+	$user_info->dni = $credentials->username;
+	//$_POST['username'];
+	$user_info->name = $credentials->username;
+	//$_POST['username'];
+	//$user_info->username = $_POST['username'];
+	//$user_info->password = MD5($_POST['password']);
+	$_SESSION['dni'] = $credentials->username;
+	//$_POST['username'];
+	$_SESSION['password'] = $credentials->password;
+	//MD5($_POST['password']);
+	//$username = $_POST['username'];
+	//$password = $_SESSION['password'];
 	$con = $conexion->query("SELECT * 
 	FROM Empleados 
-	WHERE dni = '$username' and password = '$password'");
+	WHERE dni = '$credentials->username' AND password='$credentials->password'");
 	if (mysqli_num_rows($con) > 0)
 	{
 		$_SESSION['loggedin'] = true;

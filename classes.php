@@ -16,9 +16,19 @@
 		public string $dni = "";
 		public string $tipo = "";
 		public ?int $id = NULL;
-		public string $username = "";
-		public string $password = "";
-    }
+		//public string $username = "";
+		//public string $password = "";
+	}
+	class credentials
+	{
+		public string $username;
+		public string $password;
+		public function __construct(string $username, string $password)
+		{
+			$this->username = $username;
+			$this->password = MD5($password);
+		}
+	}
 
     /*class incidence
     {

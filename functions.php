@@ -1226,6 +1226,60 @@ include 'classes.php';
         }
         return $response;
     }
+    function connnection()
+    {
+        $sql_data = new sql;
+        $sql_data->host_db = "localhost";
+        $sql_data->user_db = "Ad";
+        $sql_data->pass_db = "1234";
+        $sql_data->db_name = "Fabrica";
+        $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
+        $_SESSION['sql'] = json_encode($sql_data);
+        return $conexion;
+    }
+    function checkLoging(string $username, string $password, $conexion)
+    {
+        $response = false;
+        $credentials = new credentials($username, $password);
+        $con = $conexion->query("SELECT COUNT(*)
+        FROM Empleados 
+        WHERE dni = '$credentials->username' AND password='$credentials->password'");
+        if ($con->num_rows > 0)
+        {
+            $_SESSION['loggedin'] = true;
+            $_SESSION['start'] = time();
+            $_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
+            $response = true;
+        }
+        return $response;
+    }
+    function getEmployeeData($credentials)
+    {
+        $conexion = connnection();
+        if(checkLoging($credentials->username, $credentials->password, $conexion))
+        {
+            $user_info = new user;
+            $user_info->dni = $credentials->username;
+            $con = $conexion->query("SELECT * 
+            FROM Empleados 
+            WHERE dni = '$credentials->username' AND password='$credentials->password'");
+
+            //extrae datos personales
+            $fila = $con->fetch_array(MYSQLI_ASSOC);
+            $user_info->tipo = $fila['tipo'];
+            $user_info->comName = $fila['nombre']." ".$fila['apellido1']." ".$fila['apellido2'];
+            $user_info->id = $fila['id'];
+            $user_info->name = $fila['nombre'];
+            $user_info->surname1 = $fila['apellido1'];
+            $user_info->surname2 = $fila['apellido2'];
+            $_SESSION['user'] =  json_encode($user_info);
+            return $user_info;
+        }
+        else 
+        {
+            echo 'error desconocido';
+        }
+    }
     function takeEmployee($emp_crea)
     {
         $sql_data = new sql;
@@ -1234,13 +1288,13 @@ include 'classes.php';
         $sql_data->pass_db = "1234";
         $sql_data->db_name = "Fabrica";
         $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
-        //$conexion = json_decode($_SESSION['sql']);
         $con = $conexion->query("SELECT nombre, apellido1, apellido2, tipo, dni FROM Empleados WHERE id = $emp_crea");
         $data = $con->fetch_array(MYSQLI_ASSOC);
         $user = new user;
         $user->name = $data['nombre'];
         $user->surname1 = $data['apellido1'];
         $user->surname2 = $data['apellido2'];
+        $user->comName = $data['nombre'].' '.$data['apellido1'].' '.$data['apellido2'];
         $user->dni = $data['dni'];
         $user->tipo = $data['tipo'];
         $user->id = $emp_crea;
@@ -1255,8 +1309,27 @@ include 'classes.php';
     {
         $emp_crea = $_GET['id_emp'];
         $user = takeEmployee($emp_crea);
-        header("HTTP/1.1 200 OK");
+        header('Content-Type: application/json');
         echo json_encode($user);
         exit();
+    }
+    else if ($_SERVER['REQUEST_METHOD'] == 'POST') 
+    {
+        $json = file_get_contents('php://input');
+        $obj = json_decode($json);
+        if ($obj->funcion == 'TAKE') {
+            $credentials = new credentials($obj->username, $obj->password);
+            $_SESSION['credentials'] = json_encode($credentials);
+            $user = getEmployeeData($credentials);
+            if ($user != 'error desconocido') {
+                header('Content-Type: application/json');
+                echo json_encode($user);
+                exit();
+            }
+            else {
+                echo $user;
+                exit();
+            }
+        }
     }
 ?>
