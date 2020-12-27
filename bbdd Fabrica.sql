@@ -1,13 +1,12 @@
 create database Fabrica;
 use Fabrica;
-create table Empleados (
-    id int (50) primary key auto_increment not null,
-    dni varchar(9) unique not null,
-    password varchar (100) not null,
-    nombre varchar (100) not null,
-    apellido1 varchar (100) not null,
-    apellido2 varchar (100),
-    tipo varchar(50) not null
+CREATE TABLE Empleados (
+    id INT (50) PRIMARY KEY NOT NULL auto_increment,
+    dni VARCHAR(9) UNIQUE NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellido1 VARCHAR (100) NOT NULL,
+    apellido2 VARCHAR (100),
+    tipo VARCHAR(50) NOT NULL
 );
 create table parte (
     id_part int(50) primary key auto_increment,
@@ -32,8 +31,9 @@ create table parte (
     on delete cascade
     on update cascade
 );
+
  CREATE TABLE Notes (
-    Id INT(50) PRIMARY KEY auto_increment,
+    Id INT(50) PRIMARY KEY NOT NULL auto_increment,
     employee INT(50) NOT NULL,
     incidence INT(50) NOT NULL,
     noteType VARCHAR(50) NOT NULL,
@@ -50,26 +50,46 @@ create table parte (
     ON DELETE CASCADE
  );
 
-insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-values ('12345678Z', MD5('1234'), 'Jose Javier', 'Valero', 'Fuentes', 'Tecnico');
+ CREATE TABLE Credentials(
+     Id INT(50) PRIMARY KEY NOT NULL auto_increment,
+     username VARCHAR(100) UNIQUE NOT NULL,
+     password VARCHAR(100) NOT NULL,
+     employee INT(50) NOT NULL,
+     CONSTRAINT credentials_employee
+    FOREIGN KEY (employee)
+    REFERENCES Empleados (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+ );
 
-insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-values ('12345679Z', MD5('1234'), 'Juan Francisco', 'Navarro', 'Ramiro', 'Tecnico');
+insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+values ('12345678Z', 'Jose Javier', 'Valero', 'Fuentes', 'Tecnico');
 
-insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-values ('11111111Z', MD5('1234'), 'Jose', 'admin', 'istrador', 'Admin');
+insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+values ('12345679Z', 'Juan Francisco', 'Navarro', 'Ramiro', 'Tecnico');
 
-insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-values ('12345678A', MD5('1234'), 'Jose', 'jackson', 'arzapalo', 'Limpiador');
+insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+values ('11111111Z', 'Jose', 'admin', 'istrador', 'Admin');
 
-insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-values ('12345678S', MD5('1234'), 'Jose Antonio', 'Lidon', 'Ferrer', 'Limpiador');
+insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+values ('12345678A', 'Jose', 'jackson', 'arzapalo', 'Limpiador');
 
-insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-values ('12345678C', MD5('1234'), 'Samuel', 'Garcia', 'Sanchez', 'Encargado');
+insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+values ('12345678S', 'Jose Antonio', 'Lidon', 'Ferrer', 'Limpiador');
 
-insert into Empleados (dni, password, nombre, apellido1, tipo)
-values ('12345678B', MD5('1234'), 'jessie', 'deep', 'Tecnico');
+insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+values ('12345678C', 'Samuel', 'Garcia', 'Sanchez', 'Encargado');
+
+insert into Empleados (dni, nombre, apellido1, tipo)
+values ('12345678B', 'jessie', 'deep', 'Tecnico');
+
+INSERT INTO credentials (username, password, employee) VALUES ('12345678Z', MD5('1234'), 1);
+INSERT INTO credentials (username, password, employee) VALUES ('12345679', MD5('1234'), 2);
+INSERT INTO credentials (username, password, employee) VALUES ('11111111Z', MD5('1234'), 3);
+INSERT INTO credentials (username, password, employee) VALUES ('12345678A', MD5('1234'), 4);
+INSERT INTO credentials (username, password, employee) VALUES ('12345678S', MD5('1234'), 5);
+INSERT INTO credentials (username, password, employee) VALUES ('12345678C', MD5('1234'), 6);
+INSERT INTO credentials (username, password, employee) VALUES ('12345678B', MD5('1234'), 7);
 
 CREATE USER 'Ad'@'localhost' IDENTIFIED BY '1234';
 GRANT ALL PRIVILEGES ON `fabrica`.* TO 'Ad'@'localhost' WITH GRANT OPTION;
