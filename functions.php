@@ -1,5 +1,6 @@
 <?php
 include 'classes.php';
+include 'sql.php';
     function tiempo($n, $i)
 	{
 		if($i == 0 && $n == 86400)
@@ -68,142 +69,6 @@ include 'classes.php';
 		}
 		return $_SESSION['time'];
 	}
-	function selectNewPartes($conexion, $user)
-	{
-		//Partes sin atender propios
-		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
-		FROM parte P INNER JOIN Empleados E
-		ON E.id=P.emp_crea 
-		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NULL");
-	}
-	function selectOwnPartes($conexion, $user)
-	{
-		//Partes atendidos propios
-		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
-		FROM parte P INNER JOIN Empleados E
-		ON E.id=P.emp_crea 
-		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NOT NULL AND P.resuelto=0");
-	}
-	function selectOtherPartes($conexion, $user)
-	{
-		//Partes atendidos no propios
-		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
-		FROM parte P INNER JOIN  Empleados E
-		ON E.id=P.tec_res
-		WHERE E.dni='$user->dni' AND P.tec_res IS NOT NULL AND P.resuelto=0");
-	}
-	function selectNewOtherPartes($conexion, $user)
-	{
-		//Partes sin atender no propios
-		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2
-		FROM parte P, Empleados E
-		WHERE E.dni!='$user->dni' AND E.id=P.emp_crea AND P.tec_res IS NULL");
-	}
-	function countOldPartes($conexion, $user)
-	{
-		//Partes cerrados propios
-		$con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-		FROM Empleados E INNER JOIN parte P
-		ON E.id=P.emp_crea
-        WHERE E.id=$user->id AND E.dni='$user->dni'");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-    function countPiezas($conexion)
-    {
-        return $conexion->query("SELECT pieza, COUNT(pieza) AS 'numeroP' 
-        FROM parte
-        WHERE resuelto=1
-        GROUP BY pieza");
-    }
-	function selectOldOtherPartes($conexion, $user)
-	{
-		//Partes cerrados	
-		return $conexion->query("SELECT T.tiempo, P.id_part, P.inf_part, P.not_tec, P.fecha_hora_creacion, P.fecha_resolucion, P.hora_resolucion, P.emp_crea, P.pieza
-		FROM Empleados E INNER JOIN parte P
-		ON E.id=P.tec_res
-		INNER JOIN tiempo_resolucion T
-		ON T.id_part=P.id_part
-		WHERE P.tec_res!=P.emp_crea and E.id=$user->id and E.dni='$user->dni'");
-	}
-	function selectOldPartes($conexion, $user)
-	{
-		return $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
-		FROM Empleados E INNER JOIN parte P
-		ON E.id=P.emp_crea
-		INNER JOIN tiempo_resolucion T
-		ON T.id_part=P.id_part
-		WHERE E.id=$user->id AND E.dni='$user->dni' AND P.oculto=0");
-	}
-	function countHiddenPartes($conexion, $user)
-	{
-		$con = $conexion->query("SELECT COUNT(*) AS Partes
-		FROM parte 
-        WHERE oculto=1 AND emp_crea = $user->id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-	function selectHiddenPartes($conexion, $user)
-	{
-		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec, not_tec
-		FROM parte P INNER JOIN Empleados E
-		ON P.emp_crea=E.id 
-		WHERE oculto='1' AND E.dni='$user->dni' 
-		GROUP BY P.id_part, P.inf_part, E.nombre, E.id 
-		ORDER BY P.id_part ASC");
-	}
-	function selectParte($conexion, $id_part)
-	{
-		return $conexion->query("SELECT *
-		FROM parte
-		WHERE id_part=$id_part AND tec_res is null");
-	}
-	function selectFullDataParte($conexion, $id_part)
-	{
-		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion 
-		FROM Empleados E INNER JOIN parte P 
-		ON E.id=P.emp_crea 
-		WHERE id_part=$id_part");
-    }
-	function selectEmpleado($conexion, $emp_crea)
-	{
-        return $conexion->query("SELECT nombre, apellido1, apellido2 FROM Empleados WHERE id = $emp_crea");
-	}
-	function selectEmpleadoNoAdmin($conexion)
-	{
-		$id_emp = $_GET['id_emp'];
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE tipo NOT IN ('Admin') AND id=$id_emp");
-	}
-	function selectEmpleados($conexion)
-	{
-		//Lista de empleados no administradores.
-		return $conexion->query("select id, dni, nombre, apellido1, apellido2, tipo
-		from Empleados
-		where tipo not in ('Admin')");
-    }
-    function selectEmployee($conexion)
-    {
-        $id_emp = $_GET['id_emp'];
-        $dni = $_GET['dni'];
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE id=$id_emp AND dni='$dni'");
-    }
-	function tiempoMedio($conexion, $user)
-	{
-		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec
-		FROM Tiempo_resolucion
-		WHERE tec_res=$user->id
-		GROUP BY nom_tec
-		ORDER BY ROUND(AVG(Tiempo),0) DESC");
-    }
-    function tiempoMedioAdmin($conexion)
-    {
-        return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
-        GROUP BY nom_tec");
-    }
     function modParte($conexion, $user)
     {
         $response = "";
@@ -266,10 +131,14 @@ include 'classes.php';
                         </select>
                     </td>
                 </tr>
+                <tr>
+                    <td>Nueva nota</td>
+                    <td><input type="text" name="not_tec" /></td>
+                </tr>
                 <input type="hidden" name="id_part" value="'.$id_part.'" />
                 <input type="hidden" name="id_emp" value="'.$fila['id'].'" />
                 <tr>
-                    <td>
+                    <td colspan="2">
                         <input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
                         <input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
                     </td>
@@ -441,54 +310,6 @@ include 'classes.php';
     {
         return '<'.$tag.'>'.$data.'</'.$tag.'>';
     }
-    function countOwnPartes($conexion, $dni)
-    {
-        //partes no ocultos propios (empleado)
-        $con = $conexion->query("SELECT COUNT(*) AS Partes
-        FROM parte 
-        WHERE oculto=0 AND emp_crea = (SELECT id FROM Empleados WHERE dni = '$dni')");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-    function countNewPartes($conexion)
-    {
-        //Partes sin atender (tecnico)
-        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-        FROM parte P INNER JOIN Empleados E 
-        ON P.emp_crea=E.id 
-        WHERE P.not_tec IS NULL 
-        GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-    //Partes de un técnico
-    function countPartes($conexion, $nombreCom)
-    {
-        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-        FROM parte P INNER JOIN Empleados E 
-        ON P.emp_crea=E.id 
-        WHERE P.nom_tec='$nombreCom' 
-        GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-    //Partes de un empleado
-    function countAllPartes($conexion)
-    {
-        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-        FROM parte P INNER JOIN Empleados E
-        ON P.emp_crea=E.id
-        GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-    function selectIncidence($conexion, $id)
-    {
-        $con = $conexion->query("SELECT * 
-        FROM parte
-        WHERE id_part=$id");
-        return $con->fetch_array(MYSQLI_ASSOC);
-    }
     //OTHER
     function links($user, $nums)
     {
@@ -560,20 +381,6 @@ include 'classes.php';
         $user->tipo = $fila['tipo'];
         $user->id = $fila['id'];
         return $user;
-    }
-    function hideParte($conexion, $user, $id)
-    {
-        return $conexion->query("update parte set oculto=1 where id_part=$id and emp_crea='$user->id' and resuelto=1");
-    }
-    function showHiddenParte($conexion, $id_part)
-    {
-        return $conexion->query("update parte set oculto=0 where id_part=$id_part");
-    }
-    function deleteParte($conexion, $id_part, $user)
-    {
-        return $conexion->query("DELETE 
-        FROM parte 
-        WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
     }
     function readIncidences($con, $user, int $state)
     {
@@ -708,9 +515,7 @@ include 'classes.php';
     function getNotes($conexion, $id_part, $user)
     {
         $response = "";
-        $con = $conexion->query("SELECT * 
-        FROM notes
-        WHERE incidence=$id_part");
+        $con = selectNotes($conexion, $id_part);
         if ($con->num_rows >0) {
             $response = $response.'
             <br /><table>
@@ -886,7 +691,7 @@ include 'classes.php';
     {
         $id_part = $_POST['id_part'];
 		$inf_part = $_POST['inf_part'];
-        $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
+        insertNote($id_part, $user, $inf_part);
     }
     function showGlobalStatistics($user_data, $conexion)
     {
