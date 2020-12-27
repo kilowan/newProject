@@ -214,51 +214,67 @@ include 'classes.php';
             //Extrae datos parte
             $con = selectFullDataParte($conexion, $id_part);
             $fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
-            $response = $response.'
-            <div class="mod_parte">
-                <p>Formulario de edición</p>
-                <p>Nombre del empleado: <strong>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</strong></p>
-                <p>Información del parte: <strong>'.$fila['inf_part'].'</strong></p>
-                <p>Pieza afectada: <strong>'.$fila['pieza'].'</strong></p>
-                <p>Fecha de creacion: <strong>'.$fila['fecha_hora_creacion'].'</strong></p>
-                <p>Notas anteriores: <strong>'.$fila['not_tec'].'</strong></p>
-                
-                <form action="" method="post">
-                    <label>Notas de resolución:</label><br/>
-                    <textarea name="not_tec" rows="2" cols="40" required></textarea><br/>
-                    
-                <p>Piezas afectadas:</p>
-                <p> 
-                    <select name="pieza">
-                        <option value="--" selectted="selected">--</option>
-                        <optgroup label="Sobre la torre">
-                            <option value="torre">La torre</option>
-                            <option value="Placa base">La placa base</option>
-                            <option value="HDD">El disco duro</option>
-                            <option value="procesador">El procesador</option>
-                            <option value="grafica">La grafica</option>
-                            <option value="RAM">La memoria RAM</option>
-                            <option value="lector">El lector</option>
-                        </optgroup>
-                        <optgroup label="perifericos">
-                            <option value="pantalla">El monitor o proyector</option>
-                            <option value="raton">El raton</option>
-                            <option value="teclado">El teclado</option>
-                            <option value="impresora">La impresora</option>
-                        </optgroup>
-                    <optgroup label="otros">
-                         <option value="regleta">La regleta</option>
-                         <option value="Router">El router</option>
-                    </optgroup>
-                    </select>
-                </p>
+            $response = $response.'<br />'.headerData('Editar Parte').'
+            <table>
+                <tr>
+                    <td>Nombre del empleado</td>
+                    <td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
+                </tr>
+                <tr>
+                    <td>Información</td>
+                    <td>'.checkInput($fila['inf_part']).'</td>
+                </tr>
+                <tr>
+                    <td>Tecnico a cargo</td>
+                    <td>'.checkInput($fila['tec_res']).'</td>
+                </tr>
+                <tr>
+                    <td>Fecha de creación</td>
+                    <td>'.checkInput($fila['fecha_hora_creacion']).'</td>
+                </tr>
+                <tr>
+                    <td>Pieza afectada</td>
+                    <td>'.checkInput($fila['pieza']).'</td>
+                </tr>
+            </table>'.getNotes($conexion, $id_part, $user).'
+            <form action="" method="post">
+            <table>
+                <tr>
+                    <td>Piezas afectadas:</td>
+                    <td>
+                        <select name="pieza">
+                            <option value="--" selectted="selected">--</option>
+                            <optgroup label="Sobre la torre">
+                                <option value="torre">La torre</option>
+                                <option value="Placa base">La placa base</option>
+                                <option value="HDD">El disco duro</option>
+                                <option value="procesador">El procesador</option>
+                                <option value="grafica">La grafica</option>
+                                <option value="RAM">La memoria RAM</option>
+                                <option value="lector">El lector</option>
+                            </optgroup>
+                            <optgroup label="perifericos">
+                                <option value="pantalla">El monitor o proyector</option>
+                                <option value="raton">El raton</option>
+                                <option value="teclado">El teclado</option>
+                                <option value="impresora">La impresora</option>
+                            </optgroup>
+                            <optgroup label="otros">
+                            <option value="regleta">La regleta</option>
+                            <option value="Router">El router</option>
+                            </optgroup>
+                        </select>
+                    </td>
+                </tr>
                 <input type="hidden" name="id_part" value="'.$id_part.'" />
                 <input type="hidden" name="id_emp" value="'.$fila['id'].'" />
-                <input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
-                <input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
-                </form>
-            </div>
-            </table><br />';
+                <tr>
+                    <td>
+                        <input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
+                        <input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
+                    </td>
+                </tr>
+            </table>';
         }
         return $response;
     }
@@ -694,7 +710,7 @@ include 'classes.php';
         $response = "";
         $con = $conexion->query("SELECT * 
         FROM notes
-        WHERE employee=$user->id AND incidence=$id_part");
+        WHERE incidence=$id_part");
         if ($con->num_rows >0) {
             $response = $response.'
             <br /><table>
@@ -868,28 +884,9 @@ include 'classes.php';
     }
     function updateNotes($conexion, $user)
     {
-        //$response = "";
         $id_part = $_POST['id_part'];
 		$inf_part = $_POST['inf_part'];
-        //$id_emp = $user->id;
-        /*$con = $conexion->query("SELECT * FROM notes WHERE employee=$id_emp AND incidence=$id_part")
-        $con->num_rows
-         */
-        //if($inf_part != '')
-        //if($con->num_rows >0)
-		//{
         $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
-        /*$conexion->query("UPDATE parte SET inf_part='$inf_part' 
-        WHERE id_part=$id_part AND emp_crea=$id_emp");
-        $_SESSION['funcion'] = 'Partes';*/
-			//header('Location: veremp.php');
-		//}
-		//else
-		//{
-			//$response = $response.'<p class="respuesta">Inserción no satisfactoria</p>';
-		//}
-        //header('Location: menu.php');
-        //return $response;
     }
     function showGlobalStatistics($user_data, $conexion)
     {
