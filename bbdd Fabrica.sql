@@ -16,7 +16,6 @@ create table parte (
 	nom_tec varchar(100),
 	oculto boolean default '0',
     resuelto boolean default '0',
-    not_tec varchar(200),
     inf_part varchar(200) not null,
     fecha_resolucion date DEFAULT NULL,
     fecha_hora_creacion timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
