@@ -1,9 +1,10 @@
 <?php
     function checkCredentialsData($credentials, $conexion)
     {
-        return $conexion->query("SELECT *
-		FROM credentials
-		WHERE username='$credentials->username' AND password='$credentials->password'");
+        return $conexion->query("SELECT C.*
+		FROM credentials C INNER JOIN Empleados E
+        ON E.id=C.employee
+		WHERE E.borrado=0 AND C.username='$credentials->username' AND C.password='$credentials->password'");
     }
 
     function selectNewPartes($conexion, $user)
@@ -117,9 +118,9 @@
 	function selectEmpleados($conexion)
 	{
 		//Lista de empleados no administradores.
-		return $conexion->query("select id, dni, nombre, apellido1, apellido2, tipo
-		from Empleados
-		where tipo not in ('Admin')");
+		return $conexion->query("SELECT id, dni, nombre, apellido1, apellido2, tipo
+		FROM Empleados
+		WHERE tipo NOT IN ('Admin') AND borrado=0");
     }
     function selectEmployee($conexion)
     {
@@ -133,7 +134,7 @@
     {
         return $conexion->query("SELECT *
 		FROM Empleados
-		where dni='$credentials->username'");
+		WHERE dni='$credentials->username'");
     }
 	function tiempoMedio($conexion, $user)
 	{
@@ -197,11 +198,11 @@
     }
     function hideParte($conexion, $user, $id)
     {
-        return $conexion->query("update parte set oculto=1 where id_part=$id and emp_crea='$user->id' and resuelto=1");
+        return $conexion->query("UPDATE parte SET oculto=1 WHERE id_part=$id AND emp_crea='$user->id' AND resuelto=1");
     }
     function showHiddenParte($conexion, $id_part)
     {
-        return $conexion->query("update parte set oculto=0 where id_part=$id_part");
+        return $conexion->query("UPDATE parte SET oculto=0 WHERE id_part=$id_part");
     }
     function deleteParte($conexion, $id_part, $user)
     {

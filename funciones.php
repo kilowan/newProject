@@ -95,7 +95,7 @@ if (isset($_SESSION['loggedin']))
 		if($funcion == 'Borrar_empleado')
 		{
 			$id_emp = $_GET['id_emp'];
-			$conexion->query("delete from empleados where id = $id_emp");
+			$conexion->query("UPDATE empleados SET borrado=1 WHERE id = $id_emp");
 			$_SESSION['funcion'] = 'Lista';
 			header('Location: veremp.php');
 		}
