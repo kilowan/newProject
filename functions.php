@@ -256,7 +256,7 @@ include 'html.php';
     {
         $response = false;
         $credentials = new credentials($username, $password);
-        $con = checkCredentials($credentials);
+        $con = checkCredentials($credentials, $conexion);
         if ($con->num_rows > 0)
         {
             $_SESSION['loggedin'] = true;

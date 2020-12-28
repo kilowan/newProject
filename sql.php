@@ -1,5 +1,5 @@
 <?php
-    function checkCredentials($credentials)
+    function checkCredentials($credentials, $conexion)
     {
         return $conexion->query("SELECT COUNT(*)
 		FROM credentials
@@ -127,6 +127,12 @@
 		return $conexion->query("SELECT *
 		FROM Empleados
 		WHERE id=$id_emp AND dni='$dni'");
+    }
+    function selectEmployeeData($conexion, $credentials)
+    {
+        return $conexion->query("SELECT *
+		FROM Empleados
+		where dni=$credentials->username");
     }
 	function tiempoMedio($conexion, $user)
 	{

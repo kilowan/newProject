@@ -1,8 +1,15 @@
 <?php
 include 'classes.php';
+include 'sql.php';
 session_start();
 ?>
 <?php
+	$sql_data = new sql;
+	$sql_data->host_db = "localhost";
+	$sql_data->user_db = "Ad";
+	$sql_data->pass_db = "1234";
+	$sql_data->db_name = "Fabrica";
+	$conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
 if ($conexion->connect_error)
 {
 	$_SESSION['mensaje'] = die("La conexión falló: " . $conexion->connect_error);
@@ -10,13 +17,8 @@ if ($conexion->connect_error)
 }
 else
 {
-	$sql_data = new sql;
-	$sql_data->host_db = "localhost";
-	$sql_data->user_db = "Ad";
-	$sql_data->pass_db = "1234";
-	$sql_data->db_name = "Fabrica";
 	$_SESSION['sql'] = json_encode($sql_data);
-	$conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
+	
 	$credentials = new credentials($_POST['username'], $_POST['password']);
 	$_SESSION['credentials'] = json_encode($credentials);
 	$user_info = new user;
@@ -24,12 +26,13 @@ else
 	$user_info->name = $credentials->username;
 	$_SESSION['dni'] = $credentials->username;
 	$_SESSION['password'] = $credentials->password;
-	$con = checkCredentials($credentials);
-	if (mysqli_num_rows($con) > 0)
+	$con = checkCredentials($credentials, $conexion);
+	if (mysqli_num_rows($con)/*mysqli_fetch_assoc($con)*/ > 0)
 	{
 		$_SESSION['loggedin'] = true;
 		$_SESSION['start'] = time();
 		$_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
+		$con = selectEmployeeData($conexion, $credentials);
 		//extrae datos personales
 		$fila = mysqli_fetch_assoc($con);
 		$_SESSION['tipo'] = $fila['tipo'];
