@@ -21,20 +21,10 @@ else
 	$_SESSION['credentials'] = json_encode($credentials);
 	$user_info = new user;
 	$user_info->dni = $credentials->username;
-	//$_POST['username'];
 	$user_info->name = $credentials->username;
-	//$_POST['username'];
-	//$user_info->username = $_POST['username'];
-	//$user_info->password = MD5($_POST['password']);
 	$_SESSION['dni'] = $credentials->username;
-	//$_POST['username'];
 	$_SESSION['password'] = $credentials->password;
-	//MD5($_POST['password']);
-	//$username = $_POST['username'];
-	//$password = $_SESSION['password'];
-	$con = $conexion->query("SELECT * 
-	FROM Empleados 
-	WHERE dni = '$credentials->username' AND password='$credentials->password'");
+	$con = checkCredentials($credentials);
 	if (mysqli_num_rows($con) > 0)
 	{
 		$_SESSION['loggedin'] = true;

@@ -140,10 +140,14 @@ if (isset($_SESSION['loggedin']))
 			$tipo = $user->tipo;
 			$dni = $user->dni;
 			$pass = $user->password;
-			$conexion->query("insert into Empleados (dni, password, nombre, apellido1, apellido2, tipo)
-			values ('$dni', MD5('$pass'), '$nombre', '$apellido1', '$apellido2' ,'$tipo')");
+			$conexion->query("insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
+			values ('$dni', '$nombre', '$apellido1', '$apellido2' ,'$tipo')");
+			$con = $conexion->query("SELECT id FROM Empleados WHERE dni='$dni'");
+			$data = $con->fetch_array(MYSQLI_ASSOC);
+			$id = $data['id'];
+			$conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$dni', MD5('$pass'), $id)");
 			$_SESSION['funcion'] = 'Lista';
-			header('Location: veremp.php');		
+			header('Location: veremp.php');
 		}		
 	}
 	//Cerrar sesión

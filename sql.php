@@ -1,5 +1,11 @@
 <?php
-	function selectNewPartes($conexion, $user)
+    function checkCredentials($credentials)
+    {
+        return $conexion->query("SELECT COUNT(*)
+		FROM credentials
+		WHERE username='$credentials->username' AND password=$credentials->password");
+    }
+    function selectNewPartes($conexion, $user)
 	{
 		//Partes sin atender propios
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
@@ -10,7 +16,7 @@
 	function selectOwnPartes($conexion, $user)
 	{
 		//Partes atendidos propios
-		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
+		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, P.nom_tec
 		FROM parte P INNER JOIN Empleados E
 		ON E.id=P.emp_crea 
 		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NOT NULL AND P.resuelto=0");
@@ -18,7 +24,7 @@
 	function selectOtherPartes($conexion, $user)
 	{
 		//Partes atendidos no propios
-		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.not_tec, P.pieza, P.nom_tec
+		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, P.nom_tec
 		FROM parte P INNER JOIN  Empleados E
 		ON E.id=P.tec_res
 		WHERE E.dni='$user->dni' AND P.tec_res IS NOT NULL AND P.resuelto=0");
@@ -50,7 +56,7 @@
 	function selectOldOtherPartes($conexion, $user)
 	{
 		//Partes cerrados	
-		return $conexion->query("SELECT T.tiempo, P.id_part, P.inf_part, P.not_tec, P.fecha_hora_creacion, P.fecha_resolucion, P.hora_resolucion, P.emp_crea, P.pieza
+		return $conexion->query("SELECT T.tiempo, P.id_part, P.inf_part, P.fecha_hora_creacion, P.fecha_resolucion, P.hora_resolucion, P.emp_crea, P.pieza
 		FROM Empleados E INNER JOIN parte P
 		ON E.id=P.tec_res
 		INNER JOIN tiempo_resolucion T
@@ -59,7 +65,7 @@
 	}
 	function selectOldPartes($conexion, $user)
 	{
-		return $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
+		return $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
 		FROM Empleados E INNER JOIN parte P
 		ON E.id=P.emp_crea
 		INNER JOIN tiempo_resolucion T
@@ -76,7 +82,7 @@
     }
 	function selectHiddenPartes($conexion, $user)
 	{
-		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec, not_tec
+		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec
 		FROM parte P INNER JOIN Empleados E
 		ON P.emp_crea=E.id 
 		WHERE oculto='1' AND E.dni='$user->dni' 
@@ -91,7 +97,7 @@
 	}
 	function selectFullDataParte($conexion, $id_part)
 	{
-		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.not_tec, P.inf_part, P.pieza, P.fecha_hora_creacion 
+		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.inf_part, P.pieza, P.fecha_hora_creacion 
 		FROM Empleados E INNER JOIN parte P 
 		ON E.id=P.emp_crea 
 		WHERE id_part=$id_part");
@@ -150,7 +156,7 @@
         $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
         FROM parte P INNER JOIN Empleados E 
         ON P.emp_crea=E.id 
-        WHERE P.not_tec IS NULL 
+        WHERE id NOT IN (SELECT incidence FROM notes)
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];

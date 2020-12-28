@@ -256,9 +256,7 @@ include 'html.php';
     {
         $response = false;
         $credentials = new credentials($username, $password);
-        $con = $conexion->query("SELECT COUNT(*)
-        FROM Empleados 
-        WHERE dni = '$credentials->username' AND password='$credentials->password'");
+        $con = checkCredentials($credentials);
         if ($con->num_rows > 0)
         {
             $_SESSION['loggedin'] = true;
@@ -277,7 +275,7 @@ include 'html.php';
             $user_info->dni = $credentials->username;
             $con = $conexion->query("SELECT * 
             FROM Empleados 
-            WHERE dni = '$credentials->username' AND password='$credentials->password'");
+            WHERE dni='$credentials->username'");
 
             //extrae datos personales
             $fila = $con->fetch_array(MYSQLI_ASSOC);

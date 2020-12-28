@@ -349,7 +349,7 @@
         if (in_array(2, $permissions) || in_array(9, $permissions)) {
             //Partes abiertos no propios (Técnico o Admin)
             $con = selectNewOtherPartes($conexion, $user);
-            if(mysqli_num_rows($con)>0)
+            if($con->num_rows>0)
             {
                 $response = $response.'
                 <table>
@@ -363,7 +363,7 @@
         if (in_array(3, $permissions) || in_array(10, $permissions)) {
             //Partes atendidos no propios (Técnico o Admin)
             $con = selectOtherPartes($conexion, $user);
-            if(mysqli_num_rows($con)>0)
+            if($con->num_rows>0)
             {
                 $response = $response.'
                 <table>
@@ -377,7 +377,7 @@
         if (in_array(4, $permissions) || in_array(11, $permissions)) {
             //Partes cerrados no propios (Técnico o Admin)
             $con = selectOldOtherPartes($conexion, $user);
-            if (mysqli_num_rows($con) > 0)
+            if ($con->num_rows > 0)
             {
                 $response = $response.'
                 <table>
@@ -491,7 +491,7 @@
         if (in_array(8, $permissions)) 
         {
             $con = selectHiddenPartes($conexion, $user);
-            if(mysqli_num_rows($con)>0)
+            if($con->num_rows>0)
             {
                 $response = $response.headerData('Partes ocultos', 'colspan="10"');
                 $response = $response.showParteview($con, $user, $state);
@@ -572,7 +572,7 @@
         if(in_array(17, $permissions))
         {
             $tiempo_medio_global = tiempoMedioAdmin($conexion);
-            if (mysqli_num_rows($tiempo_medio_global) > 0)
+            if ($tiempo_medio_global->num_rows > 0)
             {
                 $response = $response.'
                 <table>
@@ -606,7 +606,7 @@
         if (in_array(18, $permissions)) 
         {
             $piez = countPiezas($conexion);
-            if (mysqli_num_rows($piez) > 0)
+            if ($piez->num_rows > 0)
             {
                 $response = $response.'
                     <table>
@@ -684,7 +684,7 @@
                     //Lista de empleados
             $con = selectEmpleados($conexion);
             //comprobación partes existentes no cerrados
-            if(mysqli_num_rows($con)>0)		
+            if($con->num_rows>0)		
             {
                 //insercion titulos tabla (html)
                 $users = array();
