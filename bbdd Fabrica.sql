@@ -6,7 +6,8 @@ CREATE TABLE Empleados (
     nombre VARCHAR(100) NOT NULL,
     apellido1 VARCHAR (100) NOT NULL,
     apellido2 VARCHAR (100),
-    tipo VARCHAR(50) NOT NULL
+    tipo VARCHAR(50) NOT NULL,
+    borrado tinyint(1) NOT NULL DEFAULT 0
 );
 create table parte (
     id_part int(50) primary key auto_increment,
