@@ -38,6 +38,7 @@ create table parte (
     incidence INT(50) NOT NULL,
     noteType VARCHAR(50) NOT NULL,
     noteStr VARCHAR(200) NOT NULL,
+    date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     CONSTRAINT notes_employee
     FOREIGN KEY (employee)
     REFERENCES Empleados (id)
