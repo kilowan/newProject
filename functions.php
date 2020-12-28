@@ -99,13 +99,14 @@ include 'html.php';
                 //Partes sin atender (tecnico)
                 $nums[0] = countNewPartes($conexion);
                 //Partes atendidos propios (tecnico)
-                $nums[1] = countPartes($conexion, $user->comName);
+                $nums[1] = countPartes($conexion, $user->id);
             }
             else
             {
                 //Lista de partes (admin)
-                $nums[0] = countAllPartes($conexion);
-                $nums[1] = 0;
+                $nums[0] = countNewPartes($conexion);
+                $nums[1] = countPartes($conexion, $user->id);
+                $nums[2] = countOwnPartes($conexion, $user->dni);
             }
         }
         return $nums;
@@ -252,11 +253,12 @@ include 'html.php';
         $_SESSION['sql'] = json_encode($sql_data);
         return $conexion;
     }
-    function checkLoging(string $username, string $password, $conexion)
+    function checkLoging($credentials, $conexion)
     {
         $response = false;
-        $credentials = new credentials($username, $password);
-        $con = checkCredentials($credentials, $conexion);
+        //$credentials = new credentials($username, $password);
+        $con = checkCredentialsData($credentials, $conexion);
+        //$data = $con->fetch_array(MYSQLI_ASSOC);
         if ($con->num_rows > 0)
         {
             $_SESSION['loggedin'] = true;
@@ -265,11 +267,13 @@ include 'html.php';
             $response = true;
         }
         return $response;
+        //return $data;
     }
     function getEmployeeData($credentials)
     {
         $conexion = connnection();
-        if(checkLoging($credentials->username, $credentials->password, $conexion))
+        //return checkLoging($credentials, $conexion);
+        if(checkLoging($credentials, $conexion))
         {
             $user_info = new user;
             $user_info->dni = $credentials->username;

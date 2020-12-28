@@ -332,7 +332,7 @@
             }
         }
         if (in_array(8, $permissions)) {
-            //Partes propios ocultos (Empleado o Admin)
+            //Partes propios ocultos (Empleado)
             $data = countHiddenPartes($conexion, $user);
             if ($data > 0)
             {

@@ -26,15 +26,15 @@ else
 	$user_info->name = $credentials->username;
 	$_SESSION['dni'] = $credentials->username;
 	$_SESSION['password'] = $credentials->password;
-	$con = checkCredentials($credentials, $conexion);
-	if (mysqli_num_rows($con)/*mysqli_fetch_assoc($con)*/ > 0)
+	$con = checkCredentialsData($credentials, $conexion);
+	if ($con->num_rows > 0)
 	{
 		$_SESSION['loggedin'] = true;
 		$_SESSION['start'] = time();
 		$_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
 		$con = selectEmployeeData($conexion, $credentials);
 		//extrae datos personales
-		$fila = mysqli_fetch_assoc($con);
+		$fila = $con->fetch_array(MYSQLI_ASSOC);
 		$_SESSION['tipo'] = $fila['tipo'];
 		$_SESSION['nombreCom'] = $fila['nombre']." ".$fila['apellido1']." ".$fila['apellido2'];
 		$_SESSION['id_emp'] = $fila['id'];

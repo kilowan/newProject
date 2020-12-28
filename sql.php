@@ -1,10 +1,11 @@
 <?php
-    function checkCredentials($credentials, $conexion)
+    function checkCredentialsData($credentials, $conexion)
     {
-        return $conexion->query("SELECT COUNT(*)
+        return $conexion->query("SELECT *
 		FROM credentials
-		WHERE username='$credentials->username' AND password=$credentials->password");
+		WHERE username='$credentials->username' AND password='$credentials->password'");
     }
+
     function selectNewPartes($conexion, $user)
 	{
 		//Partes sin atender propios
@@ -132,7 +133,7 @@
     {
         return $conexion->query("SELECT *
 		FROM Empleados
-		where dni=$credentials->username");
+		where dni='$credentials->username'");
     }
 	function tiempoMedio($conexion, $user)
 	{
@@ -168,15 +169,14 @@
         return $result['Partes'];
     }
     //Partes de un técnico
-    function countPartes($conexion, $nombreCom)
+    function countPartes($conexion, $id_emp)
     {
-        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
+        $con = $conexion->query("SELECT P.id_part
         FROM parte P INNER JOIN Empleados E 
         ON P.emp_crea=E.id 
-        WHERE P.nom_tec='$nombreCom' 
+        WHERE P.tec_res=$id_emp 
         GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
+        return $con->num_rows;
     }
     //Partes de un empleado
     function countAllPartes($conexion)
