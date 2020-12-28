@@ -29,8 +29,10 @@
 			session_start();
 			?>
 			<?php
-			echo $_SESSION['mensaje'];
-			$_SESSION['mensaje'] = '';
+			if (isset($_SESSION['mensaje'])) {
+				echo $_SESSION['mensaje'];
+				$_SESSION['mensaje'] = '';
+			}
 			?>
 		</div>
 		<div class="Pie">
