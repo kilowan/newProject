@@ -78,14 +78,14 @@ if (isset($_SESSION['loggedin']))
 		$id_emp = $user->id;
 		if($pieza != "--")
 		{	
-			$conexion->query("insert into parte (emp_crea, resuelto, inf_part , pieza)
-			values ($id_emp, 0, '$descripcion', '$pieza')");
+			$conexion->query("insert into parte (emp_crea, inf_part , pieza)
+			values ($id_emp, '$descripcion', '$pieza')");
 			//$conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($id_emp, mysql_insert_id(), 'Empleado', '$descripcion');
 		}
 		else
 		{
-			$conexion->query("insert into parte (emp_crea, resuelto, inf_part)
-			values ($id_emp, 0, '$descripcion')");
+			$conexion->query("insert into parte (emp_crea, inf_part)
+			values ($id_emp, '$descripcion')");
 		}
 		$_SESSION['funcion'] = 'Partes';
 		header('Location: veremp.php');
