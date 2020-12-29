@@ -19,6 +19,10 @@ if (isset($_SESSION['loggedin']))
 	{
 		$funcion = $_GET['funcion'];
 	}
+	else if(isset($_POST['funcion']))
+	{
+		$funcion = $_POST['funcion'];
+	}
 	else
 	{
 		$funcion = $_SESSION['funcion'];

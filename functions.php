@@ -240,6 +240,12 @@ include 'html.php';
             case 'Crear_empleado':
                 buildEmployee($conexion);
                 break;
+            case 'insertparte':
+                updateParte($conexion, $user);
+                break;
+            case 'cierraparte':
+                closeParte($conexion, $user);
+                break;
             default:
                 break;
         }
@@ -340,6 +346,38 @@ include 'html.php';
             insertCredentials($conexion, $credentials, $id);
             $_SESSION['funcion'] = 'Lista';
         }
+    }
+    function closeParte($conexion, $user)
+    {
+        $id_part = $_POST['id_part'];
+        $not_tec = $_POST['not_tec'];
+        $pieza = $_POST['pieza'];
+        if($pieza == '--')
+        {
+            closeParte1($conexion, $id_part, $user);
+        }
+        else
+        {
+            closeParte2($conexion, $pieza, $id_part, $user);
+        }
+        updateNoteList($conexion, $user, $id_part, $not_tec);
+        $_SESSION['funcion'] = 'Partes';
+    }
+    function updateParte($conexion, $user)
+    {
+        $id_part = $_POST['id_part'];
+        $not_tec = $_POST['not_tec'];
+        $pieza = $_POST['pieza'];
+        if($pieza == '--')
+        {
+            updateParte1($conexion, $id_part, $user);
+        }
+        else
+        {
+            updateparte2($conexion, $pieza, $id_part, $user);
+        }
+        updateNoteList($conexion, $user, $id_part, $not_tec);
+        $_SESSION['funcion'] = 'Partes';
     }
 	if (!isset($_GET['funcion'])) {
         $funcion = "";

@@ -32,7 +32,7 @@
                     <td>'.checkInput($fila['pieza']).'</td>
                 </tr>
             </table>'.getNotes($conexion, $id_part, $user).'
-            <form action="" method="post">
+            <form action="veremp.php" method="post">
             <table>
                 <tr>
                     <td>Piezas afectadas:</td>
@@ -65,12 +65,20 @@
                     <td>Nueva nota</td>
                     <td><input type="text" name="not_tec" /></td>
                 </tr>
+                <tr>
+                    <td>Función</td>
+                    <td>
+                        <select name="funcion">
+                            <option value="insertparte">Actualizar parte</option>
+                            <option value="cierraparte">Cerrar parte</option>
+                        </select>
+                    </td>
+                </tr>
                 <input type="hidden" name="id_part" value="'.$id_part.'" />
                 <input type="hidden" name="id_emp" value="'.$fila['id'].'" />
                 <tr>
-                    <td colspan="2">
-                        <input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
-                        <input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
+                    <td>
+                        <input type="submit" name="Guardar" value="Guardar" />
                     </td>
                 </tr>
             </table>';
