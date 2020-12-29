@@ -735,40 +735,19 @@
         $permissions = permissions($user);
         if (in_array(19, $permissions)) {
             $response = $response.'
-            <script>
-            var usuario = 
-            {
-                name = document.getElementByName("nombre"),
-                surname1 = document.getElementByName("apellido1"),
-                surname2 = document.getElementByName("apellido2"),
-                dni = document.getElementByName("dni"),
-                tipo = document.getElementByName("tipo")
-            }
-    
-            //document.getElementByName("Submit").onclick = function() {myFunction()};
-            document.getElementById("Submit").addEventListener("click", myFunction);
-            function myFunction() {
-                  var textarea = document.createElement("textarea");
-                  var texto = document.getElementById("dni").value;
-                  var body = document.getElementById("body");
-                  textarea.appendChild(texto);
-                  body.appendChild(textarea);
-                  document.forms[0].submit();
-            }
-            </script>
-            <form class="nuevoemp" action="funciones.php" method="post" id="formulario">
-                <input type="hidden" name="funcion" value="Crear_empleado">
+            <form class="nuevoemp" action="functions.php" method="post" id="formulario">
+                <input type="hidden" name="funcion" value="Crear_empleado" />
                 <h1>Hoja del nuevo empleado:</h1><br />
                 <label>DNI:</label>
-                <input type="text" name="dni" required><br />
+                <input type="text" name="dni" required /><br />
                 <label>Nombre:</label>
-                <input type="text" name="nombre" required><br />
+                <input type="text" name="nombre" required /><br />
                 <label>Primer Apellido:</label>
-                <input type="text" name="apellido1" required><br />
+                <input type="text" name="apellido1" required /><br />
                 <label>Segundo Apellido:</label>
-                <input type="text" name="apellido2" ><br />
+                <input type="text" name="apellido2" /><br />
                 <label>Contraseña:</label>
-                <input type="password" name="pass" required><br />
+                <input type="password" name="pass" required /><br />
                 <p> ¿Que tipo de empleado es?:</p>
                 <p>
                     <select name="tipo" required>
@@ -780,9 +759,9 @@
                         <option value="Otro">Otro tipo aún no definido</option>
                     </select>
                 </p>
-                <input type="hidden" name="user" id="user"><br />
-                </form><br/>
-                <button name="Submit" id="Submit">Añadir empleado</button>';
+                <input type="hidden" name="user" id="user" /><br />
+                <input type="Submit"id="Submit />
+            </form><br/>';
         }
         return $response;
     }

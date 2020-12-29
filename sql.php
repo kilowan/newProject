@@ -130,6 +130,14 @@
 		FROM Empleados
 		WHERE id=$id_emp AND dni='$dni'");
     }
+    function selectEmployee2($conexion, $user)
+    {
+        //$id_emp = $_GET['id_emp'];
+        //$dni = $_GET['dni'];
+		return $conexion->query("SELECT *
+		FROM Empleados
+		WHERE id=$user->id AND dni='$user->dni'");
+    }
     function selectEmployeeData($conexion, $credentials)
     {
         return $conexion->query("SELECT *
@@ -215,6 +223,15 @@
         return $conexion->query("SELECT * 
         FROM notes
         WHERE incidence=$id_part");
+    }
+    function insertEmployee($conexion, $user)
+    {
+        $conexion->query("INSERT INTO Empleados (dni, nombre, apellido1, apellido2, tipo)
+        VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
+    }
+    function insertCredentials($conexion, $credentials, $id)
+    {
+        $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', MD5('$credentials->password'), $id)");
     }
     function insertNote($id_part, $user, $inf_part)
     {

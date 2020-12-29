@@ -237,6 +237,9 @@ include 'html.php';
             case 'Actualizar_parte':
                 updateNotes($conexion, $user);
                 break;
+            case 'Crear_empleado':
+                buildEmployee($conexion);
+                break;
             default:
                 break;
         }
@@ -316,6 +319,27 @@ include 'html.php';
         $user->tipo = $data['tipo'];
         $user->id = $emp_crea;
         return $user;
+    }
+    function buildEmployee($conexion)
+    {
+        $permissions = permissions($user);
+        if (in_array(19, $permissions)) {
+            $user = new user();
+            $user->dni = $_POST['dni'];
+            $user->name = $_POST['nombre'];
+            $user->surname1 = $_POST['apellido1'];
+            $user->surname2 = $_POST['apellido2'];
+            $_POST['user'] = json_encode($user);
+            $user->tipo = $_POST['tipo'];
+            $credentials = new credentials($_POST['dni'], $_POST['pass']);
+            $_POST['credentials'] = json_encode($credentials);
+            insertEmployee($conexion, $user);
+            $con = selectEmployee2($conexion, $user);
+            $data = $con->fetch_array(MYSQLI_ASSOC);
+            $id = $data['id'];
+            insertCredentials($conexion, $credentials, $id);
+            $_SESSION['funcion'] = 'Lista';
+        }
     }
 	if (!isset($_GET['funcion'])) {
         $funcion = "";

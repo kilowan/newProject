@@ -2,6 +2,7 @@
 session_start();
 ?>
 <?php
+include 'functions.php';
 if (isset($_SESSION['loggedin']))
 {
 	//Conexion Mysql
@@ -131,24 +132,6 @@ if (isset($_SESSION['loggedin']))
 			$_SESSION['funcion'] = 'Lista';
 			header('Location: veremp.php');
 		}
-		if($funcion == 'Crear_empleado')
-		{
-			$user = $_POST['user'];
-			$nombre = $user->name;
-			$apellido1 = $user->surname1;
-			$apellido2 = $user->surname2;
-			$tipo = $user->tipo;
-			$dni = $user->dni;
-			$pass = $user->password;
-			$conexion->query("insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
-			values ('$dni', '$nombre', '$apellido1', '$apellido2' ,'$tipo')");
-			$con = $conexion->query("SELECT id FROM Empleados WHERE dni='$dni'");
-			$data = $con->fetch_array(MYSQLI_ASSOC);
-			$id = $data['id'];
-			$conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$dni', MD5('$pass'), $id)");
-			$_SESSION['funcion'] = 'Lista';
-			header('Location: veremp.php');
-		}		
 	}
 	//Cerrar sesión
 	if($funcion == 'Logout')
