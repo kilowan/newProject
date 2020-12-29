@@ -2,6 +2,7 @@
 session_start();
 ?>
 <?php
+include 'sql.php';
 if (isset($_SESSION['loggedin']))
 {
     //Conexion Mysql

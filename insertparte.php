@@ -2,6 +2,7 @@
 session_start();
 ?>
 <?php
+include 'sql.php';
 if (isset($_SESSION['loggedin']))
 {
 	//Conexion Mysql
@@ -17,7 +18,7 @@ if (isset($_SESSION['loggedin']))
 	}
 	else
 	{
-		updateparte2($conexion, $pieza, $id_part, $user)
+		updateparte2($conexion, $pieza, $id_part, $user);
 	}
 	updateNoteList($conexion, $user, $id_part, $not_tec);
 	$_SESSION['funcion'] = 'Partes';

@@ -13,7 +13,7 @@
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
 		FROM parte P INNER JOIN Empleados E
 		ON E.id=P.emp_crea 
-		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NULL");
+		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.state=1");
 	}
 	function selectOwnPartes($conexion, $user)
 	{
@@ -21,7 +21,7 @@
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, P.nom_tec
 		FROM parte P INNER JOIN Empleados E
 		ON E.id=P.emp_crea 
-		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.tec_res IS NOT NULL AND P.resuelto=0");
+		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.state=2");
 	}
 	function selectOtherPartes($conexion, $user)
 	{
@@ -29,14 +29,15 @@
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, P.nom_tec
 		FROM parte P INNER JOIN  Empleados E
 		ON E.id=P.tec_res
-		WHERE E.dni='$user->dni' AND P.tec_res IS NOT NULL AND P.resuelto=0");
+		WHERE E.dni='$user->dni' AND P.state=2");
 	}
 	function selectNewOtherPartes($conexion, $user)
 	{
 		//Partes sin atender no propios
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2
-		FROM parte P, Empleados E
-		WHERE E.dni!='$user->dni' AND E.id=P.emp_crea AND P.tec_res IS NULL");
+		FROM parte P INNER JOIN Empleados E
+        ON E.id=P.emp_crea
+		WHERE E.dni!='$user->dni' AND P.state=1");
 	}
 	function countOldPartes($conexion, $user)
 	{
@@ -44,7 +45,7 @@
 		$con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
 		FROM Empleados E INNER JOIN parte P
 		ON E.id=P.emp_crea
-        WHERE E.id=$user->id AND E.dni='$user->dni'");
+        WHERE E.id=$user->id AND E.dni='$user->dni' AND P.state=3");
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
     }
@@ -63,7 +64,7 @@
 		ON E.id=P.tec_res
 		INNER JOIN tiempo_resolucion T
 		ON T.id_part=P.id_part
-		WHERE P.tec_res!=P.emp_crea and E.id=$user->id and E.dni='$user->dni'");
+		WHERE P.tec_res!=P.emp_crea and E.id=$user->id and E.dni='$user->dni' AND P.state=3");
 	}
 	function selectOldPartes($conexion, $user)
 	{
@@ -72,8 +73,8 @@
 		ON E.id=P.emp_crea
 		INNER JOIN tiempo_resolucion T
 		ON T.id_part=P.id_part
-		WHERE E.id=$user->id AND E.dni='$user->dni' AND P.oculto=0");
-	}
+		WHERE E.id=$user->id AND E.dni='$user->dni' AND P.oculto=0 AND P.state=3");
+    }
 	function countHiddenPartes($conexion, $user)
 	{
 		$con = $conexion->query("SELECT COUNT(*) AS Partes
@@ -244,25 +245,25 @@
     function updateParte1($conexion, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $conexion->query("UPDATE parte  set tec_res = $user->id, nom_tec='$nombre_tecnico' 
-		WHERE id_part = $id_part and (tec_res=$user->id or tec_res is null) and resuelto=0");
+        $conexion->query("UPDATE parte  SET tec_res = $user->id, nom_tec='$nombre_tecnico', state=2
+		WHERE id_part = $id_part AND (tec_res=$user->id OR tec_res IS NULL) AND state IN (1, 2)");
     }
     function updateparte2($conexion, $pieza, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $conexion->query("UPDATE parte SET pieza = '$pieza', nom_tec='$nombre_tecnico', tec_res = $user->id
-		WHERE id_part = $id_part and (tec_res=$user->id or tec_res is null) and resuelto=0");
+        $conexion->query("UPDATE parte SET pieza = '$pieza', nom_tec='$nombre_tecnico', tec_res = $user->id, state=2
+		WHERE id_part = $id_part AND (tec_res=$user->id OR tec_res IS NULL) AND state IN (1, 2)");
     }
     function closeParte1($conexion, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $con = $conexion->query("UPDATE parte SET nom_tec = '$nombre_tecnico', fecha_resolucion = CURRENT_DATE(), hora_resolucion = CURRENT_TIME(), resuelto = 1, tec_res = $user->id  
-		WHERE id_part = $id_part and (tec_res=$user->id or tec_res is null) and resuelto=0");
+        $con = $conexion->query("UPDATE parte SET nom_tec = '$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
+		WHERE id_part = $id_part and (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
     }
     function closeParte2($conexion, $pieza, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $con = $conexion->query("UPDATE parte SET pieza= '$pieza', nom_tec = '$nombre_tecnico', fecha_resolucion = CURRENT_DATE(), hora_resolucion = CURRENT_TIME(), resuelto = 1, tec_res = $user->id  
-		WHERE id_part = $id_part and (tec_res=$user->id or tec_res is null) and resuelto=0");
+        $con = $conexion->query("UPDATE parte SET pieza='$pieza', nom_tec='$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
+		WHERE id_part = $id_part AND (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
     }
 ?>

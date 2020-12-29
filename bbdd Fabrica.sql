@@ -7,30 +7,40 @@ CREATE TABLE Empleados (
     apellido1 VARCHAR (100) NOT NULL,
     apellido2 VARCHAR (100),
     tipo VARCHAR(50) NOT NULL,
-    borrado tinyint(1) NOT NULL DEFAULT 0
+    borrado TINYINT(1) NOT NULL DEFAULT 0
 );
 create table parte (
-    id_part int(50) primary key auto_increment,
-    emp_crea int(50) not null,
-    tec_res int(50),
-	nom_tec varchar(100),
-	oculto boolean default '0',
-    resuelto boolean default '0',
-    inf_part varchar(200) not null,
+    id_part INT(50) PRIMARY KEY auto_increment,
+    emp_crea INT(50) NOT NULL,
+    tec_res INT(50),
+	nom_tec VARCHAR(100),
+	oculto BOOLEAN DEFAULT '0',
+    inf_part VARCHAR(200) NOT NULL,
     fecha_resolucion date DEFAULT NULL,
     fecha_hora_creacion timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     hora_resolucion time(5) DEFAULT NULL,
-	pieza varchar(100) DEFAULT null,
-    constraint part_crea_emp
-    foreign key (emp_crea)
-    references Empleados (id)
-    on update cascade
-    on delete cascade,
-    constraint part_res_tec
-    foreign key (tec_res)
-    references Empleados (id)
-    on delete cascade
-    on update cascade
+	pieza VARCHAR(100) DEFAULT NULL,
+    state INT(50) NOT NULL,
+    CONSTRAINT part_crea_emp
+    FOREIGN KEY (emp_crea)
+    REFERENCES Empleados (id)
+    ON DELETE CASCADE
+    on UPDATE CASCADE,
+    CONSTRAINT part_res_tec
+    FOREIGN KEY (tec_res)
+    REFERENCES Empleados (id)
+    ON DELETE CASCADE
+    on UPDATE CASCADE,
+    CONSTRAINT incidence_state
+    FOREIGN KEY (state)
+    REFERENCES state (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE state (
+    id INT(50) PRIMARY KEY NOT NULL auto_increment,
+    name VARCHAR(50) NOT NULL
 );
 
  CREATE TABLE Notes (
@@ -63,6 +73,10 @@ create table parte (
     ON UPDATE CASCADE
     ON DELETE CASCADE
  );
+
+INSERT INTO state (name) VALUES ('Nuevo');
+INSERT INTO state (name) VALUES ('En curso');
+INSERT INTO state (name) VALUES ('Cerrado');
 
 insert into Empleados (dni, nombre, apellido1, apellido2, tipo)
 values ('12345678Z', 'Jose Javier', 'Valero', 'Fuentes', 'Tecnico');
@@ -104,5 +118,5 @@ SELECT ((((YEAR(fecha_resolucion))-(YEAR(fecha_hora_creacion)))*31536000)+
 (((MINUTE(hora_resolucion))-(MINUTE(fecha_hora_creacion)))*60)+
 ((SECOND(hora_resolucion))-(SECOND(fecha_hora_creacion)))) AS "Tiempo", id_part, tec_res, nom_tec
 FROM parte
-WHERE resuelto=1
+WHERE state=3
 GROUP BY id_part, tec_res, nom_tec;
