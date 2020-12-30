@@ -23,7 +23,7 @@ if (isset($_SESSION['loggedin']))
 			</head>
 		<body>
 			<div class="cabecera">
-				<p class="mensaje">Bienvenido'.' '.$user->comName.'<p>
+				<p class="mensaje">Bienvenido'.' '.$user->name.' '.$user->surname1.' '.$user->surname2.'<p>
 				<div class="Logo">
 					<a href="veremp.php?funcion=Logout">
 						<img class="cierra" src="shutdown.png" alt="Cerrar sesión" />

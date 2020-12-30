@@ -255,6 +255,9 @@ include 'html.php';
             case 'Logout':
                 logout();
                 break;
+            case 'Login':
+                login();
+                break;
             case 'service01':
                 service01();
                 break;
@@ -277,42 +280,21 @@ include 'html.php';
         $_SESSION['sql'] = json_encode($sql_data);
         return $conexion;
     }
-    function checkLoging($credentials, $conexion)
+    function sessionStart()
     {
-        $response = false;
-        //$credentials = new credentials($username, $password);
-        $con = checkCredentialsData($credentials, $conexion);
-        //$data = $con->fetch_array(MYSQLI_ASSOC);
-        if ($con->num_rows > 0)
-        {
-            $_SESSION['loggedin'] = true;
-            $_SESSION['start'] = time();
-            $_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
-            $response = true;
-        }
-        return $response;
-        //return $data;
+        $_SESSION['loggedin'] = true;
+		$_SESSION['start'] = time();
+		$_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
     }
     function getEmployeeData($credentials)
     {
         $conexion = connnection();
-        //return checkLoging($credentials, $conexion);
-        if(checkLoging($credentials, $conexion))
+        $con = checkCredentialsData($credentials, $conexion);
+        if ($con->num_rows > 0)
         {
-            $user_info = new user;
-            $user_info->dni = $credentials->username;
-            $con = $conexion->query("SELECT * 
-            FROM Empleados 
-            WHERE dni='$credentials->username'");
-
             //extrae datos personales
             $fila = $con->fetch_array(MYSQLI_ASSOC);
-            $user_info->tipo = $fila['tipo'];
-            $user_info->comName = $fila['nombre']." ".$fila['apellido1']." ".$fila['apellido2'];
-            $user_info->id = $fila['id'];
-            $user_info->name = $fila['nombre'];
-            $user_info->surname1 = $fila['apellido1'];
-            $user_info->surname2 = $fila['apellido2'];
+            $user_info = getEmployee($fila);
             $_SESSION['user'] =  json_encode($user_info);
             return $user_info;
         }
@@ -321,25 +303,11 @@ include 'html.php';
             echo 'error desconocido';
         }
     }
-    function takeEmployee($emp_crea)
+    function takeEmployee($conexion, $emp_crea)
     {
-        $sql_data = new sql;
-        $sql_data->host_db = "localhost";
-        $sql_data->user_db = "Ad";
-        $sql_data->pass_db = "1234";
-        $sql_data->db_name = "Fabrica";
-        $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
-        $con = $conexion->query("SELECT nombre, apellido1, apellido2, tipo, dni FROM Empleados WHERE id = $emp_crea");
+        $con = selectEmpleado($conexion, $emp_crea);
         $data = $con->fetch_array(MYSQLI_ASSOC);
-        $user = new user;
-        $user->name = $data['nombre'];
-        $user->surname1 = $data['apellido1'];
-        $user->surname2 = $data['apellido2'];
-        $user->comName = $data['nombre'].' '.$data['apellido1'].' '.$data['apellido2'];
-        $user->dni = $data['dni'];
-        $user->tipo = $data['tipo'];
-        $user->id = $emp_crea;
-        return $user;
+        return getEmployee($data);
     }
     function buildEmployee($conexion)
     {
@@ -427,6 +395,36 @@ include 'html.php';
         }
         $_SESSION['funcion'] = 'Lista';
     }
+    function login()
+    {
+        $conexion = connnection();
+        if ($conexion->connect_error)
+        {
+            $_SESSION['mensaje'] = die("La conexión falló: " . $conexion->connect_error);
+            header('Location: login.html');
+        }
+        else
+        {
+            $credentials = new credentials($_POST['username'], $_POST['password']);
+            $_SESSION['credentials'] = json_encode($credentials);
+            $con = checkCredentialsData($credentials, $conexion);
+            if ($con->num_rows > 0)
+            {
+                sessionStart();
+                $con = selectEmployeeData($conexion, $credentials);
+                //extrae datos personales
+                $fila = $con->fetch_array(MYSQLI_ASSOC);
+                $user_info = getEmployee($fila);
+                $_SESSION['user'] =  json_encode($user_info);
+                header('Location: menu.php');
+            }
+            else
+            {
+                $_SESSION['mensaje'] = '<p class="respuesta">Username o Password estan incorrectos.</p>';
+                header('Location: login.php');
+            }
+        }
+    }
     function logout()
     {
         $_SESSION = array();
@@ -442,8 +440,10 @@ include 'html.php';
     }
     function service01()
     {
+        session_start();
+        $conexion = connnection();
         $emp_crea = $_GET['id_emp'];
-        $user = takeEmployee($emp_crea);
+        $user = takeEmployee($conexion, $emp_crea);
         header('Content-Type: application/json');
         echo json_encode($user);
         exit();

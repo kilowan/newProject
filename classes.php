@@ -9,15 +9,12 @@
 
 	class user
 	{
-		public string $comName = "";
 		public string $name = "";
 		public string $surname1 = "";
 		public ?string $surname2 = "";
 		public string $dni = "";
 		public string $tipo = "";
 		public ?int $id = NULL;
-		//public string $username = "";
-		//public string $password = "";
 	}
 	class credentials
 	{
