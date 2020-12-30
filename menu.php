@@ -25,7 +25,7 @@ if (isset($_SESSION['loggedin']))
 			<div class="cabecera">
 				<p class="mensaje">Bienvenido'.' '.$user->comName.'<p>
 				<div class="Logo">
-					<a href="funciones.php?funcion=Logout">
+					<a href="veremp.php?funcion=Logout">
 						<img class="cierra" src="shutdown.png" alt="Cerrar sesión" />
 					</a>
 				</div>

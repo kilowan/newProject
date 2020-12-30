@@ -70,20 +70,17 @@ include 'html.php';
 		}
 		return $_SESSION['time'];
 	}
-    function check($GET, $SESSION)
-	{
-		$data = null;
-		if(isset($GET))
-		{
-			$data = $GET;
-		}
-		else
-		{
-			$data = $SESSION;
-			$SESSION = null;
-		}
-		return $data;
-	}
+    function check($input)
+    {
+        if($input == "")
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
     function structure($user, $conexion)
     {
         if($user->tipo != 'Tecnico' && $user->tipo != 'Admin')
@@ -246,6 +243,24 @@ include 'html.php';
             case 'cierraparte':
                 closeParte($conexion, $user);
                 break;
+            case 'Crear_parte':
+                buildParte($conexion);
+                break;
+            case 'Borrar_empleado':
+                deleteEmpleado($conexion, $user);
+                break;
+            case 'Editar_empleado':
+                updateEmpleado($conexion);
+                break;
+            case 'Logout':
+                logout();
+                break;
+            case 'service01':
+                service01();
+                break;
+            case 'service02':
+                service02();
+                break;
             default:
                 break;
         }
@@ -379,12 +394,53 @@ include 'html.php';
         updateNoteList($conexion, $user, $id_part, $not_tec);
         $_SESSION['funcion'] = 'Partes';
     }
-	if (!isset($_GET['funcion'])) {
-        $funcion = "";
-    } else {
-        $funcion = $_GET['funcion'];
+    function buildParte($conexion)
+    {
+		$pieza = $_POST['pieza'];
+		$descripcion = $_POST['descripcion'];
+		if($pieza != "--")
+		{	
+            insertParte1($conexion, $user, $descripcion, $pieza);
+		}
+		else
+		{
+            insertParte2($conexion, $user, $descripcion);
+		}
+		$_SESSION['funcion'] = 'Partes';
     }
-    if ($_SERVER['REQUEST_METHOD'] == 'GET' && $funcion == 'GET')
+    function deleteEmpleado($conexion, $user)
+    {
+        $id_emp = $_GET['id_emp'];
+        deleteEmployee($conexion, $user);
+        $_SESSION['funcion'] = 'Lista';
+    }
+    function updateEmpleado($conexion)
+    {
+        $user = json_decode($_POST['user']);
+        $bool = check($user->dni);
+        $bool = check($user->name);
+        $bool = check($user->surname1);
+        $bool = check($user->surname2);
+        if($bool == true)
+        {
+            updateEmployee($conexion, $user);
+        }
+        $_SESSION['funcion'] = 'Lista';
+    }
+    function logout()
+    {
+        $_SESSION = array();
+		if (ini_get("session.use_cookies")) {
+		$params = session_get_cookie_params();
+		setcookie(session_name(), '', time() - 42000,
+			$params["path"], $params["domain"],
+			$params["secure"], $params["httponly"]
+		);
+		}
+		session_destroy();
+		header("Location: login.php");
+    }
+    function service01()
     {
         $emp_crea = $_GET['id_emp'];
         $user = takeEmployee($emp_crea);
@@ -392,23 +448,23 @@ include 'html.php';
         echo json_encode($user);
         exit();
     }
-    else if ($_SERVER['REQUEST_METHOD'] == 'POST') 
+    function service02()
     {
         $json = file_get_contents('php://input');
         $obj = json_decode($json);
-        if ($obj->funcion == 'TAKE') {
-            $credentials = new credentials($obj->username, $obj->password);
-            $_SESSION['credentials'] = json_encode($credentials);
-            $user = getEmployeeData($credentials);
-            if ($user != 'error desconocido') {
-                header('Content-Type: application/json');
-                echo json_encode($user);
-                exit();
-            }
-            else {
-                echo $user;
-                exit();
-            }
+        //if ($obj->funcion == 'service02') {
+        $credentials = new credentials($obj->username, $obj->password);
+        $_SESSION['credentials'] = json_encode($credentials);
+        $user = getEmployeeData($credentials);
+        if ($user != 'error desconocido') {
+            header('Content-Type: application/json');
+            echo json_encode($user);
+            exit();
         }
+        else {
+            echo $user;
+            exit();
+        }
+        //}
     }
 ?>

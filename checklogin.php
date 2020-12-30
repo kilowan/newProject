@@ -35,10 +35,6 @@ else
 		$con = selectEmployeeData($conexion, $credentials);
 		//extrae datos personales
 		$fila = $con->fetch_array(MYSQLI_ASSOC);
-		$_SESSION['tipo'] = $fila['tipo'];
-		$_SESSION['nombreCom'] = $fila['nombre']." ".$fila['apellido1']." ".$fila['apellido2'];
-		$_SESSION['id_emp'] = $fila['id'];
-		$_SESSION['nombre'] = $fila['nombre'];
 		$user_info->tipo = $fila['tipo'];
 		$user_info->comName = $fila['nombre']." ".$fila['apellido1']." ".$fila['apellido2'];
 		$user_info->id = $fila['id'];

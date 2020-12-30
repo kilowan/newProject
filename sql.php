@@ -266,4 +266,23 @@
         $con = $conexion->query("UPDATE parte SET pieza='$pieza', nom_tec='$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
 		WHERE id_part = $id_part AND (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
     }
+    function insertParte1($conexion, $user, $descripcion, $pieza)
+    {
+        $conexion->query("INSERT INTO parte (emp_crea, inf_part , pieza)
+        VALUES ($user->id, '$descripcion', '$pieza')");
+    }
+    function insertParte2($conexion, $user, $descripcion)
+    {
+        $conexion->query("INSERT INTO parte (emp_crea, inf_part)
+        VALUES ($user->id, '$descripcion')");
+    }
+    function deleteEmployee($conexion, $user)
+    {
+        $conexion->query("UPDATE empleados SET borrado=1 WHERE id = $user->id");
+    }
+    function updateEmployee($conexion, $user)
+    {
+        $conexion->query("UPDATE Empleados SET dni = '$user->dni', nombre = '$user->name', apellido1 = '$user->surname1', apellido2 = '$user->surname2', tipo = '$user->tipo' 
+        WHERE id = $user->id");
+    }
 ?>

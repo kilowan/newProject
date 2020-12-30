@@ -471,7 +471,7 @@
         $permissions = permissions($user);
         if (in_array(12, $permissions)) {
             $response = $response.'
-            <form class="crearP" action="funciones.php" method="post">
+            <form class="crearP" action="veremp.php" method="post">
                 <input type="hidden" name="funcion" value="Crear_parte">
                 <label>Descripción del problema:</label><br />
                 <textarea name="descripcion" rows="10" cols="40" required placeholder="resumen del fallo"></textarea><br />

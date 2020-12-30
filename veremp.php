@@ -7,14 +7,6 @@ if (isset($_SESSION['loggedin']))
 {	
 	$user = $_SESSION['user'];
 	$user = json_decode($user);
-	$dni = $user->dni;
-	$id_emp = $user->id;
-	$tipo = $user->tipo;
-	$nombreCom = $user->comName;
-	$nombre = $user->name;
-	$apellido1 = $user->surname1;
-	$apellido2 = $user->surname2;
-	$table = "";
 	if(isset($_GET['funcion']))
 	{
 		$funcion = $_GET['funcion'];
@@ -23,10 +15,16 @@ if (isset($_SESSION['loggedin']))
 	{
 		$funcion = $_POST['funcion'];
 	}
-	else
+	else if (isset($_SESSION['funcion']))
 	{
 		$funcion = $_SESSION['funcion'];
 		$SESSION = null;
+	}
+	else {
+
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$funcion = $obj->funcion;
 	}
 	if (!isset($_SESSION['mensaje']))
 	{
