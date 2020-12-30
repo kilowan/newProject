@@ -1,8 +1,10 @@
 <?php
 session_start();
-?>
-<?php
 include 'functions.php';
+if (!isset($_SESSION['loggedin']) && isset($_POST['username']) && isset($_POST['password'])) {
+	login($_POST['username'], $_POST['password']);
+}
+
 if (isset($_SESSION['loggedin']))
 {	
 	$user = $_SESSION['user'];

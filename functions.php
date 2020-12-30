@@ -395,7 +395,7 @@ include 'html.php';
         }
         $_SESSION['funcion'] = 'Lista';
     }
-    function login()
+    function login($username, $password)
     {
         $conexion = connnection();
         if ($conexion->connect_error)
@@ -405,7 +405,7 @@ include 'html.php';
         }
         else
         {
-            $credentials = new credentials($_POST['username'], $_POST['password']);
+            $credentials = new credentials($username, $password);
             $_SESSION['credentials'] = json_encode($credentials);
             $con = checkCredentialsData($credentials, $conexion);
             if ($con->num_rows > 0)

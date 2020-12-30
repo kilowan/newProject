@@ -265,7 +265,10 @@
         {
             $table = $table.'&nbsp<a class="link" href="veremp.php?funcion=Lista&id_emp='.$user->id.'&dni='.$user->dni.'">Lista empleados</a>';
         }
-        $table = $table.'<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>';
+        if (in_array(0, $permissions)) {
+            $table = $table.'<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>';
+        }
+        
         return $table;
     }
     function readIncidences($con, $user, int $state)

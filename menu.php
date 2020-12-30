@@ -1,5 +1,5 @@
-<?php session_start(); ?>
-<?php
+<?php 
+session_start();
 include 'functions.php';
 if (isset($_SESSION['loggedin']))
 {
