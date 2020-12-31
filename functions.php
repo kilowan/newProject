@@ -1,8 +1,7 @@
 <?php
-//include 'classes.php';
-//include 'sql.php';
-//include 'html.php';
-include 'oFunctions.php';
+include 'classes.php';
+include 'sql.php';
+include 'html.php';
     function tiempo($n, $i)
 	{
 		if($i == 0 && $n == 86400)
@@ -297,12 +296,6 @@ include 'oFunctions.php';
         {
             echo 'error desconocido';
         }
-    }
-    function takeEmployee($conexion, $emp_crea)
-    {
-        $con = selectEmpleado($conexion, $emp_crea);
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        return getEmployee($data);
     }
     function buildEmployee($conexion)
     {
