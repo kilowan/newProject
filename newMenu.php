@@ -1,17 +1,34 @@
 <?php
 include 'sql.php';
 include 'classes.php';
-    $json = file_get_contents('php://input');
-    $obj = json_decode($json);
-    $funcion = $obj->funcion;
-    $conexion = connection();
+    if(isset($_GET['funcion']))
+    {
+        $funcion = $_GET['funcion'];
+    }
+    else {
+        $json = file_get_contents('php://input');
+        $obj = json_decode($json);
+        $funcion = $obj->funcion;
+        $conexion = connection();
+    }
     
     switch ($funcion) {
-        case 'service01':
-            service01();
-            break;        
-        case 'service02':
-            service02();
+        case 'getEmployeeById':
+            getEmployeeById();
+            break;
+        case 'getEmployeeByUsername':
+            session_start();
+            $conexion = connection();
+            $username = $_GET['username'];
+            $con = getEmployeeByUsername($conexion, $username);
+            $data = $con->fetch_array(MYSQLI_ASSOC);
+            $user = buildEmployee($data);
+            header('Content-Type: application/json');
+            echo json_encode($user);
+            exit();
+            break;
+        case 'getEmployeeByCredentials':
+            getEmployeeByCredentials();
             break;
             
         default:
@@ -37,7 +54,7 @@ include 'classes.php';
             //extrae datos personales
             $con = selectEmployeeData($conexion, $credentials);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
-            $user_info = getEmployee($fila);
+            $user_info = buildEmployee($fila);
             $_SESSION['user'] =  json_encode($user_info);
             return $user_info;
         }
@@ -46,7 +63,7 @@ include 'classes.php';
             echo 'error desconocido';
         }
     }
-    function getEmployee($fila)
+    function buildEmployee($fila)
     {
         $user = new user;
         $user->dni = $fila['dni'];
@@ -57,18 +74,19 @@ include 'classes.php';
         $user->id = $fila['id'];
         return $user;
     }
-
-    function service01()
+    function getEmployeeById()
     {
         session_start();
         $conexion = connection();
-        $emp_crea = $_GET['id_emp'];
-        $user = takeEmployee($conexion, $emp_crea);
+        $id = $_GET['id_emp'];
+        $con = getEmployee($conexion, $id);
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        $user = buildEmployee($data);
         header('Content-Type: application/json');
         echo json_encode($user);
         exit();
     }
-    function service02()
+    function getEmployeeByCredentials()
     {
         $json = file_get_contents('php://input');
         $obj = json_decode($json);

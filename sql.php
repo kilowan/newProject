@@ -105,9 +105,13 @@
 		ON E.id=P.emp_crea 
 		WHERE id_part=$id_part");
     }
-	function selectEmpleado($conexion, $id = 0, $dni = null)
+	function getEmployeeByUsername($conexion, $dni)
 	{
-        return $conexion->query("SELECT nombre, apellido1, apellido2 FROM Empleados WHERE id = $id OR dni = $dni");
+        return $conexion->query("SELECT * FROM Empleados WHERE dni = '$dni'");
+    }
+    function getEmployee($conexion, $id)
+	{
+        return $conexion->query("SELECT * FROM Empleados WHERE id = $id");
 	}
 	function selectEmpleadoNoAdmin($conexion)
 	{
