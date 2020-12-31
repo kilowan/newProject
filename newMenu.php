@@ -31,8 +31,20 @@ include 'classes.php';
             getEmployeeByCredentials();
             break;
 
-        case 'incidences':
-            getIncidencesList();
+        case 'getAllincidences':
+            getAllincidences();
+            break;
+
+        case 'getOwnNewIncidences':
+            getOwnNewIncidences();
+            break;
+
+        case 'getOwnIncidences':
+            getOwnIncidences();
+            break;
+
+        case 'getOwnOldIncidences':
+            getOwnOldIncidences();
             break;
             
         default:
@@ -143,9 +155,46 @@ include 'classes.php';
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
-        //return $incidences;
+        return $incidences;
+    }
+    function getAllincidences()
+    {
+        $incidences = getIncidencesList();
         header('Content-Type: application/json');
         echo json_encode($incidences);
+        exit();
+    }
+    function getOwnNewIncidences()
+    {
+        //$dni = $_GET['dni'];
+        $incidences = getIncidencesList();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->owner->dni == $_GET['dni'] && $array->state == 1);
+        });
+        header('Content-Type: application/json');
+        echo json_encode($new_array);
+        exit();
+    }
+    function getOwnIncidences()
+    {
+        //$dni = $_GET['dni'];
+        $incidences = getIncidencesList();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->owner->dni == $_GET['dni'] && $array->state == 2);
+        });
+        header('Content-Type: application/json');
+        echo json_encode($new_array);
+        exit();
+    }
+    function getOwnOldIncidences()
+    {
+        //$dni = $_GET['dni'];
+        $incidences = getIncidencesList();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
+        });
+        header('Content-Type: application/json');
+        echo json_encode($new_array);
         exit();
     }
 ?>
