@@ -714,7 +714,7 @@
                     </tr>';
                 while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
                 {
-                    $user = getEmployee($fila);
+                    $user = getEmployeeData($fila);
 
                     array_push($users, $user);
                     //insercion partes (html) 

@@ -30,6 +30,10 @@ include 'classes.php';
         case 'getEmployeeByCredentials':
             getEmployeeByCredentials();
             break;
+
+        case 'incidences':
+            getIncidencesList();
+            break;
             
         default:
             break;
@@ -63,15 +67,15 @@ include 'classes.php';
             echo 'error desconocido';
         }
     }
-    function buildEmployee($fila)
+    function buildEmployee($data)
     {
         $user = new user;
-        $user->dni = $fila['dni'];
-        $user->name = $fila['nombre'];
-        $user->surname1 = $fila['apellido1'];
-        $user->surname2 = $fila['apellido2'];
-        $user->tipo = $fila['tipo'];
-        $user->id = $fila['id'];
+        $user->dni = $data['dni'];
+        $user->name = $data['nombre'];
+        $user->surname1 = $data['apellido1'];
+        $user->surname2 = $data['apellido2'];
+        $user->tipo = $data['tipo'];
+        $user->id = $data['id'];
         return $user;
     }
     function getEmployeeById()
@@ -102,5 +106,46 @@ include 'classes.php';
             echo $user;
             exit();
         }
+    }
+    function getIncidencesList()
+    {
+        session_start();
+        $conexion = connection();
+        $con = selectIncidences($conexion);
+        $incidences = null;
+        $incidence_count = 0;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
+            $tec = new user();
+            
+            $noteList = null;
+            $count = 0;
+            $con2 = selectNotes($conexion, $fila['id_part']);
+            while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
+                $noteList[$count] = $notes['noteStr'];
+                $count++;
+            }
+            $con3 = getEmployee($conexion, $fila['emp_crea']);
+            $emp1 = $con3->fetch_array(MYSQLI_ASSOC);
+            $owner = buildEmployee($emp1);
+
+
+            if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
+                $con3 = getEmployee($conexion, $fila['tec_res']);
+                $emp2 = $con3->fetch_array(MYSQLI_ASSOC);
+                $tec = buildEmployee($emp2);
+            }
+
+            $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
+            $incidence->solver = $tec;
+            $incidence->finishTime = $fila['hora_resolucion'];
+            $incidence->finishDate = $fila['fecha_resolucion'];
+            $incidence->state = $fila['state'];
+            $incidences[$incidence_count] = $incidence;
+            $incidence_count++;
+        }
+        //return $incidences;
+        header('Content-Type: application/json');
+        echo json_encode($incidences);
+        exit();
     }
 ?>

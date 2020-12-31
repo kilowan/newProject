@@ -289,4 +289,8 @@
         $conexion->query("UPDATE Empleados SET dni = '$user->dni', nombre = '$user->name', apellido1 = '$user->surname1', apellido2 = '$user->surname2', tipo = '$user->tipo' 
         WHERE id = $user->id");
     }
+    function selectIncidences($conexion)
+    {
+        return $conexion->query("SELECT * FROM parte");
+    }
 ?>

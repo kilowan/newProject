@@ -20,6 +20,7 @@
 	{
 		public string $username;
 		public string $password;
+		
 		public function __construct(string $username, string $password)
 		{
 			$this->username = $username;
@@ -27,15 +28,25 @@
 		}
 	}
 
-    /*class incidence
+    class incidence
     {
-        public $owner = new user;
-        public $solver = new user;
+        public $owner = null;
+        public $solver = null;
         public $initDateTime = null;
         public $finishTime = null;
         public $finishDate = null;
         public string $issueDesc = "";
         public string $piece = "";
-        public array $notes = null;
-    }*/
+		public ?array $notes = null;
+		public int $state = 1;
+		
+		public function __construct($owner, $initDateTime, string $issueDesc, string $piece, ?array $notes)
+		{
+			$this->owner = $owner;
+			$this->initDateTime = $initDateTime;
+			$this->issueDesc = $issueDesc;
+			$this->piece = $piece;
+			$this->notes = $notes;
+		}
+    }
 ?>

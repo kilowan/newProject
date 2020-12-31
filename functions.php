@@ -108,7 +108,7 @@ include 'html.php';
         }
         return $nums;
     }
-    function getEmployee($fila)
+    function getEmployeeData($fila)
     {
         $user = new user;
         $user->dni = $fila['dni'];
@@ -280,23 +280,6 @@ include 'html.php';
 		$_SESSION['start'] = time();
 		$_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
     }
-    function getEmployeeData($credentials)
-    {
-        $conexion = connection();
-        $con = checkCredentialsData($credentials, $conexion);
-        if ($con->num_rows > 0)
-        {
-            //extrae datos personales
-            $fila = $con->fetch_array(MYSQLI_ASSOC);
-            $user_info = getEmployee($fila);
-            $_SESSION['user'] =  json_encode($user_info);
-            return $user_info;
-        }
-        else 
-        {
-            echo 'error desconocido';
-        }
-    }
     function buildEmployee($conexion)
     {
         $permissions = permissions($user);
@@ -402,7 +385,7 @@ include 'html.php';
                 $con = selectEmployeeData($conexion, $credentials);
                 //extrae datos personales
                 $fila = $con->fetch_array(MYSQLI_ASSOC);
-                $user_info = getEmployee($fila);
+                $user_info = getEmployeeData($fila);
                 $_SESSION['user'] =  json_encode($user_info);
                 header('Location: menu.php');
             }
