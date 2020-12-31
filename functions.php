@@ -1,7 +1,8 @@
 <?php
-include 'classes.php';
-include 'sql.php';
-include 'html.php';
+//include 'classes.php';
+//include 'sql.php';
+//include 'html.php';
+include 'oFunctions.php';
     function tiempo($n, $i)
 	{
 		if($i == 0 && $n == 86400)
@@ -258,18 +259,12 @@ include 'html.php';
             case 'Login':
                 login();
                 break;
-            case 'service01':
-                service01();
-                break;
-            case 'service02':
-                service02();
-                break;
             default:
                 break;
         }
         return $response;
     }
-    function connnection()
+    function connection()
     {
         $sql_data = new sql;
         $sql_data->host_db = "localhost";
@@ -288,7 +283,7 @@ include 'html.php';
     }
     function getEmployeeData($credentials)
     {
-        $conexion = connnection();
+        $conexion = connection();
         $con = checkCredentialsData($credentials, $conexion);
         if ($con->num_rows > 0)
         {
@@ -397,7 +392,7 @@ include 'html.php';
     }
     function login($username, $password)
     {
-        $conexion = connnection();
+        $conexion = connection();
         if ($conexion->connect_error)
         {
             $_SESSION['mensaje'] = die("La conexión falló: " . $conexion->connect_error);
@@ -437,34 +432,5 @@ include 'html.php';
 		}
 		session_destroy();
 		header("Location: login.php");
-    }
-    function service01()
-    {
-        session_start();
-        $conexion = connnection();
-        $emp_crea = $_GET['id_emp'];
-        $user = takeEmployee($conexion, $emp_crea);
-        header('Content-Type: application/json');
-        echo json_encode($user);
-        exit();
-    }
-    function service02()
-    {
-        $json = file_get_contents('php://input');
-        $obj = json_decode($json);
-        //if ($obj->funcion == 'service02') {
-        $credentials = new credentials($obj->username, $obj->password);
-        $_SESSION['credentials'] = json_encode($credentials);
-        $user = getEmployeeData($credentials);
-        if ($user != 'error desconocido') {
-            header('Content-Type: application/json');
-            echo json_encode($user);
-            exit();
-        }
-        else {
-            echo $user;
-            exit();
-        }
-        //}
     }
 ?>
