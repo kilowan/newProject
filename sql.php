@@ -42,12 +42,11 @@
 	function countOldPartes($conexion, $user)
 	{
 		//Partes cerrados propios
-		$con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-		FROM Empleados E INNER JOIN parte P
-		ON E.id=P.emp_crea
-        WHERE E.id=$user->id AND E.dni='$user->dni' AND P.state=3");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
+		$con = $conexion->query("SELECT *
+		FROM parte
+        WHERE emp_crea=$user->id AND state=3");
+        return $con->num_rows;
+        
     }
     function countPiezas($conexion)
     {
@@ -85,7 +84,7 @@
     }
 	function selectHiddenPartes($conexion, $user)
 	{
-		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, nom_tec
+		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, P.fecha_hora_creacion, nom_tec
 		FROM parte P INNER JOIN Empleados E
 		ON P.emp_crea=E.id 
 		WHERE oculto='1' AND E.dni='$user->dni' 
@@ -178,33 +177,18 @@
     function countNewPartes($conexion)
     {
         //Partes sin atender (tecnico)
-        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-        FROM parte P INNER JOIN Empleados E 
-        ON P.emp_crea=E.id 
-        WHERE id NOT IN (SELECT incidence FROM notes)
-        GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
+        $con = $conexion->query("SELECT *
+        FROM parte
+        WHERE state=1");
+        return $con->num_rows;
     }
     //Partes de un técnico
     function countPartes($conexion, $id_emp)
     {
-        $con = $conexion->query("SELECT P.id_part
-        FROM parte P INNER JOIN Empleados E 
-        ON P.emp_crea=E.id 
-        WHERE P.tec_res=$id_emp 
-        GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
+        $con = $conexion->query("SELECT *
+        FROM parte 
+        WHERE tec_res=$id_emp");
         return $con->num_rows;
-    }
-    //Partes de un empleado
-    function countAllPartes($conexion)
-    {
-        $con = $conexion->query("SELECT COUNT(P.id_part) AS Partes
-        FROM parte P INNER JOIN Empleados E
-        ON P.emp_crea=E.id
-        GROUP BY P.id_part, P.inf_part, E.nombre, E.id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
     }
     function selectIncidence($conexion, $id)
     {
@@ -215,7 +199,7 @@
     }
     function hideParte($conexion, $user, $id)
     {
-        return $conexion->query("UPDATE parte SET oculto=1 WHERE id_part=$id AND emp_crea='$user->id' AND resuelto=1");
+        return $conexion->query("UPDATE parte SET oculto=1 WHERE id_part=$id AND emp_crea='$user->id' AND state=3");
     }
     function showHiddenParte($conexion, $id_part)
     {

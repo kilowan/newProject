@@ -109,7 +109,7 @@
         else if ($state == 1 && (in_array(4, $permissions) || in_array(10, $permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Modificar</a></td>';
         }
-        else if ($state == 2 && in_array(7, $permissions)) {
+        else if ($state == 2 && in_array(22, $permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Ocultar_parte">Ocultar</a></td>';
         }
         else if ($state == 3 && in_array(8, $permissions)) {
@@ -172,7 +172,8 @@
 
 		//Empleado
 		//Permiso 12 -> Crear parte
-		//Permiso 13 -> Borrar parte propio no atendido
+        //Permiso 13 -> Borrar parte propio no atendido
+        //Permiso 22 -> Ocultar parte propio cerrado
 
 		//Admin
 		//Permiso 12 -> Crear parte
@@ -225,7 +226,8 @@
 			$permissions[3] = 7;
 			$permissions[4] = 8;
 			$permissions[5] = 12;
-			$permissions[6] = 13;
+            $permissions[6] = 13;
+            $permissions[7] = 22;
 		}
 
 		return $permissions;
@@ -257,7 +259,7 @@
         {
             $table = $table.'&nbsp'.'<a class="link" href="veremp.php?id_emp='.$user->id.'&dni='.$user->dni.'&funcion=Partes">Ver partes</a>';
         }	
-        if(in_array(1, $permissions))
+        if(in_array(1, $permissions) && $nums[1] > 0)
         {
             $table=$table.'&nbsp<a class="link" href="veremp.php?funcion=Estadisticas&id_emp='.$user->id.'&dni='.$user->dni.'">Estadísticas</a>';
         }
@@ -505,7 +507,7 @@
             if($con->num_rows>0)
             {
                 $response = $response.headerData('Partes ocultos', 'colspan="10"');
-                $response = $response.showParteview($con, $user, $state);
+                $response = $response.showParteview($con, $user, 3);
             }
         }
         return $response;
