@@ -43,6 +43,18 @@ include 'classes.php';
         case 'getOwnOldIncidences':
             getOwnOldIncidences();
             break;
+
+        case 'getNewIncidences':
+            getNewIncidences();
+            break;
+
+        case 'getOtherIncidences':
+            getOtherIncidences();
+            break;
+
+        case 'getOtherOldIncidences':
+            getOtherOldIncidences();
+            break;
             
         default:
             break;
@@ -208,6 +220,36 @@ include 'classes.php';
         $incidences = getIncidencesList();
         $new_array = array_filter($incidences, function($array) {
             return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
+        });
+        header('Content-Type: application/json');
+        echo json_encode($new_array);
+        exit();
+    }
+    function getNewIncidences()
+    {
+        $incidences = getIncidencesList();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->state == 1);
+        });
+        header('Content-Type: application/json');
+        echo json_encode($new_array);
+        exit();
+    }
+    function getOtherIncidences()
+    {
+        $incidences = getIncidencesList();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->solver->dni == $_GET['dni'] && $array->state == 2);
+        });
+        header('Content-Type: application/json');
+        echo json_encode($new_array);
+        exit();
+    }
+    function getOtherOldIncidences()
+    {
+        $incidences = getIncidencesList();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->solver->dni == $_GET['dni'] && $array->state == 3);
         });
         header('Content-Type: application/json');
         echo json_encode($new_array);
