@@ -112,7 +112,11 @@
     function getEmployee($conexion, $id)
 	{
         return $conexion->query("SELECT * FROM Empleados WHERE id = $id");
-	}
+    }
+    function getAllEmployeeData($conexion)
+    {
+        return $conexion->query("SELECT * FROM Empleados");
+    }
 	function selectEmpleadoNoAdmin($conexion)
 	{
 		$id_emp = $_GET['id_emp'];

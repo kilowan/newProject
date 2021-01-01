@@ -27,9 +27,6 @@ include 'classes.php';
             echo json_encode($user);
             exit();
             break;
-        case 'getEmployeeByCredentials':
-            getEmployeeByCredentials();
-            break;
 
         case 'getAllincidences':
             getAllincidences();
@@ -92,24 +89,31 @@ include 'classes.php';
     }
     function getEmployeeById()
     {
-        session_start();
-        $conexion = connection();
-        $id = $_GET['id_emp'];
-        $con = getEmployee($conexion, $id);
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        $user = buildEmployee($data);
+        $users = getEmpolyeeList();
+        $new_array = array_filter($users, function($array) {
+            return ($array->id == $_GET['id_emp']);
+        });
         header('Content-Type: application/json');
-        echo json_encode($user);
+        echo json_encode(array_pop($new_array));
         exit();
     }
-    function getEmployeeByCredentials()
+    /*function getEmployeeByCredentials()
     {
-        $json = file_get_contents('php://input');
-        $obj = json_decode($json);
-        $credentials = new credentials($obj->username, $obj->password);
-        $_SESSION['credentials'] = json_encode($credentials);
-        $user = getEmployeeData($credentials);
-        if ($user != 'error desconocido') {
+        //$json = file_get_contents('php://input');
+        //$obj = json_decode($json);
+        //$credentials = new credentials($obj->username, $obj->password);
+        //$_SESSION['credentials'] = json_encode($credentials);
+        $users = getEmpolyeeList();
+        $new_array = array_filter($users, function($array) {
+            $json = file_get_contents('php://input');
+            $obj = json_decode($json);
+            return ($array->dni == $obj->username);
+        });
+        header('Content-Type: application/json');
+        echo json_encode(array_pop($new_array));
+        exit();
+        //$user = getEmployeeData($credentials);
+        /*if ($user != 'error desconocido') {
             header('Content-Type: application/json');
             echo json_encode($user);
             exit();
@@ -118,7 +122,7 @@ include 'classes.php';
             echo $user;
             exit();
         }
-    }
+    }*/
     function getIncidencesList()
     {
         session_start();
@@ -157,6 +161,21 @@ include 'classes.php';
         }
         return $incidences;
     }
+    function getEmpolyeeList()
+    {
+        session_start();
+        $conexion = connection();
+        $con = getAllEmployeeData($conexion);
+        $employees = null;
+        $employee_count = 0;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
+        {
+            $employee = buildEmployee($fila);
+            $employees[$employee_count] = $employee;
+            $employee_count++;
+        }
+        return $employees;
+    }
     function getAllincidences()
     {
         $incidences = getIncidencesList();
@@ -166,7 +185,6 @@ include 'classes.php';
     }
     function getOwnNewIncidences()
     {
-        //$dni = $_GET['dni'];
         $incidences = getIncidencesList();
         $new_array = array_filter($incidences, function($array) {
             return ($array->owner->dni == $_GET['dni'] && $array->state == 1);
@@ -177,7 +195,6 @@ include 'classes.php';
     }
     function getOwnIncidences()
     {
-        //$dni = $_GET['dni'];
         $incidences = getIncidencesList();
         $new_array = array_filter($incidences, function($array) {
             return ($array->owner->dni == $_GET['dni'] && $array->state == 2);
@@ -188,7 +205,6 @@ include 'classes.php';
     }
     function getOwnOldIncidences()
     {
-        //$dni = $_GET['dni'];
         $incidences = getIncidencesList();
         $new_array = array_filter($incidences, function($array) {
             return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
