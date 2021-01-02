@@ -4,6 +4,8 @@ include 'classes.php';
     if(isset($_GET['funcion']))
     {
         $funcion = $_GET['funcion'];
+        session_start();
+        $_SESSION['funcion'] = $_GET['funcion'];
     }
     else {
         $json = file_get_contents('php://input');
@@ -17,7 +19,6 @@ include 'classes.php';
             getEmployeeById();
             break;
         case 'getEmployeeByUsername':
-            session_start();
             $conexion = connection();
             $username = $_GET['username'];
             $con = getEmployeeByUsername($conexion, $username);
@@ -29,33 +30,26 @@ include 'classes.php';
             break;
 
         case 'getAllincidences':
-            getAllincidences();
+            show(getIncidencesList());
             break;
-
         case 'getOwnNewIncidences':
-            getOwnNewIncidences();
+            show(filter(getIncidencesList()));
             break;
-
         case 'getOwnIncidences':
-            getOwnIncidences();
+            show(filter(getIncidencesList()));
             break;
-
         case 'getOwnOldIncidences':
-            getOwnOldIncidences();
+            show(filter(getIncidencesList()));
             break;
-
         case 'getNewIncidences':
-            getNewIncidences();
+            show(filter(getIncidencesList()));
             break;
-
         case 'getOtherIncidences':
-            getOtherIncidences();
+            show(filter(getIncidencesList()));
             break;
-
         case 'getOtherOldIncidences':
-            getOtherOldIncidences();
-            break;
-            
+            show(filter(getIncidencesList()));
+            break;            
         default:
             break;
     }
@@ -137,7 +131,6 @@ include 'classes.php';
     }*/
     function getIncidencesList()
     {
-        session_start();
         $conexion = connection();
         $con = selectIncidences($conexion);
         $incidences = null;
@@ -175,7 +168,6 @@ include 'classes.php';
     }
     function getEmpolyeeList()
     {
-        session_start();
         $conexion = connection();
         $con = getAllEmployeeData($conexion);
         $employees = null;
@@ -188,71 +180,31 @@ include 'classes.php';
         }
         return $employees;
     }
-    function getAllincidences()
+    function show($new_array)
     {
-        $incidences = getIncidencesList();
-        header('Content-Type: application/json');
-        echo json_encode($incidences);
-        exit();
-    }
-    function getOwnNewIncidences()
-    {
-        $incidences = getIncidencesList();
-        $new_array = array_filter($incidences, function($array) {
-            return ($array->owner->dni == $_GET['dni'] && $array->state == 1);
-        });
         header('Content-Type: application/json');
         echo json_encode($new_array);
         exit();
     }
-    function getOwnIncidences()
+    function filter($incidences)
     {
-        $incidences = getIncidencesList();
-        $new_array = array_filter($incidences, function($array) {
-            return ($array->owner->dni == $_GET['dni'] && $array->state == 2);
+        return array_filter($incidences, function($array) {
+            switch ($_SESSION['funcion']) {
+                case 'getOtherOldIncidences':
+                    return ($array->solver->dni == $_GET['dni'] && $array->state == 3);
+                case 'getOtherIncidences':
+                    return ($array->solver->dni == $_GET['dni'] && $array->state == 2);
+                case 'getNewIncidences':
+                    return ($array->state == 1);
+                case 'getOwnOldIncidences':
+                    return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
+                case 'getOwnIncidences':
+                    return ($array->owner->dni == $_GET['dni'] && $array->state == 2);
+                case 'getOwnNewIncidences':
+                    return ($array->owner->dni == $_GET['dni'] && $array->state == 1);                 
+                default:
+                    break;
+            }
         });
-        header('Content-Type: application/json');
-        echo json_encode($new_array);
-        exit();
-    }
-    function getOwnOldIncidences()
-    {
-        $incidences = getIncidencesList();
-        $new_array = array_filter($incidences, function($array) {
-            return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
-        });
-        header('Content-Type: application/json');
-        echo json_encode($new_array);
-        exit();
-    }
-    function getNewIncidences()
-    {
-        $incidences = getIncidencesList();
-        $new_array = array_filter($incidences, function($array) {
-            return ($array->state == 1);
-        });
-        header('Content-Type: application/json');
-        echo json_encode($new_array);
-        exit();
-    }
-    function getOtherIncidences()
-    {
-        $incidences = getIncidencesList();
-        $new_array = array_filter($incidences, function($array) {
-            return ($array->solver->dni == $_GET['dni'] && $array->state == 2);
-        });
-        header('Content-Type: application/json');
-        echo json_encode($new_array);
-        exit();
-    }
-    function getOtherOldIncidences()
-    {
-        $incidences = getIncidencesList();
-        $new_array = array_filter($incidences, function($array) {
-            return ($array->solver->dni == $_GET['dni'] && $array->state == 3);
-        });
-        header('Content-Type: application/json');
-        echo json_encode($new_array);
-        exit();
     }
 ?>
