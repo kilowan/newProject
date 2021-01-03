@@ -20,11 +20,13 @@
 	{
 		public string $username;
 		public string $password;
+		public ?int $employee;
 		
-		public function __construct(string $username, string $password)
+		public function __construct(string $username, string $password, ?int $employee = null)
 		{
 			$this->username = $username;
 			$this->password = MD5($password);
+			$this->employee = $employee;
 		}
 	}
 

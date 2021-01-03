@@ -150,7 +150,7 @@
     {
         return $conexion->query("SELECT *
 		FROM Empleados
-		WHERE dni='$credentials->username'");
+		WHERE id='$credentials->employee' OR dni='$credentials->username'");
     }
 	function tiempoMedio($conexion, $user)
 	{

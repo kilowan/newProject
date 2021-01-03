@@ -377,11 +377,13 @@ include 'html.php';
         else
         {
             $credentials = new credentials($username, $password);
-            $_SESSION['credentials'] = json_encode($credentials);
             $con = checkCredentialsData($credentials, $conexion);
             if ($con->num_rows > 0)
             {
+                $creds = $con->fetch_array(MYSQLI_ASSOC);
                 sessionStart();
+                $credentials->employee = $creds['employee'];
+                $_SESSION['credentials'] = json_encode($credentials);
                 $con = selectEmployeeData($conexion, $credentials);
                 //extrae datos personales
                 $fila = $con->fetch_array(MYSQLI_ASSOC);

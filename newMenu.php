@@ -23,7 +23,7 @@ include 'classes.php';
             $username = $_GET['username'];
             $con = getEmployeeByUsername($conexion, $username);
             $data = $con->fetch_array(MYSQLI_ASSOC);
-            $user = buildEmployee($data);
+            $user = buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
             header('Content-Type: application/json');
             echo json_encode($user);
             exit();
@@ -49,7 +49,10 @@ include 'classes.php';
             break;
         case 'getOtherOldIncidences':
             show(filter(getIncidencesList()));
-            break;            
+            break;
+        case 'addEmployee':
+            addEmployee();
+            break;
         default:
             break;
     }
@@ -73,7 +76,7 @@ include 'classes.php';
             //extrae datos personales
             $con = selectEmployeeData($conexion, $credentials);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
-            $user_info = buildEmployee($fila);
+            $user_info = buildEmployee($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
             $_SESSION['user'] =  json_encode($user_info);
             return $user_info;
         }
@@ -82,15 +85,15 @@ include 'classes.php';
             echo 'error desconocido';
         }
     }
-    function buildEmployee($data)
+    function buildEmployee($dni, $name, $surname1, $surname2, $tipo, $id)
     {
         $user = new user;
-        $user->dni = $data['dni'];
-        $user->name = $data['nombre'];
-        $user->surname1 = $data['apellido1'];
-        $user->surname2 = $data['apellido2'];
-        $user->tipo = $data['tipo'];
-        $user->id = $data['id'];
+        $user->dni = $dni;
+        $user->name = $name;
+        $user->surname1 = $surname1;
+        $user->surname2 = $surname2;
+        $user->tipo = $tipo;
+        $user->id = $id;
         return $user;
     }
     function getEmployeeById()
@@ -147,13 +150,13 @@ include 'classes.php';
             }
             $con3 = getEmployee($conexion, $fila['emp_crea']);
             $emp1 = $con3->fetch_array(MYSQLI_ASSOC);
-            $owner = buildEmployee($emp1);
+            $owner = buildEmployee($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $emp1['id']);
 
 
             if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
                 $con3 = getEmployee($conexion, $fila['tec_res']);
                 $emp2 = $con3->fetch_array(MYSQLI_ASSOC);
-                $tec = buildEmployee($emp2);
+                $tec = buildEmployee($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $emp2['id']);
             }
 
             $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
@@ -174,11 +177,25 @@ include 'classes.php';
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
         {
-            $employee = buildEmployee($fila);
+            $employee = buildEmployee($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
             $employees[$employee_count] = $employee;
             $employee_count++;
         }
         return $employees;
+    }
+    function addEmployee()
+    {
+        $conexion = connection();
+        $json = file_get_contents('php://input');
+        $obj = json_decode($json);
+        $credentials = new credentials($obj->username, $obj->password);
+
+        insertEmployee($conexion, buildEmployee($obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, null));
+        $con = getEmployeeByUsername($conexion, $obj->dni);
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        $user = buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
+        insertCredentials($conexion, $credentials, $user->id);
+        show($user);
     }
     function show($new_array)
     {
