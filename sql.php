@@ -140,11 +140,9 @@
     }
     function selectEmployee2($conexion, $user)
     {
-        //$id_emp = $_GET['id_emp'];
-        //$dni = $_GET['dni'];
 		return $conexion->query("SELECT *
 		FROM Empleados
-		WHERE id=$user->id AND dni='$user->dni'");
+		WHERE dni='$user->dni'");
     }
     function selectEmployeeData($conexion, $credentials)
     {

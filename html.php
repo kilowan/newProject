@@ -553,7 +553,7 @@
             $nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
             $response = $response.'
             <br />'.headerData('Editar empleado').'
-            <form action="funciones.php" method="post">
+            <form action="veremp.php" method="post">
                 <input type="hidden" name="id_emp" value="'.$id_emp.'" />
                 <input type="hidden" name="funcion" value="Actualizar_empleado" />
                 <table>
@@ -748,7 +748,7 @@
         $permissions = permissions($user);
         if (in_array(19, $permissions)) {
             $response = $response.'
-            <form class="nuevoemp" action="functions.php" method="post" id="formulario">
+            <form class="nuevoemp" action="veremp.php" method="post" id="formulario">
                 <input type="hidden" name="funcion" value="Crear_empleado" />
                 <h1>Hoja del nuevo empleado:</h1><br />
                 <label>DNI:</label>
@@ -771,8 +771,7 @@
                         <option value="Temporal">Uno temporal</option>
                         <option value="Otro">Otro tipo aún no definido</option>
                     </select>
-                </p>
-                <input type="hidden" name="user" id="user" /><br />
+                </p><br />
                 <input type="Submit"id="Submit />
             </form><br/>';
         }

@@ -17,16 +17,10 @@ if (isset($_SESSION['loggedin']))
 	{
 		$funcion = $_POST['funcion'];
 	}
-	else if (isset($_SESSION['funcion']))
+	else
 	{
 		$funcion = $_SESSION['funcion'];
 		$SESSION = null;
-	}
-	else {
-
-		$json = file_get_contents('php://input');
-		$obj = json_decode($json);
-		$funcion = $obj->funcion;
 	}
 	if (!isset($_SESSION['mensaje']))
 	{

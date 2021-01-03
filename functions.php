@@ -235,7 +235,7 @@ include 'html.php';
                 updateNotes($conexion, $user);
                 break;
             case 'Crear_empleado':
-                buildEmployee($conexion);
+                buildEmployee($conexion, $user);
                 break;
             case 'insertparte':
                 updateParte($conexion, $user);
@@ -257,6 +257,9 @@ include 'html.php';
                 break;
             case 'Login':
                 login();
+                break;
+            case 'Actualizar_empleado':
+                Actualizar_empleado($conexion);
                 break;
             default:
                 break;
@@ -280,21 +283,21 @@ include 'html.php';
 		$_SESSION['start'] = time();
 		$_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
     }
-    function buildEmployee($conexion)
+    function buildEmployee($conexion, $user)
     {
         $permissions = permissions($user);
         if (in_array(19, $permissions)) {
-            $user = new user();
-            $user->dni = $_POST['dni'];
-            $user->name = $_POST['nombre'];
-            $user->surname1 = $_POST['apellido1'];
-            $user->surname2 = $_POST['apellido2'];
-            $_POST['user'] = json_encode($user);
-            $user->tipo = $_POST['tipo'];
+            $user2 = new user();
+            $user2->dni = $_POST['dni'];
+            $user2->name = $_POST['nombre'];
+            $user2->surname1 = $_POST['apellido1'];
+            $user2->surname2 = $_POST['apellido2'];
+            //$_POST['user'] = json_encode($user);
+            $user2->tipo = $_POST['tipo'];
             $credentials = new credentials($_POST['dni'], $_POST['pass']);
-            $_POST['credentials'] = json_encode($credentials);
-            insertEmployee($conexion, $user);
-            $con = selectEmployee2($conexion, $user);
+            //$_POST['credentials'] = json_encode($credentials);
+            insertEmployee($conexion, $user2);
+            $con = selectEmployee2($conexion, $user2);
             $data = $con->fetch_array(MYSQLI_ASSOC);
             $id = $data['id'];
             insertCredentials($conexion, $credentials, $id);
@@ -410,5 +413,25 @@ include 'html.php';
 		}
 		session_destroy();
 		header("Location: login.php");
+    }
+    function Actualizar_empleado($conexion)
+    {
+        $dni = $_POST['dni'];
+        $nombre = $_POST['nombre'];
+        $apellido1 = $_POST['apellido1'];
+        $apellido2 = $_POST['apellido2'];
+        $tipo = $_POST['tipo'];
+        $con = getEmployeeByUsername($conexion, $dni);
+        $fila = $con->fetch_array(MYSQLI_ASSOC);
+        //$user = getEmployeeData($fila);
+        $user->name = $_POST['nombre'];
+        $user->surname1 = $_POST['apellido1'];
+        $user->surname2 = $_POST['apellido2'];
+        $user->tipo = $_POST['tipo'];
+        $user->dni = $_POST['dni'];
+        $user->id = $fila['id'];
+        updateEmployee($conexion, $user);
+        $_SESSION['funcion'] = 'Lista';
+        //header('Location: veremp.php');
     }
 ?>
