@@ -226,6 +226,10 @@
     {
         $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', MD5('$credentials->password'), $id)");
     }
+    function insertCredentials2($conexion, $credentials, $id)
+    {
+        $conexion->query("UPDATE credentials SET username='$credentials->username', password=MD5('$credentials->password') WHERE employee=$id");
+    }
     function insertNote($id_part, $user, $inf_part)
     {
         $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
@@ -274,8 +278,12 @@
     }
     function updateEmployee($conexion, $user)
     {
-        $conexion->query("UPDATE Empleados SET dni = '$user->dni', nombre = '$user->name', apellido1 = '$user->surname1', apellido2 = '$user->surname2', tipo = '$user->tipo' 
+        $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
         WHERE id = $user->id");
+    }
+    function insertEmployee2($conexion, $user)
+    {
+        $conexion->query("UPDATE empleados SET nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', borrado=0 WHERE id=$user->id");
     }
     function selectIncidences($conexion)
     {

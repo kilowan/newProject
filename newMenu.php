@@ -53,6 +53,9 @@ include 'classes.php';
         case 'addEmployee':
             addEmployee();
             break;
+        case 'removeEmployee':
+            removeEmployee();
+            break;
         default:
             break;
     }
@@ -190,11 +193,39 @@ include 'classes.php';
         $obj = json_decode($json);
         $credentials = new credentials($obj->username, $obj->password);
 
-        insertEmployee($conexion, buildEmployee($obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, null));
         $con = getEmployeeByUsername($conexion, $obj->dni);
+        if ($data = $con->num_rows >0) 
+        {
+            //update
+            $user = getUserData($conexion, $obj->dni);
+            insertEmployee2($conexion, $user);
+            insertCredentials2($conexion, $credentials, $user->id);
+        } 
+        else 
+        {
+            //insert
+            $usertmp = buildEmployee($obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, null);
+            insertEmployee($conexion, $usertmp);
+            $user = getUserData($conexion, $obj->dni);
+            insertCredentials($conexion, $credentials, $user->id);
+        }
+
+        show($user);
+    }
+    function getUserData($conexion, $dni)
+    {
+        $con = getEmployeeByUsername($conexion, $dni);
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        return buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
+    }
+    function removeEmployee()
+    {
+        $id = $_GET['id'];
+        $conexion = connection();
+        $con = getEmployee($conexion, $id);
         $data = $con->fetch_array(MYSQLI_ASSOC);
         $user = buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
-        insertCredentials($conexion, $credentials, $user->id);
+        deleteEmployee($conexion, $user);
         show($user);
     }
     function show($new_array)
