@@ -108,13 +108,7 @@ include 'html.php';
                 $dni = $_GET['dni'];
                 $con = selectEmployee($conexion);
                 $result = $con->fetch_array(MYSQLI_ASSOC);
-                $userA = new user();
-                $userA->tipo = $result['tipo'];
-                $userA->name = $result['nombre'];
-                $userA->surname1 = $result['apellido1'];
-                $userA->surname2 = $result['apellido2'];
-                $userA->dni = $dni;
-                $userA->id = $id;
+                $userA = getUser($dni, $result['nombre'], $result['apellido1'], $result['apellido2'], $result['tipo'], $id);
                 $response = $response.personalData($userA);
                 $response = $response.showPartes($conexion, $userA);
                 $response = $response.showStadistics($conexion, $userA);
@@ -267,26 +261,7 @@ include 'html.php';
     {
         $permissions = permissions($user);
         if (in_array(19, $permissions)) {
-            //datos
-            $credentials = new credentials($_POST['username'], $_POST['pass']);
-            $_POST['credentials'] = json_encode($credentials);
-            $con = getEmployeeByUsername($conexion, $_POST['dni']);
-            if ($data = $con->num_rows >0) 
-            {
-                //update
-                $olduser = getUserData($conexion, $_POST['dni']);
-                $user2 = getUser($_POST['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['type'], $olduser->id);
-                insertEmployee2($conexion, $user2);
-                insertCredentials2($conexion, $credentials, $user2->id);
-            }
-            else 
-            {
-                //insert
-                $usertmp = buildEmployee($obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, null);
-                insertEmployee($conexion, $usertmp);
-                $user2 = getUserData($conexion, $obj->dni);
-                insertCredentials($conexion, $credentials, $user2->id);
-            }
+            $user = makeEmployee($conexion, $_POST['username'], $_POST['pass'], $_POST['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['type']);
             $_SESSION['funcion'] = 'Lista';
         }
     }
@@ -433,5 +408,27 @@ include 'html.php';
         updateEmployee($conexion, $user);
         $_SESSION['funcion'] = 'Lista';
         //header('Location: veremp.php');
+    }
+    function makeEmployee($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type)
+    {
+        $credentials = new credentials($username, $password);
+        $con = getEmployeeByUsername($conexion, $dni);
+        if ($data = $con->num_rows >0) 
+        {
+            //update
+            $olduser = getUserData($conexion, $dni);
+            $user = buildEmployee($dni, $name, $surname1, $surname2, $type, $olduser->id);
+            insertEmployee2($conexion, $user);
+            insertCredentials2($conexion, $credentials, $olduser->id);
+        } 
+        else 
+        {
+            //insert
+            $usertmp = buildEmployee($dni, $name, $surname1, $surname2, $type, null);
+            insertEmployee($conexion, $usertmp);
+            $user = getUserData($conexion, $dni);
+            insertCredentials($conexion, $credentials, $user->id);
+        }
+        return $user;
     }
 ?>

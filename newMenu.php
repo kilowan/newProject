@@ -191,26 +191,30 @@ include 'classes.php';
         $conexion = connection();
         $json = file_get_contents('php://input');
         $obj = json_decode($json);
-        $credentials = new credentials($obj->username, $obj->password);
-
-        $con = getEmployeeByUsername($conexion, $obj->dni);
+        $user = makeEmployee($conexion, $obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type);
+        show($user);
+    }
+    function makeEmployee($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type)
+    {
+        $credentials = new credentials($username, $password);
+        $con = getEmployeeByUsername($conexion, $dni);
         if ($data = $con->num_rows >0) 
         {
             //update
-            $user = getUserData($conexion, $obj->dni);
+            $olduser = getUserData($conexion, $dni);
+            $user = buildEmployee($dni, $name, $surname1, $surname2, $type, $olduser->id);
             insertEmployee2($conexion, $user);
-            insertCredentials2($conexion, $credentials, $user->id);
+            insertCredentials2($conexion, $credentials, $olduser->id);
         } 
         else 
         {
             //insert
-            $usertmp = buildEmployee($obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, null);
+            $usertmp = buildEmployee($dni, $name, $surname1, $surname2, $type, null);
             insertEmployee($conexion, $usertmp);
-            $user = getUserData($conexion, $obj->dni);
+            $user = getUserData($conexion, $dni);
             insertCredentials($conexion, $credentials, $user->id);
         }
-
-        show($user);
+        return $user;
     }
     function getUserData($conexion, $dni)
     {
