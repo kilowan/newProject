@@ -108,17 +108,6 @@ include 'html.php';
         }
         return $nums;
     }
-    function getEmployeeData($fila)
-    {
-        $user = new user;
-        $user->dni = $fila['dni'];
-        $user->name = $fila['nombre'];
-        $user->surname1 = $fila['apellido1'];
-        $user->surname2 = $fila['apellido2'];
-        $user->tipo = $fila['tipo'];
-        $user->id = $fila['id'];
-        return $user;
-    }
     function updateNotes($conexion, $user)
     {
         $id_part = $_POST['id_part'];
@@ -247,7 +236,7 @@ include 'html.php';
                 buildParte($conexion);
                 break;
             case 'Borrar_empleado':
-                deleteEmpleado($conexion, $user);
+                deleteEmpleado($conexion);
                 break;
             case 'Editar_empleado':
                 updateEmpleado($conexion);
@@ -283,26 +272,49 @@ include 'html.php';
 		$_SESSION['start'] = time();
 		$_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
     }
+    function getUserData($conexion, $dni)
+    {
+        $con = getEmployeeByUsername($conexion, $dni);
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        return getUser($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
+    }
     function buildEmployee($conexion, $user)
     {
         $permissions = permissions($user);
         if (in_array(19, $permissions)) {
-            $user2 = new user();
-            $user2->dni = $_POST['dni'];
-            $user2->name = $_POST['nombre'];
-            $user2->surname1 = $_POST['apellido1'];
-            $user2->surname2 = $_POST['apellido2'];
-            //$_POST['user'] = json_encode($user);
-            $user2->tipo = $_POST['tipo'];
-            $credentials = new credentials($_POST['dni'], $_POST['pass']);
-            //$_POST['credentials'] = json_encode($credentials);
-            insertEmployee($conexion, $user2);
-            $con = selectEmployee2($conexion, $user2);
-            $data = $con->fetch_array(MYSQLI_ASSOC);
-            $id = $data['id'];
-            insertCredentials($conexion, $credentials, $id);
+            //datos
+            $credentials = new credentials($_POST['username'], $_POST['pass']);
+            $_POST['credentials'] = json_encode($credentials);
+            $con = getEmployeeByUsername($conexion, $_POST['dni']);
+            if ($data = $con->num_rows >0) 
+            {
+                //update
+                $olduser = getUserData($conexion, $_POST['dni']);
+                $user2 = getUser($_POST['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['type'], $olduser->id);
+                insertEmployee2($conexion, $user2);
+                insertCredentials2($conexion, $credentials, $user2->id);
+            }
+            else 
+            {
+                //insert
+                $usertmp = buildEmployee($obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, null);
+                insertEmployee($conexion, $usertmp);
+                $user2 = getUserData($conexion, $obj->dni);
+                insertCredentials($conexion, $credentials, $user2->id);
+            }
             $_SESSION['funcion'] = 'Lista';
         }
+    }
+    function getUser($dni, $name, $surname1, $surname2, $type, $id=null)
+    {
+        $user = new user();
+        $user->dni = $dni;
+        $user->name = $name;
+        $user->surname1 = $surname1;
+        $user->surname2 = $surname2;
+        $user->tipo = $type;
+        $user->id = $id;
+        return $user;
     }
     function closeParte($conexion, $user)
     {
@@ -350,9 +362,12 @@ include 'html.php';
 		}
 		$_SESSION['funcion'] = 'Partes';
     }
-    function deleteEmpleado($conexion, $user)
+    function deleteEmpleado($conexion)
     {
         $id_emp = $_GET['id_emp'];
+        $con = getEmployee($conexion, $id_emp);
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        $user = getUser($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
         deleteEmployee($conexion, $user);
         $_SESSION['funcion'] = 'Lista';
     }
@@ -390,7 +405,7 @@ include 'html.php';
                 $con = selectEmployeeData($conexion, $credentials);
                 //extrae datos personales
                 $fila = $con->fetch_array(MYSQLI_ASSOC);
-                $user_info = getEmployeeData($fila);
+                $user_info = getUser($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
                 $_SESSION['user'] =  json_encode($user_info);
                 header('Location: menu.php');
             }
@@ -423,7 +438,7 @@ include 'html.php';
         $tipo = $_POST['tipo'];
         $con = getEmployeeByUsername($conexion, $dni);
         $fila = $con->fetch_array(MYSQLI_ASSOC);
-        //$user = getEmployeeData($fila);
+        //$user = getUser($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id_emp']);
         $user->name = $_POST['nombre'];
         $user->surname1 = $_POST['apellido1'];
         $user->surname2 = $_POST['apellido2'];

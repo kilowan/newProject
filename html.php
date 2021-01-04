@@ -716,7 +716,7 @@
                     </tr>';
                 while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
                 {
-                    $user = getEmployeeData($fila);
+                    $user = getUser($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
 
                     array_push($users, $user);
                     //insercion partes (html) 
@@ -728,7 +728,7 @@
                         <td>'.$fila['apellido1'].'</td>
                         <td>'.$fila['apellido2'].'</td>
                         <td>'.$fila['tipo'].'</td>
-                        <td><a href="funciones.php?id_emp='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
+                        <td><a href="veremp.php?id_emp='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
                         <td><a href="veremp.php?funcion=Editar_empleado&id_emp='.$fila['id'].'&dni='.$fila['dni'].'">Editar</a></td>
                     </tr>';
                 }
@@ -759,6 +759,8 @@
                 <input type="text" name="apellido1" required /><br />
                 <label>Segundo Apellido:</label>
                 <input type="text" name="apellido2" /><br />
+                <label>Username:</label>
+                <input type="username" name="username" required /><br />
                 <label>Contraseña:</label>
                 <input type="password" name="pass" required /><br />
                 <p> ¿Que tipo de empleado es?:</p>
