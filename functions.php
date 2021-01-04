@@ -2,74 +2,59 @@
 include 'classes.php';
 include 'sql.php';
 include 'html.php';
-    function tiempo($n, $i)
-	{
-		if($i == 0 && $n == 86400)
-		{
-			$_SESSION['time'] = "1 día";
-		}
-		elseif($i == 0 && $n >= 86400 && $n <= 86460)
-		{
-			$segundos = $n%60;
-			$_SESSION['time'] = "1 día y $segundos segundo(s)";
-		}
-		elseif($i == 0 && $n >= 90000 && $n <= 90060)
-		{
-			$segundos=$n%60;
-			$_SESSION['time'] = "1 día, 1 hora y $segundos segundo(s)";
-		}
-		elseif($i == 0 && $n == 3600)
-		{
-			$_SESSION['time'] = "1 hora";
-		}	
-		elseif($i == 0 && $n >= 3600 && $n <= 3660)
-		{
-			$segundos = $n%60;
-			$_SESSION['time'] = "1 hora y $segundos segundo(s)";
-		}
-		elseif($i == 0 && $n <= 60)
-		{
-			$_SESSION['time'] = "$n segundos";
-		}
-		elseif($i == 0 && $n>60)
-		{
-			$segundos = $n%60;
-			$n = intdiv($n,60);
-			$i++;
-		}
-		if($i == 1 && $n > 60)
-		{
-			$minutos=$n%60;
-			$n=intdiv($n,60);
-			$i++;	
-		}
-		elseif($i==1 && $n<=60)
-		{
-			$_SESSION['time']="$n minuto(s) y $segundos segundo(s)";
-		}
-		if($i == 2 && $n>24)
-		{
-			$horas = $n%24;
-			$n = intdiv($n,24);
-			$i++;
-		}
-		elseif($i == 2 && $n<24)
-		{
-			$_SESSION['time'] = "$n hora(s), $minutos minuto(s) y $segundos segundo(s)";
-		}
-		if($i == 3 && $n>365)
-		{
-			$dias = $n%365;
-			$n = intdiv($n,365);				
-			$_SESSION['time'] = "$n año(s), $dias día(s), $horas hora(s), $minutos minuto(s) y $segundos segundo(s)";
-			$i++;
-		}
-		elseif($i == 3 && $n <= 365)
-		{
-			$_SESSION['time'] = "$n día(s), $horas hora(s), $minutos minuto(s) y $segundos segundo(s)";
-		}
-		return $_SESSION['time'];
-	}
+    define('OneMonth', 2592000);
+    define('OneWeek', 604800);
+    define('OneDay', 86400);
+    define('OneHour', 3600);
+    define('OneMinute', 60);
+    function SecondsToTime($seconds)
+    { 
+        $num_units = setNumUnits($seconds);
+        $time_descr = array( 
+            "meses" => floor($seconds / OneMonth), 
+            "semanas" => floor(($seconds%OneMonth) / OneWeek), 
+            "días" => floor(($seconds%OneWeek) / OneDay), 
+            "horas" => floor(($seconds%OneDay) / OneHour), 
+            "minutos" => floor(($seconds%OneHour) / OneMinute), 
+            "segundos" => floor($seconds%OneMinute), 
+        );
+        $res = ""; $counter = 0;
+        foreach ($time_descr as $k => $v) 
+        { 
+            if ($v) 
+            { 
+                $res.=$v." ".$k; $counter++; 
+                if($counter>=$num_units) break; 
+                elseif($counter) 
+                $res.=", "; 
+            } 
+        }
+        $_SESSION['time'] = $res;
+        return $_SESSION['time'];
+    }
+    function setNumUnits($seconds)
+    {
+        switch ($seconds) {
+            case $seconds>= OneMonth:
+                return 6;
+
+            case $seconds>= OneWeek:
+                return 5;
+
+            case $seconds>= OneDay:
+                return 4;
+
+            case $seconds>= OneHour:
+                return 3;
+
+            case $seconds>= OneMinute:
+                return 2;
+
+            default:
+                return 1;
+                break;
+        }
+    }
     function check($input)
     {
         if($input == "")
