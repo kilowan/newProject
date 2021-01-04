@@ -603,7 +603,7 @@
                     //insercion partes (html)
                     $response = $response.'
                     <tr>
-                        <td>'.tiempo($fila3['tiempo_medio'], 0).'</td>
+                        <td>'.SecondsToTime($fila3['tiempo_medio']).'</td>
                         <td>'.$fila3['nom_tec'].'</td>
                     </tr>';
                 }
@@ -660,7 +660,7 @@
                         <th>Partes resueltos</th>
                     </tr>
                     <tr>
-                        <td>'.tiempo($fila2['tiempo_medio'], 0).'</td>
+                        <td>'.SecondsToTime($fila2['tiempo_medio']).'</td>
                         <td>'.$fila2['cantidad_partes'].'</td>
                     </tr>
                 </table><br />';
