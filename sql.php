@@ -1,5 +1,5 @@
 <?php
-    function checkCredentialsData($credentials, $conexion)
+    function checkCredentialsSql($credentials, $conexion)
     {
         return $conexion->query("SELECT C.*
 		FROM credentials C INNER JOIN Empleados E
@@ -7,7 +7,7 @@
 		WHERE E.borrado=0 AND C.username='$credentials->username' AND C.password='$credentials->password'");
     }
 
-    function selectNewPartes($conexion, $user)
+    function selectNewPartesSql($conexion, $user)
 	{
 		//Partes sin atender propios
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza
@@ -15,7 +15,7 @@
 		ON E.id=P.emp_crea 
 		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.state=1");
 	}
-	function selectOwnPartes($conexion, $user)
+	function selectOwnPartesSql($conexion, $user)
 	{
 		//Partes atendidos propios
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, P.nom_tec
@@ -23,7 +23,7 @@
 		ON E.id=P.emp_crea 
 		WHERE E.dni='$user->dni' AND E.id=$user->id AND P.state=2");
 	}
-	function selectOtherPartes($conexion, $user)
+	function selectOtherPartesSql($conexion, $user)
 	{
 		//Partes atendidos no propios
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, P.nom_tec
@@ -31,7 +31,7 @@
 		ON E.id=P.tec_res
 		WHERE E.dni='$user->dni' AND P.state=2");
 	}
-	function selectNewOtherPartes($conexion, $user)
+	function selectNewOtherPartesSql($conexion, $user)
 	{
 		//Partes sin atender no propios
 		return $conexion->query("SELECT P.id_part, P.fecha_hora_creacion, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2
@@ -39,7 +39,7 @@
         ON E.id=P.emp_crea
 		WHERE E.dni!='$user->dni' AND P.state=1");
 	}
-	function countOldPartes($conexion, $user)
+	function countOldPartesSql($conexion, $user)
 	{
 		//Partes cerrados propios
 		$con = $conexion->query("SELECT *
@@ -48,14 +48,14 @@
         return $con->num_rows;
         
     }
-    function countPiezas($conexion)
+    function countPiezasSql($conexion)
     {
         return $conexion->query("SELECT pieza, COUNT(pieza) AS 'numeroP' 
         FROM parte
-        WHERE resuelto=1
+        WHERE state IN (3, 4)
         GROUP BY pieza");
     }
-	function selectOldOtherPartes($conexion, $user)
+	function selectOldOtherPartesSql($conexion, $user)
 	{
 		//Partes cerrados	
 		return $conexion->query("SELECT T.tiempo, P.id_part, P.inf_part, P.fecha_hora_creacion, P.fecha_resolucion, P.hora_resolucion, P.emp_crea, P.pieza
@@ -65,72 +65,75 @@
 		ON T.id_part=P.id_part
 		WHERE P.tec_res!=P.emp_crea and E.id=$user->id and E.dni='$user->dni' AND P.state=3");
 	}
-	function selectOldPartes($conexion, $user)
+	function selectOldPartesSql($conexion, $user)
 	{
 		return $conexion->query("SELECT T.tiempo, P.id_part, P.nom_tec, P.inf_part, P.pieza, P.fecha_hora_creacion
 		FROM Empleados E INNER JOIN parte P
 		ON E.id=P.emp_crea
 		INNER JOIN tiempo_resolucion T
 		ON T.id_part=P.id_part
-		WHERE E.id=$user->id AND E.dni='$user->dni' AND P.oculto=0 AND P.state=3");
+		WHERE E.id=$user->id AND E.dni='$user->dni' AND P.state=3");
     }
-	function countHiddenPartes($conexion, $user)
+	function countHiddenPartesSql($conexion, $user)
 	{
 		$con = $conexion->query("SELECT COUNT(*) AS Partes
 		FROM parte 
-        WHERE oculto=1 AND emp_crea = $user->id");
+        WHERE state=4 AND emp_crea = $user->id");
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
     }
-	function selectHiddenPartes($conexion, $user)
+	function selectHiddenPartesSql($conexion, $user)
 	{
 		return $conexion->query("SELECT P.id_part, P.inf_part, P.pieza, E.nombre, E.apellido1, E.apellido2, E.id, P.fecha_resolucion, P.hora_resolucion, P.fecha_hora_creacion, nom_tec
 		FROM parte P INNER JOIN Empleados E
 		ON P.emp_crea=E.id 
-		WHERE oculto='1' AND E.dni='$user->dni' 
+		WHERE state=4 AND E.dni='$user->dni' 
 		GROUP BY P.id_part, P.inf_part, E.nombre, E.id 
 		ORDER BY P.id_part ASC");
 	}
-	function selectParte($conexion, $id_part)
+	function selectParteSql($conexion, $id_part)
 	{
 		return $conexion->query("SELECT *
 		FROM parte
-		WHERE id_part=$id_part AND tec_res is null");
+		WHERE id_part=$id_part AND state=1");
 	}
-	function selectFullDataParte($conexion, $id_part)
+	function selectFullDataParteSql($conexion, $id_part)
 	{
 		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.inf_part, P.pieza, P.fecha_hora_creacion 
 		FROM Empleados E INNER JOIN parte P 
 		ON E.id=P.emp_crea 
 		WHERE id_part=$id_part");
     }
-	function getEmployeeByUsername($conexion, $dni)
+    //new
+	function getEmployeeByUsernameSql($conexion, $dni)
 	{
         return $conexion->query("SELECT * FROM Empleados WHERE dni = '$dni'");
     }
-    function getEmployee($conexion, $id)
+    //new
+    function getEmployeeSql($conexion, $id)
 	{
         return $conexion->query("SELECT * FROM Empleados WHERE id = $id");
     }
-    function getAllEmployeeData($conexion)
+    //new
+    function getAllEmployeeDataSql($conexion)
     {
         return $conexion->query("SELECT * FROM Empleados");
     }
-	function selectEmpleadoNoAdmin($conexion)
+	function selectEmpleadoNoAdminSql($conexion)
 	{
 		$id_emp = $_GET['id_emp'];
 		return $conexion->query("SELECT *
 		FROM Empleados
 		WHERE tipo NOT IN ('Admin') AND id=$id_emp");
 	}
-	function selectEmpleados($conexion)
+	function selectEmpleadosSql($conexion)
 	{
 		//Lista de empleados no administradores.
 		return $conexion->query("SELECT id, dni, nombre, apellido1, apellido2, tipo
 		FROM Empleados
 		WHERE tipo NOT IN ('Admin') AND borrado=0");
     }
-    function selectEmployee($conexion)
+    function selectEmployeeSql($conexion)
     {
         $id_emp = $_GET['id_emp'];
         $dni = $_GET['dni'];
@@ -138,19 +141,14 @@
 		FROM Empleados
 		WHERE id=$id_emp AND dni='$dni'");
     }
-    function selectEmployee2($conexion, $user)
-    {
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE dni='$user->dni'");
-    }
-    function selectEmployeeData($conexion, $credentials)
+    //new
+    function selectEmployeeDataSql($conexion, $credentials)
     {
         return $conexion->query("SELECT *
 		FROM Empleados
 		WHERE id='$credentials->employee' OR dni='$credentials->username'");
     }
-	function tiempoMedio($conexion, $user)
+	function tiempoMedioSql($conexion, $user)
 	{
 		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec
 		FROM Tiempo_resolucion
@@ -158,21 +156,21 @@
 		GROUP BY nom_tec
 		ORDER BY ROUND(AVG(Tiempo),0) DESC");
     }
-    function tiempoMedioAdmin($conexion)
+    function tiempoMedioAdminSql($conexion)
     {
         return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
         GROUP BY nom_tec");
     }
-    function countOwnPartes($conexion, $dni)
+    function countOwnPartesSql($conexion, $dni)
     {
         //partes no ocultos propios (empleado)
         $con = $conexion->query("SELECT COUNT(*) AS Partes
         FROM parte 
-        WHERE oculto=0 AND emp_crea = (SELECT id FROM Empleados WHERE dni = '$dni')");
+        WHERE state=3 AND emp_crea = (SELECT id FROM Empleados WHERE dni = '$dni')");
         $result = $con->fetch_array(MYSQLI_ASSOC);
         return $result['Partes'];
     }
-    function countNewPartes($conexion)
+    function countNewPartesSql($conexion)
     {
         //Partes sin atender (tecnico)
         $con = $conexion->query("SELECT *
@@ -181,109 +179,116 @@
         return $con->num_rows;
     }
     //Partes de un técnico
-    function countPartes($conexion, $id_emp)
+    function countPartesSql($conexion, $id_emp)
     {
         $con = $conexion->query("SELECT *
         FROM parte 
         WHERE tec_res=$id_emp");
         return $con->num_rows;
     }
-    function selectIncidence($conexion, $id)
+    function selectIncidenceSql($conexion, $id)
     {
         $con = $conexion->query("SELECT * 
         FROM parte
         WHERE id_part=$id");
         return $con->fetch_array(MYSQLI_ASSOC);
     }
-    function hideParte($conexion, $user, $id)
+    function hideParteSql($conexion, $user, $id)
     {
-        return $conexion->query("UPDATE parte SET oculto=1 WHERE id_part=$id AND emp_crea='$user->id' AND state=3");
+        return $conexion->query("UPDATE parte SET state=4 WHERE id_part=$id AND emp_crea='$user->id' AND state=3");
     }
-    function showHiddenParte($conexion, $id_part)
+    function showHiddenParteSql($conexion, $id_part)
     {
-        return $conexion->query("UPDATE parte SET oculto=0 WHERE id_part=$id_part");
+        return $conexion->query("UPDATE parte SET state=3 WHERE id_part=$id_part");
     }
-    function deleteParte($conexion, $id_part, $user)
+    function deleteParteSql($conexion, $id_part, $user)
     {
         return $conexion->query("DELETE 
         FROM parte 
         WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
     }
-    function selectNotes($conexion, $id_part)
+    //new
+    function selectNotesSql($conexion, $id_part)
     {
         return $conexion->query("SELECT * 
         FROM notes
         WHERE incidence=$id_part");
     }
-    function insertEmployee($conexion, $user)
+    //new
+    function insertEmployeeSql($conexion, $user)
     {
         $conexion->query("INSERT INTO Empleados (dni, nombre, apellido1, apellido2, tipo)
         VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
     }
-    function insertCredentials($conexion, $credentials, $id)
+    //new
+    function insertCredentialsSql($conexion, $credentials, $id)
     {
         $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', MD5('$credentials->password'), $id)");
     }
-    function insertCredentials2($conexion, $credentials, $id)
+    //new
+    function insertCredentials2Sql($conexion, $credentials, $id)
     {
         $conexion->query("UPDATE credentials SET username='$credentials->username', password=MD5('$credentials->password') WHERE employee=$id");
     }
-    function insertNote($id_part, $user, $inf_part)
+    function insertNoteSql($id_part, $user, $inf_part)
     {
         $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
     }
-    function updateNoteList($conexion, $user, $id_part, $not_tec)
+    function updateNoteListSql($conexion, $user, $id_part, $not_tec)
     {
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, '$user->tipo', '$not_tec')");
     }
-    function updateParte1($conexion, $id_part, $user)
+    function updateParte1Sql($conexion, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
         $conexion->query("UPDATE parte  SET tec_res = $user->id, nom_tec='$nombre_tecnico', state=2
 		WHERE id_part = $id_part AND (tec_res=$user->id OR tec_res IS NULL) AND state IN (1, 2)");
     }
-    function updateparte2($conexion, $pieza, $id_part, $user)
+    function updateparte2Sql($conexion, $pieza, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
         $conexion->query("UPDATE parte SET pieza = '$pieza', nom_tec='$nombre_tecnico', tec_res = $user->id, state=2
 		WHERE id_part = $id_part AND (tec_res=$user->id OR tec_res IS NULL) AND state IN (1, 2)");
     }
-    function closeParte1($conexion, $id_part, $user)
+    function closeParte1Sql($conexion, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
         $con = $conexion->query("UPDATE parte SET nom_tec = '$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
 		WHERE id_part = $id_part and (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
     }
-    function closeParte2($conexion, $pieza, $id_part, $user)
+    function closeParte2Sql($conexion, $pieza, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
         $con = $conexion->query("UPDATE parte SET pieza='$pieza', nom_tec='$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
 		WHERE id_part = $id_part AND (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
     }
-    function insertParte1($conexion, $user, $descripcion, $pieza)
+    function insertParte1Sql($conexion, $user, $descripcion, $pieza)
     {
         $conexion->query("INSERT INTO parte (emp_crea, inf_part , pieza)
         VALUES ($user->id, '$descripcion', '$pieza')");
     }
-    function insertParte2($conexion, $user, $descripcion)
+    function insertParte2Sql($conexion, $user, $descripcion)
     {
         $conexion->query("INSERT INTO parte (emp_crea, inf_part)
         VALUES ($user->id, '$descripcion')");
     }
-    function deleteEmployee($conexion, $user)
+    //new
+    function deleteEmployeeSql($conexion, $user)
     {
         $conexion->query("UPDATE empleados SET borrado=1 WHERE id = $user->id");
     }
-    function updateEmployee($conexion, $user)
+    function updateEmployeeSql($conexion, $user)
     {
         $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
         WHERE id = $user->id");
     }
-    function insertEmployee2($conexion, $user)
+    //new
+    function insertEmployee2Sql($conexion, $user)
     {
         $conexion->query("UPDATE empleados SET nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', borrado=0 WHERE id=$user->id");
     }
-    function selectIncidences($conexion)
+    //new
+    function selectIncidencesSql($conexion)
     {
         return $conexion->query("SELECT * FROM parte");
     }

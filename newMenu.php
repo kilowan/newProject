@@ -1,6 +1,5 @@
 <?php
-include 'sql.php';
-include 'classes.php';
+include 'newFunctions.php';
     if(isset($_GET['funcion']))
     {
         $funcion = $_GET['funcion'];
@@ -11,47 +10,43 @@ include 'classes.php';
         $json = file_get_contents('php://input');
         $obj = json_decode($json);
         $funcion = $obj->funcion;
-        $conexion = connection();
+        $conexion = connectionFn();
     }
     
     switch ($funcion) {
         case 'getEmployeeById':
-            getEmployeeById();
+            showFn(getEmployeeById());
             break;
-        case 'getEmployeeByUsername':
-            $conexion = connection();
-            $username = $_GET['username'];
-            $con = getEmployeeByUsername($conexion, $username);
-            $data = $con->fetch_array(MYSQLI_ASSOC);
-            $user = buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
-            header('Content-Type: application/json');
-            echo json_encode($user);
-            exit();
+        case 'getEmployeeByDni':
+            showFn(getEmployeeByDni());
             break;
 
         case 'getAllincidences':
-            show(getIncidencesList());
+            showFn(getIncidencesListFn());
             break;
         case 'getOwnNewIncidences':
-            show(filter(getIncidencesList()));
+            showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getOwnIncidences':
-            show(filter(getIncidencesList()));
+            showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getOwnOldIncidences':
-            show(filter(getIncidencesList()));
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getOwnHiddenIncidences':
+            showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getNewIncidences':
-            show(filter(getIncidencesList()));
+            showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getOtherIncidences':
-            show(filter(getIncidencesList()));
+            showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getOtherOldIncidences':
-            show(filter(getIncidencesList()));
+            showFn(filterFn(getIncidencesListFn()));
             break;
         case 'addEmployee':
-            addEmployee();
+            addEmployeeFn();
             break;
         case 'removeEmployee':
             removeEmployee();
@@ -59,86 +54,28 @@ include 'classes.php';
         default:
             break;
     }
-    function connection()
-    {
-        $sql_data = new sql;
-        $sql_data->host_db = "localhost";
-        $sql_data->user_db = "Ad";
-        $sql_data->pass_db = "1234";
-        $sql_data->db_name = "Fabrica";
-        $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
-        $_SESSION['sql'] = json_encode($sql_data);
-        return $conexion;
-    }
-    function getEmployeeData($credentials)
-    {
-        $conexion = connection();
-        $con = checkCredentialsData($credentials, $conexion);
-        if ($con->num_rows > 0)
-        {
-            //extrae datos personales
-            $con = selectEmployeeData($conexion, $credentials);
-            $fila = $con->fetch_array(MYSQLI_ASSOC);
-            $user_info = buildEmployee($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
-            $_SESSION['user'] =  json_encode($user_info);
-            return $user_info;
-        }
-        else 
-        {
-            echo 'error desconocido';
-        }
-    }
-    function buildEmployee($dni, $name, $surname1, $surname2, $tipo, $id)
-    {
-        $user = new user;
-        $user->dni = $dni;
-        $user->name = $name;
-        $user->surname1 = $surname1;
-        $user->surname2 = $surname2;
-        $user->tipo = $tipo;
-        $user->id = $id;
-        return $user;
-    }
     function getEmployeeById()
     {
+        $conexion = connectionFn();
         $users = getEmpolyeeList();
         $new_array = array_filter($users, function($array) {
-            return ($array->id == $_GET['id_emp']);
+            return ($array->id == $_GET['id']);
         });
-        header('Content-Type: application/json');
-        echo json_encode(array_pop($new_array));
-        exit();
+        return array_pop($new_array);
     }
-    /*function getEmployeeByCredentials()
+    function getEmployeeByDni()
     {
-        //$json = file_get_contents('php://input');
-        //$obj = json_decode($json);
-        //$credentials = new credentials($obj->username, $obj->password);
-        //$_SESSION['credentials'] = json_encode($credentials);
+        $conexion = connectionFn();
         $users = getEmpolyeeList();
         $new_array = array_filter($users, function($array) {
-            $json = file_get_contents('php://input');
-            $obj = json_decode($json);
-            return ($array->dni == $obj->username);
+            return ($array->dni == $_GET['dni']);
         });
-        header('Content-Type: application/json');
-        echo json_encode(array_pop($new_array));
-        exit();
-        //$user = getEmployeeData($credentials);
-        /*if ($user != 'error desconocido') {
-            header('Content-Type: application/json');
-            echo json_encode($user);
-            exit();
-        }
-        else {
-            echo $user;
-            exit();
-        }
-    }*/
-    function getIncidencesList()
+        return array_pop($new_array);
+    }
+    function getIncidencesListFn()
     {
-        $conexion = connection();
-        $con = selectIncidences($conexion);
+        $conexion = connectionFn();
+        $con = selectIncidencesSql($conexion);
         $incidences = null;
         $incidence_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
@@ -146,20 +83,20 @@ include 'classes.php';
             
             $noteList = null;
             $count = 0;
-            $con2 = selectNotes($conexion, $fila['id_part']);
+            $con2 = selectNotesSql($conexion, $fila['id_part']);
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $noteList[$count] = $notes['noteStr'];
                 $count++;
             }
-            $con3 = getEmployee($conexion, $fila['emp_crea']);
+            $con3 = getEmployeeSql($conexion, $fila['emp_crea']);
             $emp1 = $con3->fetch_array(MYSQLI_ASSOC);
-            $owner = buildEmployee($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $emp1['id']);
+            $owner = getUserFn($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $emp1['id']);
 
 
             if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
-                $con3 = getEmployee($conexion, $fila['tec_res']);
+                $con3 = getEmployeeSql($conexion, $fila['tec_res']);
                 $emp2 = $con3->fetch_array(MYSQLI_ASSOC);
-                $tec = buildEmployee($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $emp2['id']);
+                $tec = getUserFn($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $emp2['id']);
             }
 
             $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
@@ -174,89 +111,38 @@ include 'classes.php';
     }
     function getEmpolyeeList()
     {
-        $conexion = connection();
-        $con = getAllEmployeeData($conexion);
+        $conexion = connectionFn();
+        $con = getAllEmployeeDataSql($conexion);
         $employees = null;
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
         {
-            $employee = buildEmployee($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
+            $employee = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
             $employees[$employee_count] = $employee;
             $employee_count++;
         }
         return $employees;
     }
-    function addEmployee()
-    {
-        $conexion = connection();
-        $json = file_get_contents('php://input');
-        $obj = json_decode($json);
-        $user = makeEmployee($conexion, $obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type);
-        show($user);
-    }
-    function makeEmployee($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type)
-    {
-        $credentials = new credentials($username, $password);
-        $con = getEmployeeByUsername($conexion, $dni);
-        if ($data = $con->num_rows >0) 
-        {
-            //update
-            $olduser = getUserData($conexion, $dni);
-            $user = buildEmployee($dni, $name, $surname1, $surname2, $type, $olduser->id);
-            insertEmployee2($conexion, $user);
-            insertCredentials2($conexion, $credentials, $olduser->id);
-        } 
-        else 
-        {
-            //insert
-            $usertmp = buildEmployee($dni, $name, $surname1, $surname2, $type, null);
-            insertEmployee($conexion, $usertmp);
-            $user = getUserData($conexion, $dni);
-            insertCredentials($conexion, $credentials, $user->id);
-        }
-        return $user;
-    }
-    function getUserData($conexion, $dni)
-    {
-        $con = getEmployeeByUsername($conexion, $dni);
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        return buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
-    }
     function removeEmployee()
     {
         $id = $_GET['id'];
-        $conexion = connection();
-        $con = getEmployee($conexion, $id);
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        $user = buildEmployee($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
-        deleteEmployee($conexion, $user);
-        show($user);
+        $conexion = connectionFn();
+        $user = getEmployeeById();
+        deleteEmployeeSql($conexion, $user);
+        showFn($user);
     }
-    function show($new_array)
+    function showFn($new_array)
     {
         header('Content-Type: application/json');
         echo json_encode($new_array);
         exit();
     }
-    function filter($incidences)
+    function addEmployeeFn()
     {
-        return array_filter($incidences, function($array) {
-            switch ($_SESSION['funcion']) {
-                case 'getOtherOldIncidences':
-                    return ($array->solver->dni == $_GET['dni'] && $array->state == 3);
-                case 'getOtherIncidences':
-                    return ($array->solver->dni == $_GET['dni'] && $array->state == 2);
-                case 'getNewIncidences':
-                    return ($array->state == 1);
-                case 'getOwnOldIncidences':
-                    return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
-                case 'getOwnIncidences':
-                    return ($array->owner->dni == $_GET['dni'] && $array->state == 2);
-                case 'getOwnNewIncidences':
-                    return ($array->owner->dni == $_GET['dni'] && $array->state == 1);                 
-                default:
-                    break;
-            }
-        });
+        $conexion = connectionFn();
+        $json = file_get_contents('php://input');
+        $obj = json_decode($json);
+        $user = makeEmployeeFn($conexion, $obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type);
+        showFn($user);
     }
 ?>
