@@ -119,6 +119,7 @@ include 'classes.php';
             $incidence->finishTime = $fila['hora_resolucion'];
             $incidence->finishDate = $fila['fecha_resolucion'];
             $incidence->state = $fila['state'];
+            $incidence->id = $fila['id_part'];
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -144,6 +145,15 @@ include 'classes.php';
         $users = getEmpolyeeListFn();
         $new_array = array_filter($users, function($array) {
             return ($array->id == $_GET['id']);
+        });
+        return array_pop($new_array);
+    }
+    function getIncidenceByIdFn()
+    {
+        $conexion = connectionFn();
+        $incidences = getIncidencesListFn();
+        $new_array = array_filter($incidences, function($array) {
+            return ($array->id == $_GET['id_part']);
         });
         return array_pop($new_array);
     }

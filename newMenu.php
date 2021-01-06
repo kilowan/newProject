@@ -45,6 +45,9 @@ include 'newFunctions.php';
         case 'getOtherOldIncidences':
             showFn(filterFn(getIncidencesListFn()));
             break;
+        case 'getIncidenceById':
+            showFn(getIncidenceByIdFn());
+            break;
         case 'addEmployee':
             $json = file_get_contents('php://input');
             $obj = json_decode($json);

@@ -41,6 +41,7 @@
         public string $piece = "";
 		public ?array $notes = null;
 		public int $state = 1;
+		public ?int $id = null;
 		
 		public function __construct($owner, $initDateTime, string $issueDesc, string $piece, ?array $notes)
 		{
