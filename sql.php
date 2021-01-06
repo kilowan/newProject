@@ -186,13 +186,6 @@
         WHERE tec_res=$id_emp");
         return $con->num_rows;
     }
-    function selectIncidenceSql($conexion, $id)
-    {
-        $con = $conexion->query("SELECT * 
-        FROM parte
-        WHERE id_part=$id");
-        return $con->fetch_array(MYSQLI_ASSOC);
-    }
     function hideParteSql($conexion, $user, $id)
     {
         return $conexion->query("UPDATE parte SET state=4 WHERE id_part=$id AND emp_crea='$user->id' AND state=3");
