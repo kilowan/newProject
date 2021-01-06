@@ -90,10 +90,10 @@
     {
         $permissions = permissionsFn($user);
         //State
-        //0: New
-        //1: Attended
-        //2: Closed
-        //3: Hidden
+        //1: New
+        //2: Attended
+        //3: Closed
+        //4: Hidden
         $data = "";
         if ($state == 0 && in_array(5, $permissions)&& $maker == $user->id) {
             $data = $data.'
@@ -104,16 +104,16 @@
                 <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Editar</a>
             </td>';
         }
-        else if ($state == 0 && (in_array(2, $permissions) || in_array(9, $permissions)) && $maker != $user->id) {
+        else if ($state == 1 && (in_array(2, $permissions) || in_array(9, $permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Atender_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Atender</a></td>';
         }
-        else if ($state == 1 && (in_array(4, $permissions) || in_array(10, $permissions)) && $maker != $user->id) {
+        else if ($state == 2 && (in_array(4, $permissions) || in_array(10, $permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Modificar</a></td>';
         }
-        else if ($state == 2 && in_array(22, $permissions)) {
+        else if ($state == 3 && in_array(22, $permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Ocultar_parte">Ocultar</a></td>';
         }
-        else if ($state == 3 && in_array(8, $permissions)) {
+        else if ($state == 4 && in_array(8, $permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Mostrar_parte">Mostrar</a></td>';
         }
         return $data;
@@ -178,7 +178,7 @@
         {
             $response = $response.'
             <tr>
-                <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state='.$state.'">'.$fila['id_part'].'</a></td>
+            <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state='.$state.'">'.$fila['id_part'].'</a></td>
                 <td>'.checkInputFn($fila['fecha_hora_creacion']).'</td>
                 <td>'.checkInputFn($fila['inf_part']).'</td>
                 <td>'.checkInputFn($fila['pieza']).'</td>
@@ -329,43 +329,65 @@
         }
         return $response;
     }
+    /*function getNotesView2($incidence)
+    {
+        $response = "";
+        //$con = selectNotesSql($conexion, $id_part);
+        if ($incidence->$notes != null  && $incidence->$notes.count() >0) {
+            $response = $response.'
+            <br /><table>
+                <tr>
+                    <th colspan="2">Notas del ténico</th>
+                </tr>
+            </table><br />
+            <table>
+                <tr>
+                    <th>Nota</th>
+                    <th>Fecha</th>
+                </tr>';
+                foreach ($incidence->$notes as $note) {
+                    $response = $response.'
+                    <tr>
+                        <td>'.$note.'</td>
+                    </tr>';
+                }
+            $response = $response.'</table><br />';
+        }
+        return $response;
+    }*/
     function showDetailParteView($conexion, $user, $id_part)
     {
         $id_part = $_GET['id_part'];
-		$state = $_GET['state'];
-		$fila = selectIncidenceSql($conexion, $id_part);
+        $incidence = getIncidenceByIdFn();
+        $state = $incidence->state;
         return '
         <br />'.headerDataView('Ver Parte').'
 		<table>
 			<tr>
 				<td>Nº parte</td>
-				<td>'.checkInputFn($fila['id_part']).'</td>
+				<td>'.checkInputFn($incidence->id).'</td>
 			</tr>
 			<tr>
 				<td>Empleado</td>
-				<td>'.checkInputFn($fila['emp_crea']).'</td>
+				<td>'.checkInputFn($incidence->owner->id).'</td>
             </tr>
             <tr>
 				<td>Información</td>
-				<td>'.checkInputFn($fila['inf_part']).'</td>
+				<td>'.checkInputFn($incidence->issueDesc).'</td>
             </tr>
 			<tr>
 				<td>Tecnico a cargo</td>
-				<td>'.checkInputFn($fila['tec_res']).'</td>
+				<td>'.checkInputFn($incidence->solver->id).'</td>
 			</tr>
 			<tr>
 				<td>Fecha de creación</td>
-				<td>'.checkInputFn($fila['fecha_hora_creacion']).'</td>
-			</tr>
-			<tr>
-				<td>Información</td>
-				<td>'.checkInputFn($fila['inf_part']).'</td>
+				<td>'.checkInputFn($incidence->initDateTime).'</td>
 			</tr>
 			<tr>
 				<td>Piezas afectadas</td>
-				<td>'.checkInputFn($fila['pieza']).'</td>
+				<td>'.checkInputFn($incidence->piece).'</td>
 			</tr>
-			<tr>'.buttonsView($id_part, $state, $user, $fila['emp_crea']).'</tr>
+			<tr>'.buttonsView($id_part, $state, $user, $incidence->owner->id).'</tr>
         </table>'.getNotesView($conexion, $id_part, $user);
     }
     function addParteView($user)
