@@ -87,4 +87,85 @@ include 'classes.php';
         $data = $con->fetch_array(MYSQLI_ASSOC);
         return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
     }
+    function getIncidencesListFn()
+    {
+        $conexion = connectionFn();
+        $con = selectIncidencesSql($conexion);
+        $incidences = null;
+        $incidence_count = 0;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
+            $tec = new user();
+            
+            $noteList = null;
+            $count = 0;
+            $con2 = selectNotesSql($conexion, $fila['id_part']);
+            while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
+                $noteList[$count] = $notes['noteStr'];
+                $count++;
+            }
+            $con3 = getEmployeeSql($conexion, $fila['emp_crea']);
+            $emp1 = $con3->fetch_array(MYSQLI_ASSOC);
+            $owner = getUserFn($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $emp1['id']);
+
+
+            if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
+                $con3 = getEmployeeSql($conexion, $fila['tec_res']);
+                $emp2 = $con3->fetch_array(MYSQLI_ASSOC);
+                $tec = getUserFn($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $emp2['id']);
+            }
+
+            $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
+            $incidence->solver = $tec;
+            $incidence->finishTime = $fila['hora_resolucion'];
+            $incidence->finishDate = $fila['fecha_resolucion'];
+            $incidence->state = $fila['state'];
+            $incidences[$incidence_count] = $incidence;
+            $incidence_count++;
+        }
+        return $incidences;
+    }
+    function getEmpolyeeListFn()
+    {
+        $conexion = connectionFn();
+        $con = getAllEmployeeDataSql($conexion);
+        $employees = null;
+        $employee_count = 0;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
+        {
+            $employee = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
+            $employees[$employee_count] = $employee;
+            $employee_count++;
+        }
+        return $employees;
+    }
+    function getEmployeeByIdFn()
+    {
+        $conexion = connectionFn();
+        $users = getEmpolyeeListFn();
+        $new_array = array_filter($users, function($array) {
+            return ($array->id == $_GET['id']);
+        });
+        return array_pop($new_array);
+    }
+    function getEmployeeByDniFn()
+    {
+        $conexion = connectionFn();
+        $users = getEmpolyeeListFn();
+        $new_array = array_filter($users, function($array) {
+            return ($array->dni == $_GET['dni']);
+        });
+        return array_pop($new_array);
+    }
+    function removeEmployeeFn()
+    {
+        $conexion = connectionFn();
+        $user = getEmployeeByIdFn();
+        deleteEmployeeSql($conexion, $user);
+        return $user;
+    }
+    function addEmployeeFn($username, $password, $dni, $name, $surname1, $surname2, $type)
+    {
+        $conexion = connectionFn();
+        return makeEmployeeFn($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type);
+    }
 ?>

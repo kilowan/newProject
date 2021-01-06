@@ -626,7 +626,7 @@
                         <td>'.$fila['apellido1'].'</td>
                         <td>'.$fila['apellido2'].'</td>
                         <td>'.$fila['tipo'].'</td>
-                        <td><a href="veremp.php?id_emp='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
+                        <td><a href="veremp.php?id='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
                         <td><a href="veremp.php?funcion=Editar_empleado&id_emp='.$fila['id'].'&dni='.$fila['dni'].'">Editar</a></td>
                     </tr>';
                 }
@@ -781,6 +781,7 @@
                 updateNotesFn($conexion, $user);
                 break;
             case 'Crear_empleado':
+                //addEmployeeFn($username, $password, $dni, $name, $surname1, $surname2, $type)
                 buildEmployeeFn($conexion, $user);
                 break;
             case 'insertparte':
@@ -793,7 +794,7 @@
                 buildParteFn($conexion);
                 break;
             case 'Borrar_empleado':
-                deleteEmpleadoFn($conexion);
+                removeEmployeeFn();
                 break;
             case 'Editar_empleado':
                 updateEmpleadoFn($conexion);
