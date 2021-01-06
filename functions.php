@@ -234,99 +234,94 @@ include 'newFunctions.php';
 		//Lectura
 
 		//Tecnico
-		//Permiso 0 -> Datos personales
-		//Permiso 1 -> Estadísticas
-		//Permiso 2 -> Partes abiertos de empleados
-		//Permiso 3 -> Partes cerrados de empleados
-        //Permiso 4 -> Partes atendidos de empleados
-        //Permiso 16 -> Estadísticas
-        //Permiso 18 -> Piezas eportadas
+		//Permiso 1 -> Datos personales
+		//Permiso 2 -> Estadísticas
+		//Permiso 3 -> Partes abiertos de empleados
+		//Permiso 4 -> Partes cerrados de empleados
+        //Permiso 5 -> Partes atendidos de empleados
+        //Permiso 18 -> Piezas reportadas
 
 		//Empleado
-		//Permiso 0 -> Datos personales
-		//Permiso 5 -> Partes abiertos creados por el mismo
-		//Permiso 6 -> Partes atendidos creados por el mismo
-		//Permiso 7 -> Partes cerrados (visibles) creados por el mismo
-		//Permiso 8 -> Partes cerrados (ocultos) creados por el mismo
+		//Permiso 1 -> Datos personales
+		//Permiso 6 -> Partes abiertos creados por el mismo
+		//Permiso 7 -> Partes atendidos creados por el mismo
+		//Permiso 8 -> Partes cerrados (visibles) creados por el mismo
+		//Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
 
 		//Admin
-		//Permiso 0 -> Datos personales
-		//Permiso 1 -> Estadísticas
-		//Permiso 5 -> Partes abiertos creados por el mismo
-		//Permiso 6 -> Partes atendidos creados por el mismo
-		//Permiso 7 -> Partes cerrados (visibles) creados por el mismo
-		//Permiso 8 -> Partes cerrados (ocultos) creados por el mismo
-		//Permiso 9 -> Partes abiertos de empleados (no propios)
-		//Permiso 10 -> Partes cerrados de empleados (no propios)
-        //Permiso 11 -> Partes atendidos de empleados (no propios)
-        //Permiso 15 -> Lista de empleados
-        //Permiso 16 -> Estadísticas
+		//Permiso 1 -> Datos personales
+		//Permiso 2 -> Estadísticas
+		//Permiso 6 -> Partes abiertos creados por el mismo
+		//Permiso 7 -> Partes atendidos creados por el mismo
+		//Permiso 8 -> Partes cerrados (visibles) creados por el mismo
+		//Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
+		//Permiso 10 -> Partes abiertos de empleados (no propios)
+		//Permiso 11 -> Partes cerrados de empleados (no propios)
+        //Permiso 12 -> Partes atendidos de empleados (no propios)
+        //Permiso 16 -> Lista de empleados
         //Permiso 17 -> Estadísticas globales
         //Permiso 18 -> Piezas eportadas
 
 		//Escritura
 
 		//Tecnico
-        //Permiso 11 -> Atender parte de empleados
         //Permiso 21 -> Modificar parte de empleados
 
 		//Empleado
-		//Permiso 12 -> Crear parte
-        //Permiso 13 -> Borrar parte propio no atendido
+		//Permiso 13 -> Crear parte
+        //Permiso 14 -> Borrar parte propio no atendido
         //Permiso 22 -> Ocultar parte propio cerrado
 
 		//Admin
-		//Permiso 12 -> Crear parte
-		//Permiso 13 -> Borrar parte propio no atendido
-        //Permiso 14 -> Atender parte de empleados (no propios)
+		//Permiso 13 -> Crear parte
+		//Permiso 14 -> Borrar parte propio no atendido
+        //Permiso 15 -> Atender parte de empleados (no propios)
         //Permiso 19 -> Crear empleado
         //Permiso 20 -> Editar empleado
         //Permiso 21 -> Modificar parte de empleados
 
 		if($user->tipo == 'Tecnico')
 		{
-			$permissions[0] = 0;
-			$permissions[1] = 1;
-			$permissions[2] = 2;
-			$permissions[3] = 3;
-			$permissions[4] = 4;
-            $permissions[5] = 11;
-            $permissions[6] = 16;
-            $permissions[7] = 18;
-            $permissions[8] = 21;
+			$permissions[0] = 1;
+			$permissions[1] = 2;
+			$permissions[2] = 3;
+			$permissions[3] = 4;
+			$permissions[4] = 5;
+            $permissions[5] = 12;
+            $permissions[6] = 18;
+            $permissions[7] = 21;
 
         }
         else if ($user->tipo == 'Admin')
 		{
-			$permissions[0] = 0;
-			$permissions[1] = 1;
-			$permissions[2] = 5;
-			$permissions[3] = 6;
-			$permissions[4] = 7;
-			$permissions[5] = 8;
-			$permissions[6] = 9;
-			$permissions[7] = 10;
-			$permissions[8] = 11;
-			$permissions[9] = 12;
-			$permissions[10] = 13;
-            $permissions[11] = 14;
-            $permissions[12] = 15;
-            $permissions[13] = 16;
-            $permissions[14] = 17;
-            $permissions[15] = 18;
-            $permissions[16] = 19;
-            $permissions[17] = 20;
-            $permissions[18] = 21;
-		}
-		else
-		{
-			$permissions[0] = 0;
-			$permissions[1] = 5;
+			$permissions[0] = 1;
+			$permissions[1] = 2;
 			$permissions[2] = 6;
 			$permissions[3] = 7;
 			$permissions[4] = 8;
-			$permissions[5] = 12;
-            $permissions[6] = 13;
+			$permissions[5] = 9;
+			$permissions[6] = 10;
+			$permissions[7] = 11;
+			$permissions[8] = 12;
+			$permissions[9] = 13;
+			$permissions[10] = 14;
+            $permissions[11] = 15;
+            $permissions[12] = 16;
+            $permissions[13] = 17;
+            $permissions[14] = 18;
+            $permissions[15] = 19;
+            $permissions[16] = 20;
+            $permissions[17] = 21;
+		}
+		else
+		{
+			$permissions[0] = 1;
+			$permissions[1] = 6;
+			$permissions[2] = 7;
+			$permissions[3] = 8;
+			$permissions[4] = 9;
+			$permissions[5] = 13;
+            $permissions[6] = 14;
             $permissions[7] = 22;
 		}
 
