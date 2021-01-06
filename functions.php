@@ -279,8 +279,9 @@ include 'newFunctions.php';
         //Permiso 19 -> Crear empleado
         //Permiso 20 -> Editar empleado
         //Permiso 21 -> Modificar parte de empleados
-
-		if($user->tipo == 'Tecnico')
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
+		/*if($user->tipo == 'Tecnico')
 		{
 			$permissions[0] = 1;
 			$permissions[1] = 2;
@@ -323,7 +324,7 @@ include 'newFunctions.php';
 			$permissions[5] = 13;
             $permissions[6] = 14;
             $permissions[7] = 22;
-		}
+		}*/
 
 		return $permissions;
     }

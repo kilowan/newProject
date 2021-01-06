@@ -178,4 +178,18 @@ include 'classes.php';
         $conexion = connectionFn();
         return makeEmployeeFn($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type);
     }
+    function getPermissionsFn()
+    {
+        $conexion = connectionFn();
+        $user = getEmployeeByIdFn();
+        $con = getPermissionsSql($conexion, $user);
+        $permission = 0;
+        $permissions = null;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
+        {
+            $permissions[$permission] = $fila['permission'];
+            $permission++;
+        }
+        return $permissions;
+    }
 ?>

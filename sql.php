@@ -285,4 +285,9 @@
     {
         return $conexion->query("SELECT * FROM parte");
     }
+    //new
+    function getPermissionsSql($conexion, $user)
+    {
+        return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$user->id");
+    }
 ?>
