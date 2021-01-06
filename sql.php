@@ -161,31 +161,6 @@
         return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
         GROUP BY nom_tec");
     }
-    function countOwnPartesSql($conexion, $dni)
-    {
-        //partes no ocultos propios (empleado)
-        $con = $conexion->query("SELECT COUNT(*) AS Partes
-        FROM parte 
-        WHERE state=3 AND emp_crea = (SELECT id FROM Empleados WHERE dni = '$dni')");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-    function countNewPartesSql($conexion)
-    {
-        //Partes sin atender (tecnico)
-        $con = $conexion->query("SELECT *
-        FROM parte
-        WHERE state=1");
-        return $con->num_rows;
-    }
-    //Partes de un técnico
-    function countPartesSql($conexion, $id_emp)
-    {
-        $con = $conexion->query("SELECT *
-        FROM parte 
-        WHERE tec_res=$id_emp");
-        return $con->num_rows;
-    }
     function hideParteSql($conexion, $user, $id)
     {
         return $conexion->query("UPDATE parte SET state=4 WHERE id_part=$id AND emp_crea='$user->id' AND state=3");

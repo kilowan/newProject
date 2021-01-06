@@ -147,20 +147,21 @@
     {
         return '<'.$tag.'>'.$data.'</'.$tag.'>';
     }
-    function linksView($user, $nums)
+    function linksView($user)
     {
         $table = "";
         $_GET['id'] = $user->id;
         $permissions = getPermissionsFn();
+        $partes = structureFn($permissions);
         if(in_array(13, $permissions))
         {
             $table = $table.'<a class="link" href="veremp.php?funcion=Agregar_parte&id_emp='.$user->id.'&dni='.$user->dni.'">Crear parte</a>';
         }
-        if($nums[0] > 0 || $nums[1] > 0)
+        if($partes > 0)
         {
             $table = $table.'&nbsp'.'<a class="link" href="veremp.php?id_emp='.$user->id.'&dni='.$user->dni.'&funcion=Partes">Ver partes</a>';
         }
-        if(in_array(2, $permissions) && $nums[1] > 0)
+        if(in_array(2, $permissions) && $partes > 0)
         {
             $table=$table.'&nbsp<a class="link" href="veremp.php?funcion=Estadisticas&id_emp='.$user->id.'&dni='.$user->dni.'">Estadísticas</a>';
         }

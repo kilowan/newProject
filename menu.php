@@ -8,7 +8,6 @@ if (isset($_SESSION['loggedin']))
 	$conexion = new mysqli($sql->host_db, $sql->user_db, $sql->pass_db, $sql->db_name);
 	$user = json_decode($_SESSION['user']);
 	$table = '';
-	$nums = structureFn($user, $conexion);
 	if (!isset($_SESSION['mensaje']))
 	{
 		$_SESSION['mensaje'] = "";
@@ -29,7 +28,7 @@ if (isset($_SESSION['loggedin']))
 						<img class="cierra" src="shutdown.png" alt="Cerrar sesión" />
 					</a>
 				</div>
-			 <div class="opciones">'.linksView($user, $nums).'</div>
+			 <div class="opciones">'.linksView($user).'</div>
 			 <div class="cuerpo">'.$_SESSION['mensaje'].'</div>
 			 <div class="Pie">
 				<p>Trabajo realizado por Jose Javier Valero Fuentes y Juan Francisco Navarro Ramiro para el curso de ASIR 2º X</p>

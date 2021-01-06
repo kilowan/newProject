@@ -64,32 +64,32 @@ include 'newFunctions.php';
             return true;
         }
     }
-    function structureFn($user, $conexion)
-    {
-        if($user->tipo != 'Tecnico' && $user->tipo != 'Admin')
+    function structureFn($permissions)
+    {        
+        $partes = 0;
+        $incidences = getIncidencesListFn();
+        if(in_array(7, $permissions) && in_array(8, $permissions) && in_array(9, $permissions))
         {
-            //partes no ocultos propios (empleado)
-            $nums[0] = countOwnPartesSql($conexion, $user->dni);
-            $nums[1] = 0;
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id']);
+            });
+            $partes = count($new_array);
         }
-        else
+        else if (in_array(3, $permissions) && in_array(4, $permissions) && in_array(5, $permissions))
         {
-            if($user->tipo == 'Tecnico')
-            {
-                //Partes sin atender (tecnico)
-                $nums[0] = countNewPartesSql($conexion);
-                //Partes atendidos propios (tecnico)
-                $nums[1] = countPartesSql($conexion, $user->id);
-            }
-            else
-            {
-                //Lista de partes (admin)
-                $nums[0] = countNewPartesSql($conexion);
-                $nums[1] = countPartesSql($conexion, $user->id);
-                $nums[2] = countOwnPartesSql($conexion, $user->dni);
-            }
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->solver->id == $_GET['id'] || $array->state == 1);
+            });
+            $partes = count($new_array);
         }
-        return $nums;
+        else if (in_array(6, $permissions) && in_array(7, $permissions) && in_array(8, $permissions) && in_array(9, $permissions) && in_array(10, $permissions) && in_array(11, $permissions) && in_array(12, $permissions)) 
+        {
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->solver->id == $_GET['id'] || $array->state == 1 || $array->owner->id == $_GET['id']);
+            });
+            $partes = count($new_array);
+        }
+        return $partes;
     }
     function updateNotesFn($conexion, $user)
     {
