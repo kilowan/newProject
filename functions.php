@@ -230,7 +230,7 @@ include 'newFunctions.php';
         $_SESSION['funcion'] = 'Lista';
         //header('Location: veremp.php');
     }
-    		/*Lectura
+        /*Lectura
 		Tecnico
 		Permiso 1 -> Datos personales
 		Permiso 2 -> Estadísticas

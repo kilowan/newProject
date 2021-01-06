@@ -100,7 +100,10 @@ include 'classes.php';
             $count = 0;
             $con2 = selectNotesSql($conexion, $fila['id_part']);
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
-                $noteList[$count] = $notes['noteStr'];
+                $note = new note();
+                $note->noteStr = $notes['noteStr'];
+                $note->date = $notes['date'];
+                $noteList[$count] = $note;
                 $count++;
             }
             $con3 = getEmployeeSql($conexion, $fila['emp_crea']);

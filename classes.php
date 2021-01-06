@@ -29,6 +29,11 @@
 			$this->employee = $employee;
 		}
 	}
+	class note
+	{
+		public string $noteStr = "";
+		public $date = null;
+	}
 
     class incidence
     {
