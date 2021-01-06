@@ -99,7 +99,8 @@ include 'newFunctions.php';
     }
     function buildEmployeeFn($conexion, $user)
     {
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(19, $permissions)) {
             makeEmployeeFn($conexion, $_POST['username'], $_POST['pass'], $_POST['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo']);
             $_SESSION['funcion'] = 'Lista';
@@ -229,103 +230,45 @@ include 'newFunctions.php';
         $_SESSION['funcion'] = 'Lista';
         //header('Location: veremp.php');
     }
-    function permissionsFn($user)
-	{
-		//Lectura
-
-		//Tecnico
-		//Permiso 1 -> Datos personales
-		//Permiso 2 -> Estadísticas
-		//Permiso 3 -> Partes abiertos de empleados
-		//Permiso 4 -> Partes cerrados de empleados
-        //Permiso 5 -> Partes atendidos de empleados
-        //Permiso 18 -> Piezas reportadas
-
-		//Empleado
-		//Permiso 1 -> Datos personales
-		//Permiso 6 -> Partes abiertos creados por el mismo
-		//Permiso 7 -> Partes atendidos creados por el mismo
-		//Permiso 8 -> Partes cerrados (visibles) creados por el mismo
-		//Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
-
-		//Admin
-		//Permiso 1 -> Datos personales
-		//Permiso 2 -> Estadísticas
-		//Permiso 6 -> Partes abiertos creados por el mismo
-		//Permiso 7 -> Partes atendidos creados por el mismo
-		//Permiso 8 -> Partes cerrados (visibles) creados por el mismo
-		//Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
-		//Permiso 10 -> Partes abiertos de empleados (no propios)
-		//Permiso 11 -> Partes cerrados de empleados (no propios)
-        //Permiso 12 -> Partes atendidos de empleados (no propios)
-        //Permiso 16 -> Lista de empleados
-        //Permiso 17 -> Estadísticas globales
-        //Permiso 18 -> Piezas eportadas
-
-		//Escritura
-
-		//Tecnico
-        //Permiso 21 -> Modificar parte de empleados
-
-		//Empleado
-		//Permiso 13 -> Crear parte
-        //Permiso 14 -> Borrar parte propio no atendido
-        //Permiso 22 -> Ocultar parte propio cerrado
-
-		//Admin
-		//Permiso 13 -> Crear parte
-		//Permiso 14 -> Borrar parte propio no atendido
-        //Permiso 15 -> Atender parte de empleados (no propios)
-        //Permiso 19 -> Crear empleado
-        //Permiso 20 -> Editar empleado
-        //Permiso 21 -> Modificar parte de empleados
-        $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-		/*if($user->tipo == 'Tecnico')
-		{
-			$permissions[0] = 1;
-			$permissions[1] = 2;
-			$permissions[2] = 3;
-			$permissions[3] = 4;
-			$permissions[4] = 5;
-            $permissions[5] = 12;
-            $permissions[6] = 18;
-            $permissions[7] = 21;
-
-        }
-        else if ($user->tipo == 'Admin')
-		{
-			$permissions[0] = 1;
-			$permissions[1] = 2;
-			$permissions[2] = 6;
-			$permissions[3] = 7;
-			$permissions[4] = 8;
-			$permissions[5] = 9;
-			$permissions[6] = 10;
-			$permissions[7] = 11;
-			$permissions[8] = 12;
-			$permissions[9] = 13;
-			$permissions[10] = 14;
-            $permissions[11] = 15;
-            $permissions[12] = 16;
-            $permissions[13] = 17;
-            $permissions[14] = 18;
-            $permissions[15] = 19;
-            $permissions[16] = 20;
-            $permissions[17] = 21;
-		}
-		else
-		{
-			$permissions[0] = 1;
-			$permissions[1] = 6;
-			$permissions[2] = 7;
-			$permissions[3] = 8;
-			$permissions[4] = 9;
-			$permissions[5] = 13;
-            $permissions[6] = 14;
-            $permissions[7] = 22;
-		}*/
-
-		return $permissions;
-    }
+    		/*Lectura
+		Tecnico
+		Permiso 1 -> Datos personales
+		Permiso 2 -> Estadísticas
+		Permiso 3 -> Partes abiertos de empleados
+		Permiso 4 -> Partes cerrados de empleados
+        Permiso 5 -> Partes atendidos de empleados
+        Permiso 18 -> Piezas reportadas
+		Empleado
+		Permiso 1 -> Datos personales
+		Permiso 6 -> Partes abiertos creados por el mismo
+		Permiso 7 -> Partes atendidos creados por el mismo
+		Permiso 8 -> Partes cerrados (visibles) creados por el mismo
+		Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
+		Admin
+		Permiso 1 -> Datos personales
+		Permiso 2 -> Estadísticas
+		Permiso 6 -> Partes abiertos creados por el mismo
+		Permiso 7 -> Partes atendidos creados por el mismo
+		Permiso 8 -> Partes cerrados (visibles) creados por el mismo
+		Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
+		Permiso 10 -> Partes abiertos de empleados (no propios)
+		Permiso 11 -> Partes cerrados de empleados (no propios)
+        Permiso 12 -> Partes atendidos de empleados (no propios)
+        Permiso 16 -> Lista de empleados
+        Permiso 17 -> Estadísticas globales
+        Permiso 18 -> Piezas eportadas
+		Escritura
+		Tecnico
+        Permiso 21 -> Modificar parte de empleados
+		Empleado
+		Permiso 13 -> Crear parte
+        Permiso 14 -> Borrar parte propio no atendido
+        Permiso 22 -> Ocultar parte propio cerrado
+		Admin
+		Permiso 13 -> Crear parte
+		Permiso 14 -> Borrar parte propio no atendido
+        Permiso 15 -> Atender parte de empleados (no propios)
+        Permiso 19 -> Crear empleado
+        Permiso 20 -> Editar empleado
+        Permiso 21 -> Modificar parte de empleados*/
 ?>

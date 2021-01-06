@@ -3,7 +3,8 @@
     function modParteView($conexion, $user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(21, $permissions)) 
         {
             $id_part = $_GET['id_part'];
@@ -88,7 +89,8 @@
     }
     function buttonsView($id, int $state, $user, $maker)
     {
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         //State
         //1: New
         //2: Attended
@@ -148,7 +150,8 @@
     function linksView($user, $nums)
     {
         $table = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if(in_array(13, $permissions))
         {
             $table = $table.'<a class="link" href="veremp.php?funcion=Agregar_parte&id_emp='.$user->id.'&dni='.$user->dni.'">Crear parte</a>';
@@ -200,7 +203,8 @@
     }
     function showPartesView($conexion, $user)
     {
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         $response = "";
         if (in_array(6, $permissions)) {
             //Partes abiertos propios (empleado o admin)
@@ -393,7 +397,8 @@
     function addParteView($user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(13, $permissions)) {
             $response = $response.'
             <form class="crearP" action="veremp.php" method="post">
@@ -420,7 +425,8 @@
     function showHiddenPartesView($conexion, $user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(9, $permissions)) 
         {
             $con = selectHiddenPartesSql($conexion, $user);
@@ -464,7 +470,8 @@
     function editEmployeeView($conexion, $user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(20, $permissions)) 
         {
             $id_emp = $_GET['id_emp'];
@@ -501,7 +508,8 @@
     function showGlobalStatisticsView($user_data, $conexion)
     {
         $response = "";
-        $permissions = permissionsFn($user_data);
+        $_GET['id'] = $user_data->id;
+        $permissions = getPermissionsFn();
         if(in_array(17, $permissions))
         {
             $tiempo_medio_global = tiempoMedioAdminSql($conexion);
@@ -535,7 +543,8 @@
     function reportedPiecesView($conexion, $user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(18, $permissions)) 
         {
             $piez = countPiezasSql($conexion);
@@ -565,7 +574,8 @@
     function showStadisticsView($conexion, $user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(2, $permissions)) 
         { 
             $tiempo_medio = tiempoMedioSql($conexion, $user);           
@@ -611,7 +621,8 @@
     function employeeListView($conexion, $user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(16, $permissions)) 
         {
                     //Lista de empleados
@@ -665,7 +676,8 @@
     function addEmployeeView($user)
     {
         $response = "";
-        $permissions = permissionsFn($user);
+        $_GET['id'] = $user->id;
+        $permissions = getPermissionsFn();
         if (in_array(19, $permissions)) {
             $response = $response.'
             <form class="nuevoemp" action="veremp.php" method="post" id="formulario">
