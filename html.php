@@ -4,8 +4,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(21, $permissions)) 
+        if (in_array(21, $user->permissions))
         {
             //Extrae datos parte
             $incidence = getIncidenceByIdFn();
@@ -88,14 +87,13 @@
     function buttonsView($id, int $state, $user, $maker)
     {
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
         //State
         //1: New
         //2: Attended
         //3: Closed
         //4: Hidden
         $data = "";
-        if ($state == 0 && in_array(6, $permissions)&& $maker == $user->id) {
+        if ($state == 0 && in_array(6, $user->permissions)&& $maker == $user->id) {
             $data = $data.'
             <td>
                 <a href="veremp.php?id_part='.$id.'&funcion=Borrar_parte">Borrar</a>
@@ -104,16 +102,16 @@
                 <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Editar</a>
             </td>';
         }
-        else if ($state == 1 && (in_array(3, $permissions) || in_array(10, $permissions)) && $maker != $user->id) {
+        else if ($state == 1 && (in_array(3, $user->permissions) || in_array(10, $user->permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Atender_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Atender</a></td>';
         }
-        else if ($state == 2 && (in_array(5, $permissions) || in_array(11, $permissions)) && $maker != $user->id) {
+        else if ($state == 2 && (in_array(5, $user->permissions) || in_array(11, $user->permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Modificar</a></td>';
         }
-        else if ($state == 3 && in_array(22, $permissions)) {
+        else if ($state == 3 && in_array(22, $user->permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Ocultar_parte">Ocultar</a></td>';
         }
-        else if ($state == 4 && in_array(9, $permissions)) {
+        else if ($state == 4 && in_array(9, $user->permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Mostrar_parte">Mostrar</a></td>';
         }
         return $data;
@@ -149,9 +147,8 @@
     {
         $table = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        $partes = structureFn($permissions);
-        if(in_array(13, $permissions))
+        $partes = structureFn($user->permissions);
+        if(in_array(13, $user->permissions))
         {
             $table = $table.'<a class="link" href="veremp.php?funcion=Agregar_parte&id_emp='.$user->id.'&dni='.$user->dni.'">Crear parte</a>';
         }
@@ -159,15 +156,15 @@
         {
             $table = $table.'&nbsp'.'<a class="link" href="veremp.php?id_emp='.$user->id.'&dni='.$user->dni.'&funcion=Partes">Ver partes</a>';
         }
-        if(in_array(2, $permissions) && $partes > 0)
+        if(in_array(2, $user->permissions) && $partes > 0)
         {
             $table=$table.'&nbsp<a class="link" href="veremp.php?funcion=Estadisticas&id_emp='.$user->id.'&dni='.$user->dni.'">Estadísticas</a>';
         }
-        if(in_array(16, $permissions))
+        if(in_array(16, $user->permissions))
         {
             $table = $table.'&nbsp<a class="link" href="veremp.php?funcion=Lista&id_emp='.$user->id.'&dni='.$user->dni.'">Lista empleados</a>';
         }
-        if (in_array(1, $permissions)) {
+        if (in_array(1, $user->permissions)) {
             $table = $table.'<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>';
         }
         
@@ -203,9 +200,8 @@
     function showPartesView($conexion, $user)
     {
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
         $response = "";
-        if (in_array(6, $permissions)) {
+        if (in_array(6, $user->permissions)) {
             //Partes abiertos propios (empleado o admin)
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -216,7 +212,7 @@
                 $response = $response.showParteView($new_array, 1);
             }
         }
-        if (in_array(7, $permissions)) {
+        if (in_array(7, $user->permissions)) {
             //Partes atendidos propios (empleado o admin)
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -233,7 +229,7 @@
                 $response = $response.showParteView($new_array, 2);
             }
         }
-        if (in_array(8, $permissions)) {
+        if (in_array(8, $user->permissions)) {
             //Partes cerrados propios (empleado o admin)
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -249,7 +245,7 @@
                 </table>'.showParteView($new_array, 3);
             }
         }
-        if (in_array(9, $permissions)) {
+        if (in_array(9, $user->permissions)) {
             //Partes propios ocultos (Empleado)
             $data = countHiddenPartesSql($conexion, $user);
             if ($data > 0)
@@ -264,7 +260,7 @@
                 </table><br />';
             }
         }
-        if (in_array(3, $permissions) || in_array(10, $permissions)) {
+        if (in_array(3, $user->permissions) || in_array(10, $user->permissions)) {
             //Partes abiertos no propios (Técnico o Admin)
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -281,7 +277,7 @@
                 $response = $response.showParteView($new_array, 1);
             }
         }
-        if (in_array(4, $permissions) || in_array(11, $permissions)) {
+        if (in_array(4, $user->permissions) || in_array(11, $user->permissions)) {
             //Partes atendidos no propios (Técnico o Admin)
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -298,7 +294,7 @@
                 $response = $response.showParteView($new_array, 2);
             }
         }
-        if (in_array(5, $permissions) || in_array(12, $permissions)) {
+        if (in_array(5, $user->permissions) || in_array(12, $user->permissions)) {
             //Partes cerrados no propios (Técnico o Admin)
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -383,8 +379,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(13, $permissions)) {
+        if (in_array(13, $user->permissions)) {
             $response = $response.'
             <form class="crearP" action="veremp.php" method="post">
                 <input type="hidden" name="funcion" value="Crear_parte">
@@ -411,8 +406,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(9, $permissions)) 
+        if (in_array(9, $user->permissions)) 
         {
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
@@ -459,8 +453,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(20, $permissions)) 
+        if (in_array(20, $user->permissions)) 
         {
             $id_emp = $_GET['id_emp'];
             $con = selectEmpleadoNoAdminSql($conexion);
@@ -497,8 +490,7 @@
     {
         $response = "";
         $_GET['id'] = $user_data->id;
-        $permissions = getPermissionsFn();
-        if(in_array(17, $permissions))
+        if(in_array(17, $user_data->permissions))
         {
             $tiempo_medio_global = tiempoMedioAdminSql($conexion);
             if ($tiempo_medio_global->num_rows > 0)
@@ -532,8 +524,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(18, $permissions)) 
+        if (in_array(18, $user->permissions)) 
         {
             $piez = countPiezasSql($conexion);
             if ($piez->num_rows > 0)
@@ -563,8 +554,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(2, $permissions)) 
+        if (in_array(2, $user->permissions)) 
         { 
             $tiempo_medio = tiempoMedioSql($conexion, $user);           
             $rows = $tiempo_medio->num_rows;
@@ -610,8 +600,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(16, $permissions)) 
+        if (in_array(16, $user->permissions)) 
         {
                     //Lista de empleados
             $con = selectEmpleadosSql($conexion);
@@ -662,8 +651,7 @@
     {
         $response = "";
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(19, $permissions)) {
+        if (in_array(19, $user->permissions)) {
             $response = $response.'
             <form class="nuevoemp" action="veremp.php" method="post" id="formulario">
                 <input type="hidden" name="funcion" value="Crear_empleado" />

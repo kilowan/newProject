@@ -100,8 +100,7 @@ include 'newFunctions.php';
     function buildEmployeeFn($conexion, $user)
     {
         $_GET['id'] = $user->id;
-        $permissions = getPermissionsFn();
-        if (in_array(19, $permissions)) {
+        if (in_array(19, $user->permissions)) {
             makeEmployeeFn($conexion, $_POST['username'], $_POST['pass'], $_POST['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo']);
             $_SESSION['funcion'] = 'Lista';
         }
@@ -173,6 +172,8 @@ include 'newFunctions.php';
                 //extrae datos personales
                 $fila = $con->fetch_array(MYSQLI_ASSOC);
                 $user_info = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
+                $permissions = getPermissionsFn($user_info);
+                $user_info->permissions = $permissions;
                 $_SESSION['user'] =  json_encode($user_info);
                 header('Location: menu.php');
             }

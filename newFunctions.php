@@ -137,6 +137,8 @@ include 'classes.php';
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
         {
             $employee = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
+            $permissions = getPermissionsFn($employee);
+            $employee->permissions = $permissions;
             $employees[$employee_count] = $employee;
             $employee_count++;
         }
@@ -181,10 +183,9 @@ include 'classes.php';
         $conexion = connectionFn();
         return makeEmployeeFn($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type);
     }
-    function getPermissionsFn()
+    function getPermissionsFn($user)
     {
         $conexion = connectionFn();
-        $user = getEmployeeByIdFn();
         $con = getPermissionsSql($conexion, $user);
         $permission = 0;
         $permissions = null;
