@@ -73,8 +73,8 @@
                         </select>
                     </td>
                 </tr>
-                <input type="hidden" name="id_part" value="'.$id_part.'" />
-                <input type="hidden" name="id_emp" value="'.$fila['id'].'" />
+                <input type="hidden" name="id_part" value="'.$incidence->id.'" />
+                <input type="hidden" name="id_emp" value="'.$incidence->solver->id.'" />
                 <tr>
                     <td>
                         <input type="submit" name="Guardar" value="Guardar" />
