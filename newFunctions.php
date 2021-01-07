@@ -215,7 +215,7 @@ include 'classes.php';
                 break;
             
             default:
-                $permissions = [6,7,8,9,13,14,22];
+                $permissions = [1,6,7,8,9,13,14,22];
                 break;
         }
         $conexion = connectionFn();
