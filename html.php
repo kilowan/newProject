@@ -694,6 +694,8 @@
                 $con = selectEmployeeSql($conexion);
                 $result = $con->fetch_array(MYSQLI_ASSOC);
                 $userA = getUserFn($dni, $result['nombre'], $result['apellido1'], $result['apellido2'], $result['tipo'], $id);
+                $permissions = getPermissionsFn($userA);
+                $userA->permissions = $permissions;
                 $response = $response.personalDataView($userA);
                 $response = $response.showPartesView($conexion, $userA);
                 $response = $response.showStadisticsView($conexion, $userA);
