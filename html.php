@@ -623,9 +623,6 @@
                     </tr>';
                 while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
                 {
-                    $user = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
-
-                    array_push($users, $user);
                     //insercion partes (html) 
                     $response = $response.'
                     <tr>
@@ -805,9 +802,6 @@
                 break;
             case 'Borrar_empleado':
                 removeEmployeeFn();
-                break;
-            case 'Editar_empleado':
-                updateEmpleadoFn($conexion);
                 break;
             case 'Logout':
                 logoutFn();

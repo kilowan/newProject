@@ -152,19 +152,6 @@ include 'newFunctions.php';
 		}
 		$_SESSION['funcion'] = 'Partes';
     }
-    function updateEmpleadoFn($conexion)
-    {
-        $user = json_decode($_POST['user']);
-        $bool = checkFn($user->dni);
-        $bool = checkFn($user->name);
-        $bool = checkFn($user->surname1);
-        $bool = checkFn($user->surname2);
-        if($bool == true)
-        {
-            updateEmployeeSql($conexion, $user);
-        }
-        $_SESSION['funcion'] = 'Lista';
-    }
     function loginFn($username, $password)
     {
         $conexion = connectionFn();
@@ -212,23 +199,9 @@ include 'newFunctions.php';
     }
     function Actualizar_empleadoFn($conexion)
     {
-        $dni = $_POST['dni'];
-        $nombre = $_POST['nombre'];
-        $apellido1 = $_POST['apellido1'];
-        $apellido2 = $_POST['apellido2'];
-        $tipo = $_POST['tipo'];
-        $con = getEmployeeByUsernameSql($conexion, $dni);
-        $fila = $con->fetch_array(MYSQLI_ASSOC);
-        //$user = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id_emp']);
-        $user->name = $_POST['nombre'];
-        $user->surname1 = $_POST['apellido1'];
-        $user->surname2 = $_POST['apellido2'];
-        $user->tipo = $_POST['tipo'];
-        $user->dni = $_POST['dni'];
-        $user->id = $fila['id'];
-        updateEmployeeSql($conexion, $user);
+        $olduser = getUserDataFn($conexion, $_POST['dni']);
+        updateEmployeeFn($conexion, $fila['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo'], $olduser);
         $_SESSION['funcion'] = 'Lista';
-        //header('Location: veremp.php');
     }
         /*Lectura
 		Tecnico

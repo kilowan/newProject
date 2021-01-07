@@ -9,8 +9,7 @@ include 'classes.php';
         {
             //update
             $olduser = getUserDataFn($conexion, $dni);
-            $user = getUserFn($dni, $name, $surname1, $surname2, $type, $olduser->id);
-            insertEmployee2Sql($conexion, $user);
+            $user = updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser);
             insertCredentials2Sql($conexion, $credentials, $olduser->id);
         } 
         else 
@@ -194,5 +193,11 @@ include 'classes.php';
             $permission++;
         }
         return $permissions;
+    }
+    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser)
+    {
+        $user = getUserFn($dni, $name, $surname1, $surname2, $type, $olduser->id);
+        insertEmployee2Sql($conexion, $user);
+        return $user;
     }
 ?>
