@@ -18,6 +18,7 @@ include 'classes.php';
             $usertmp = getUserFn($dni, $name, $surname1, $surname2, $type, null);
             insertEmployeeSql($conexion, $usertmp);
             $user = getUserDataFn($conexion, $dni);
+            insertPermissionsFn($user);
             insertCredentialsSql($conexion, $credentials, $user->id);
         }
         return $user;
@@ -199,5 +200,28 @@ include 'classes.php';
         $user = getUserFn($dni, $name, $surname1, $surname2, $type, $olduser->id);
         insertEmployee2Sql($conexion, $user);
         return $user;
+    }
+
+    function insertPermissionsFn($user)
+    {
+        $permissions = null;
+        switch ($user->tipo) {
+            case 'Tecnico':
+                $permissions = [1,2,3,4,5,18,21];
+                break;
+
+            case 'Admin':
+                $permissions = [1,2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+                break;
+            
+            default:
+                $permissions = [6,7,8,9,13,14,22];
+                break;
+        }
+        $conexion = connectionFn();
+        foreach ($permissions as $permission) {
+            insertPermissionsSql($conexion, $user, $permission);
+        }
+        return $permissions;
     }
 ?>

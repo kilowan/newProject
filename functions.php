@@ -169,7 +169,6 @@ include 'newFunctions.php';
                 $creds = $con->fetch_array(MYSQLI_ASSOC);
                 sessionStartFn();
                 $credentials->employee = $creds['employee'];
-                $_SESSION['credentials'] = json_encode($credentials);
                 $con = selectEmployeeDataSql($conexion, $credentials);
                 //extrae datos personales
                 $fila = $con->fetch_array(MYSQLI_ASSOC);

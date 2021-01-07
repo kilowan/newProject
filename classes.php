@@ -15,6 +15,7 @@
 		public string $dni = "";
 		public string $tipo = "";
 		public ?int $id = NULL;
+		public $permissions = null;
 	}
 	class credentials
 	{

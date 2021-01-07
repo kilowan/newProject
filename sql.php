@@ -184,12 +184,12 @@
     //new
     function insertCredentialsSql($conexion, $credentials, $id)
     {
-        $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', MD5('$credentials->password'), $id)");
+        $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', '$credentials->password', $id)");
     }
     //new
     function insertCredentials2Sql($conexion, $credentials, $id)
     {
-        $conexion->query("UPDATE credentials SET username='$credentials->username', password=MD5('$credentials->password') WHERE employee=$id");
+        $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
     }
     function insertNoteSql($id_part, $user, $inf_part)
     {
@@ -257,5 +257,10 @@
     function getPermissionsSql($conexion, $user)
     {
         return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$user->id");
+    }
+    //new
+    function insertPermissionsSql($conexion, $user, $permission)
+    {
+        $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
     }
 ?>
