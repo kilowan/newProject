@@ -16,6 +16,7 @@
 		public string $tipo = "";
 		public ?int $id = NULL;
 		public $permissions = null;
+		public int $borrado = 0;
 	}
 	class credentials
 	{
