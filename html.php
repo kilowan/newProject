@@ -93,7 +93,7 @@
         //3: Closed
         //4: Hidden
         $data = "";
-        if ($state == 0 && in_array(6, $user->permissions)&& $maker == $user->id) {
+        if ($state == 1 && in_array(6, $user->permissions)&& $maker == $user->id) {
             $data = $data.'
             <td>
                 <a href="veremp.php?id_part='.$id.'&funcion=Borrar_parte">Borrar</a>
@@ -247,8 +247,11 @@
         }
         if (in_array(9, $user->permissions)) {
             //Partes propios ocultos (Empleado)
-            $data = countHiddenPartesSql($conexion, $user);
-            if ($data > 0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 4);
+            });
+            if (count($new_array) > 0)
             {
                 $response = $response.'
                 <table>
@@ -420,16 +423,13 @@
         }
         return $response;
     }
-    function editParteView($conexion)
+    function editParteView()
     {
-        $id_part = $_GET['id_part'];
-		$con = selectParteSql($conexion, $id_part);
-		$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
-		$nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
+        $incidence = getIncidenceByIdFn();
 		return '
 		<br />'.headerDataView('Editar parte').'
 		<form action="veremp.php" method="post">
-			<input type="hidden" name="id_part" value="'.$fila['id_part'].'" />
+			<input type="hidden" name="id_part" value="'.$incidence->id.'" />
 			<input type="hidden" name="funcion" value="Actualizar_parte" />
 			<table>
 				<tr>
@@ -440,10 +440,10 @@
 					<th>--</th>
 				</tr>
 				<tr>
-					<td>'.$fila['id_part'].'</td>
-					<td>'.$fila['fecha_hora_creacion'].'</td>
-					<td><input type="text" name="inf_part" value="'.$fila['inf_part'].'" required /></td>
-					<td>'.$fila['pieza'].'</td>
+					<td>'.$incidence->id.'</td>
+					<td>'.$incidence->initDateTime.'</td>
+					<td><input type="text" name="inf_part" value="'.$incidence->issueDesc.'" required /></td>
+					<td>'.$incidence->piece.'</td>
 					<td><input type="submit" value="Guardar" /></td>
 				</tr>
 			</table>
@@ -752,7 +752,7 @@
     
             case 'Editar_parte':
                 //Vista Editar parte
-                $response = $response.editParteView($conexion);
+                $response = $response.editParteView();
                 break;
     
             case 'Estadisticas':
@@ -787,7 +787,7 @@
                 $response = $response.modParteView($conexion, $user);
                 break;
             case 'Actualizar_parte':
-                updateNotesFn($conexion, $user);
+                updateNotesFn($conexion);
                 break;
             case 'Crear_empleado':
                 //addEmployeeFn($username, $password, $dni, $name, $surname1, $surname2, $type)

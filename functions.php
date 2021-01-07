@@ -91,11 +91,11 @@ include 'newFunctions.php';
         }
         return $partes;
     }
-    function updateNotesFn($conexion, $user)
+    function updateNotesFn($conexion)
     {
         $id_part = $_POST['id_part'];
 		$inf_part = $_POST['inf_part'];
-        insertNoteSql($id_part, $user, $inf_part);
+        updateIncidence($conexion, $inf_part, $id_part);
     }
     function buildEmployeeFn($conexion, $user)
     {

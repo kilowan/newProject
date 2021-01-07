@@ -14,14 +14,6 @@
         WHERE state IN (3, 4)
         GROUP BY pieza");
     }
-	function countHiddenPartesSql($conexion, $user)
-	{
-		$con = $conexion->query("SELECT COUNT(*) AS Partes
-		FROM parte 
-        WHERE state=4 AND emp_crea = $user->id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
 	function selectParteSql($conexion, $id_part)
 	{
 		return $conexion->query("SELECT *
@@ -122,10 +114,10 @@
     {
         $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
     }
-    function insertNoteSql($id_part, $user, $inf_part)
+    /*function insertNoteSql($conexion, $id_part, $user, $inf_part)
     {
         $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
-    }
+    }*/
     function updateNoteListSql($conexion, $user, $id_part, $not_tec)
     {
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, '$user->tipo', '$not_tec')");
@@ -193,5 +185,9 @@
     function insertPermissionsSql($conexion, $user, $permission)
     {
         $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
+    }
+    function updateIncidence($conexion, $inf_part, $id_part)
+    {
+        $conexion->query("UPDATE parte SET inf_part='$inf_part' WHERE id_part=$id_part");
     }
 ?>
