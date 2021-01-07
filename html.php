@@ -173,22 +173,22 @@
         
         return $table;
     }
-    function readIncidencesView($con, $user, int $state)
+    function readIncidencesView($incidences, int $state)
     {
         $response = "";
-        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        foreach ($incidences as $incidence) 
         {
             $response = $response.'
             <tr>
-            <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state='.$state.'">'.$fila['id_part'].'</a></td>
-                <td>'.checkInputFn($fila['fecha_hora_creacion']).'</td>
-                <td>'.checkInputFn($fila['inf_part']).'</td>
-                <td>'.checkInputFn($fila['pieza']).'</td>
+            <td><a href="veremp.php?id_part='.$incidence->id.'&funcion=Ver_parte&state='.$state.'">'.$incidence->id.'</a></td>
+                <td>'.checkInputFn($incidence->initDateTime).'</td>
+                <td>'.checkInputFn($incidence->issueDesc).'</td>
+                <td>'.checkInputFn($incidence->piece).'</td>
             </tr>';
         }
         return $response;
     }
-    function showParteView($con, $user, int $state)
+    function showParteView($incidences, int $state)
     {
         return '
         <table>
@@ -197,7 +197,7 @@
                 <th>Fecha de creación</th>
                 <th>Información</th>
                 <th>Piezas afectadas</th>
-            </tr>'.readIncidencesView($con, $user, $state).'
+            </tr>'.readIncidencesView($incidences, $state).'
         </table><br />';
     }
     function showPartesView($conexion, $user)
@@ -207,16 +207,22 @@
         $response = "";
         if (in_array(6, $permissions)) {
             //Partes abiertos propios (empleado o admin)
-            $con = selectNewPartesSql($conexion, $user);
-            if ($con->num_rows>0) {
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 1);
+            });
+            if (count($new_array) >0) {
                 $response = $response.headerDataView('Partes abiertos', 'colspan="10"');
-                $response = $response.showParteView($con, $user, 0);
+                $response = $response.showParteView($new_array, 1);
             }
         }
         if (in_array(7, $permissions)) {
             //Partes atendidos propios (empleado o admin)
-            $con = selectOwnPartesSql($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 2);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -224,25 +230,23 @@
                         <th colspan="10">Partes atendidos</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteView($con, $user, 1);
+                $response = $response.showParteView($new_array, 2);
             }
         }
         if (in_array(8, $permissions)) {
             //Partes cerrados propios (empleado o admin)
-            $num = countOldPartesSql($conexion, $user);
-            if ($num>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 3);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
                     <tr>
-                        <th colspan="10">Partes cerrados</th>
+                        <th colspan="10">Partes cerrados propios</th>
                     </tr>
-                </table>';
-            }
-            $con = selectOldPartesSql($conexion, $user);	
-            if ($con->num_rows > 0)
-            {
-                $response = $response.showParteView($con, $user, 2);
+                </table>'.showParteView($new_array, 3);
             }
         }
         if (in_array(9, $permissions)) {
@@ -262,8 +266,11 @@
         }
         if (in_array(3, $permissions) || in_array(10, $permissions)) {
             //Partes abiertos no propios (Técnico o Admin)
-            $con = selectNewOtherPartesSql($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id != $_GET['id_emp'] && $array->state == 1);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -271,13 +278,16 @@
                         <th colspan="10">Partes abiertos</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteView($con, $user, 0);
+                $response = $response.showParteView($new_array, 1);
             }
         }
         if (in_array(4, $permissions) || in_array(11, $permissions)) {
             //Partes atendidos no propios (Técnico o Admin)
-            $con = selectOtherPartesSql($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id != $_GET['id_emp'] && $array->solver->id == $_GET['id'] && $array->state == 2);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -285,13 +295,17 @@
                         <th colspan="10">Partes atendidos</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteView($con, $user, 1);
+                $response = $response.showParteView($new_array, 2);
             }
         }
         if (in_array(5, $permissions) || in_array(12, $permissions)) {
             //Partes cerrados no propios (Técnico o Admin)
-            $con = selectOldOtherPartesSql($conexion, $user);
-            if ($con->num_rows > 0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id != $_GET['id_emp'] && $array->solver->id == $_GET['id'] && $array->state == 3);
+            });
+
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -299,7 +313,7 @@
                         <th>Partes cerrados</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteView($con, $user, 2);
+                $response = $response.showParteView($new_array, 3);
             }
         }
         return $response;
@@ -400,16 +414,14 @@
         $permissions = getPermissionsFn();
         if (in_array(9, $permissions)) 
         {
-            /*
             $incidences = getIncidencesListFn();
             $new_array = array_filter($incidences, function($array) {
-                return ($array->owner->id == $_GET['id']);
-            });*/
-            $con = selectHiddenPartesSql($conexion, $user);
-            if($con->num_rows>0)
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 4);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.headerDataView('Partes ocultos', 'colspan="10"');
-                $response = $response.showParteView($con, $user, 3);
+                $response = $response.showParteView($new_array, 4);
             }
         }
         return $response;
