@@ -456,13 +456,15 @@
         if (in_array(20, $user->permissions)) 
         {
             $id_emp = $_GET['id_emp'];
-            $con = selectEmpleadoNoAdminSql($conexion);
-            $fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
-            $nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
+            $users = getEmpolyeeListFn();
+            $new_array = array_filter($users, function($array) {
+                return ($array->id == $_GET['id'] && $array->tipo != 'Admin');
+            });
+            $user = array_pop($new_array);
             $response = $response.'
             <br />'.headerDataView('Editar empleado').'
             <form action="veremp.php" method="post">
-                <input type="hidden" name="id_emp" value="'.$id_emp.'" />
+                <input type="hidden" name="id_emp" value="'.$user->id.'" />
                 <input type="hidden" name="funcion" value="Actualizar_empleado" />
                 <table>
                     <tr>
@@ -474,11 +476,11 @@
                         <th>--</th>
                     </tr>
                     <tr>
-                        <td><input type="text" name="dni" value="'.$fila['dni'].'" required /></td>
-                        <td><input type="text" name="nombre" value="'.$fila['nombre'].'" required /></td>
-                        <td><input type="text" name="apellido1" value="'.$fila['apellido1'].'" required /></td>
-                        <td><input type="text" name="apellido2" value="'.$fila['apellido2'].'" /></td>
-                        <td><input type="text" name="tipo" value="'.$fila['tipo'].'" required /></td>
+                        <td><input type="text" name="dni" value="'.$user->dni.'" required /></td>
+                        <td><input type="text" name="nombre" value="'.$user->name.'" required /></td>
+                        <td><input type="text" name="apellido1" value="'.$user->surname1.'" required /></td>
+                        <td><input type="text" name="apellido2" value="'.$user->surname2.'" /></td>
+                        <td><input type="text" name="tipo" value="'.$user->tipo.'" required /></td>
                         <td><input type="submit" value="Guardar" /></td>
                     </tr>
                 </table>

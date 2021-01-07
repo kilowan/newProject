@@ -14,12 +14,6 @@
         WHERE state IN (3, 4)
         GROUP BY pieza");
     }
-	function selectParteSql($conexion, $id_part)
-	{
-		return $conexion->query("SELECT *
-		FROM parte
-		WHERE id_part=$id_part AND state=1");
-	}
     //new
 	function getEmployeeByUsernameSql($conexion, $dni)
 	{
@@ -35,13 +29,6 @@
     {
         return $conexion->query("SELECT * FROM Empleados");
     }
-	function selectEmpleadoNoAdminSql($conexion)
-	{
-		$id_emp = $_GET['id_emp'];
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE tipo NOT IN ('Admin') AND id=$id_emp");
-	}
 	function selectEmpleadosSql($conexion)
 	{
 		//Lista de empleados no administradores.
