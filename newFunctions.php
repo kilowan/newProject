@@ -5,7 +5,7 @@ include 'classes.php';
     {
         $credentials = new credentials($username, $password);
         $con = getEmployeeByUsernameSql($conexion, $dni);
-        if ($data = $con->num_rows >0) 
+        if ($con->num_rows >0)
         {
             //update
             $olduser = getUserDataFn($conexion, $dni);
@@ -16,7 +16,7 @@ include 'classes.php';
         {
             //insert
             $usertmp = getUserFn($dni, $name, $surname1, $surname2, $type, null);
-            insertEmployee($conexion, $usertmp);
+            insertEmployeeSql($conexion, $usertmp);
             $user = getUserDataFn($conexion, $dni);
             insertCredentialsSql($conexion, $credentials, $user->id);
         }
