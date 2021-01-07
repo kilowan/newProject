@@ -7,33 +7,31 @@
         $permissions = getPermissionsFn();
         if (in_array(21, $permissions)) 
         {
-            $id_part = $_GET['id_part'];
             //Extrae datos parte
-            $con = selectFullDataParteSql($conexion, $id_part);
-            $fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
+            $incidence = getIncidenceByIdFn();
             $response = $response.'<br />'.headerDataView('Editar Parte').'
             <table>
                 <tr>
                     <td>Nombre del empleado</td>
-                    <td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
+                    <td>'.$incidence->owner->name.' '.$incidence->owner->surname1.' '.$incidence->owner->surname2.'</td>
                 </tr>
                 <tr>
                     <td>Información</td>
-                    <td>'.checkInputFn($fila['inf_part']).'</td>
+                    <td>'.checkInputFn($incidence->issueDesc).'</td>
                 </tr>
                 <tr>
                     <td>Tecnico a cargo</td>
-                    <td>'.checkInputFn($fila['tec_res']).'</td>
+                    <td>'.checkInputFn($incidence->solver->id).'</td>
                 </tr>
                 <tr>
                     <td>Fecha de creación</td>
-                    <td>'.checkInputFn($fila['fecha_hora_creacion']).'</td>
+                    <td>'.checkInputFn($incidence->initDateTime).'</td>
                 </tr>
                 <tr>
                     <td>Pieza afectada</td>
-                    <td>'.checkInputFn($fila['pieza']).'</td>
+                    <td>'.checkInputFn($incidence->piece).'</td>
                 </tr>
-            </table>'.getNotesView($conexion, $id_part, $user).'
+            </table>'.getNotesView($incidence).'
             <form action="veremp.php" method="post">
             <table>
                 <tr>
@@ -306,11 +304,10 @@
         }
         return $response;
     }
-    function getNotesView($conexion, $id_part, $user)
+    function getNotesView($incidence)
     {
         $response = "";
-        $con = selectNotesSql($conexion, $id_part);
-        if ($con->num_rows >0) {
+        if ($incidence->notes != null  && count($incidence->notes) >0) {
             $response = $response.'
             <br /><table>
                 <tr>
@@ -322,44 +319,17 @@
                     <th>Nota</th>
                     <th>Fecha</th>
                 </tr>';
-            while ($result = $con->fetch_array(MYSQLI_ASSOC)) 
-            {
-                $response = $response.'
-                <tr>
-                    <td>'.$result['noteStr'].'</td>
-                    <td>'.$result['date'].'</td>
-                </tr>';
-            }
-            $response = $response.'</table><br />';
-        }
-        return $response;
-    }
-    /*function getNotesView2($incidence)
-    {
-        $response = "";
-        //$con = selectNotesSql($conexion, $id_part);
-        if ($incidence->$notes != null  && $incidence->$notes.count() >0) {
-            $response = $response.'
-            <br /><table>
-                <tr>
-                    <th colspan="2">Notas del ténico</th>
-                </tr>
-            </table><br />
-            <table>
-                <tr>
-                    <th>Nota</th>
-                    <th>Fecha</th>
-                </tr>';
-                foreach ($incidence->$notes as $note) {
+                foreach ($incidence->notes as $note) {
                     $response = $response.'
                     <tr>
-                        <td>'.$note.'</td>
+                        <td>'.$note->noteStr.'</td>
+                        <td>'.$note->date.'</td>
                     </tr>';
                 }
             $response = $response.'</table><br />';
         }
         return $response;
-    }*/
+    }
     function showDetailParteView($conexion, $user, $id_part)
     {
         $id_part = $_GET['id_part'];
@@ -393,7 +363,7 @@
 				<td>'.checkInputFn($incidence->piece).'</td>
 			</tr>
 			<tr>'.buttonsView($id_part, $state, $user, $incidence->owner->id).'</tr>
-        </table>'.getNotesView($conexion, $id_part, $user);
+        </table>'.getNotesView($incidence);
     }
     function addParteView($user)
     {
@@ -430,6 +400,11 @@
         $permissions = getPermissionsFn();
         if (in_array(9, $permissions)) 
         {
+            /*
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id']);
+            });*/
             $con = selectHiddenPartesSql($conexion, $user);
             if($con->num_rows>0)
             {

@@ -97,13 +97,6 @@
 		FROM parte
 		WHERE id_part=$id_part AND state=1");
 	}
-	function selectFullDataParteSql($conexion, $id_part)
-	{
-		return $conexion->query("SELECT E.nombre, E.apellido1, E.apellido2, E.id, P.inf_part, P.pieza, P.fecha_hora_creacion 
-		FROM Empleados E INNER JOIN parte P 
-		ON E.id=P.emp_crea 
-		WHERE id_part=$id_part");
-    }
     //new
 	function getEmployeeByUsernameSql($conexion, $dni)
 	{
