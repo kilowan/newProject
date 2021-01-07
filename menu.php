@@ -1,6 +1,6 @@
-<?php session_start(); ?>
-<?php
-include 'functions.php';
+<?php 
+session_start();
+include 'html.php';
 if (isset($_SESSION['loggedin']))
 {
 	//Conexion Mysql
@@ -8,7 +8,6 @@ if (isset($_SESSION['loggedin']))
 	$conexion = new mysqli($sql->host_db, $sql->user_db, $sql->pass_db, $sql->db_name);
 	$user = json_decode($_SESSION['user']);
 	$table = '';
-	$nums = structure($user, $conexion);
 	if (!isset($_SESSION['mensaje']))
 	{
 		$_SESSION['mensaje'] = "";
@@ -23,13 +22,13 @@ if (isset($_SESSION['loggedin']))
 			</head>
 		<body>
 			<div class="cabecera">
-				<p class="mensaje">Bienvenido'.' '.$user->comName.'<p>
+				<p class="mensaje">Bienvenido'.' '.$user->name.' '.$user->surname1.' '.$user->surname2.'<p>
 				<div class="Logo">
-					<a href="funciones.php?funcion=Logout">
+					<a href="veremp.php?funcion=Logout">
 						<img class="cierra" src="shutdown.png" alt="Cerrar sesión" />
 					</a>
 				</div>
-			 <div class="opciones">'.links($user, $nums).'</div>
+			 <div class="opciones">'.linksView($user).'</div>
 			 <div class="cuerpo">'.$_SESSION['mensaje'].'</div>
 			 <div class="Pie">
 				<p>Trabajo realizado por Jose Javier Valero Fuentes y Juan Francisco Navarro Ramiro para el curso de ASIR 2º X</p>

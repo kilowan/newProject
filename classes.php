@@ -9,36 +9,53 @@
 
 	class user
 	{
-		public string $comName = "";
 		public string $name = "";
 		public string $surname1 = "";
 		public ?string $surname2 = "";
 		public string $dni = "";
 		public string $tipo = "";
 		public ?int $id = NULL;
-		//public string $username = "";
-		//public string $password = "";
+		public $permissions = null;
 	}
 	class credentials
 	{
 		public string $username;
 		public string $password;
-		public function __construct(string $username, string $password)
+		public ?int $employee;
+		
+		public function __construct(string $username, string $password, ?int $employee = null)
 		{
 			$this->username = $username;
 			$this->password = MD5($password);
+			$this->employee = $employee;
 		}
 	}
+	class note
+	{
+		public string $noteStr = "";
+		public $date = null;
+	}
 
-    /*class incidence
+    class incidence
     {
-        public $owner = new user;
-        public $solver = new user;
+        public $owner = null;
+        public $solver = null;
         public $initDateTime = null;
         public $finishTime = null;
         public $finishDate = null;
         public string $issueDesc = "";
         public string $piece = "";
-        public array $notes = null;
-    }*/
+		public ?array $notes = null;
+		public int $state = 1;
+		public ?int $id = null;
+		
+		public function __construct($owner, $initDateTime, string $issueDesc, string $piece, ?array $notes)
+		{
+			$this->owner = $owner;
+			$this->initDateTime = $initDateTime;
+			$this->issueDesc = $issueDesc;
+			$this->piece = $piece;
+			$this->notes = $notes;
+		}
+    }
 ?>

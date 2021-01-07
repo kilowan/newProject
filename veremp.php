@@ -1,23 +1,21 @@
 <?php
 session_start();
-?>
-<?php
-include 'functions.php';
+include 'html.php';
+if (!isset($_SESSION['loggedin']) && isset($_POST['username']) && isset($_POST['password'])) {
+	loginFn($_POST['username'], $_POST['password']);
+}
+
 if (isset($_SESSION['loggedin']))
 {	
 	$user = $_SESSION['user'];
 	$user = json_decode($user);
-	$dni = $user->dni;
-	$id_emp = $user->id;
-	$tipo = $user->tipo;
-	$nombreCom = $user->comName;
-	$nombre = $user->name;
-	$apellido1 = $user->surname1;
-	$apellido2 = $user->surname2;
-	$table = "";
 	if(isset($_GET['funcion']))
 	{
 		$funcion = $_GET['funcion'];
+	}
+	else if(isset($_POST['funcion']))
+	{
+		$funcion = $_POST['funcion'];
 	}
 	else
 	{
@@ -32,7 +30,7 @@ if (isset($_SESSION['loggedin']))
 	//Conexion Mysql
 	$sql = json_decode($_SESSION['sql']);
 	$conexion = new mysqli($sql->host_db, $sql->user_db, $sql->pass_db, $sql->db_name);
-	$_SESSION['mensaje'] = $_SESSION['mensaje'].mainStruture($funcion, $conexion, $user);
+	$_SESSION['mensaje'] = $_SESSION['mensaje'].mainStrutureView($funcion, $conexion, $user);
 }
 header('Location: menu.php');
 mysqli_close($conexion);

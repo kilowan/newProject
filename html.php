@@ -1,38 +1,37 @@
 <?php
-    function modParte($conexion, $user)
+    include 'functions.php';
+    function modParteView($conexion, $user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(21, $permissions)) 
+        $_GET['id'] = $user->id;
+        if (in_array(21, $user->permissions))
         {
-            $id_part = $_GET['id_part'];
             //Extrae datos parte
-            $con = selectFullDataParte($conexion, $id_part);
-            $fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
-            $response = $response.'<br />'.headerData('Editar Parte').'
+            $incidence = getIncidenceByIdFn();
+            $response = $response.'<br />'.headerDataView('Editar Parte').'
             <table>
                 <tr>
                     <td>Nombre del empleado</td>
-                    <td>'.$fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'].'</td>
+                    <td>'.$incidence->owner->name.' '.$incidence->owner->surname1.' '.$incidence->owner->surname2.'</td>
                 </tr>
                 <tr>
                     <td>Información</td>
-                    <td>'.checkInput($fila['inf_part']).'</td>
+                    <td>'.checkInputFn($incidence->issueDesc).'</td>
                 </tr>
                 <tr>
                     <td>Tecnico a cargo</td>
-                    <td>'.checkInput($fila['tec_res']).'</td>
+                    <td>'.checkInputFn($incidence->solver->id).'</td>
                 </tr>
                 <tr>
                     <td>Fecha de creación</td>
-                    <td>'.checkInput($fila['fecha_hora_creacion']).'</td>
+                    <td>'.checkInputFn($incidence->initDateTime).'</td>
                 </tr>
                 <tr>
                     <td>Pieza afectada</td>
-                    <td>'.checkInput($fila['pieza']).'</td>
+                    <td>'.checkInputFn($incidence->piece).'</td>
                 </tr>
-            </table>'.getNotes($conexion, $id_part, $user).'
-            <form action="" method="post">
+            </table>'.getNotesView($incidence).'
+            <form action="veremp.php" method="post">
             <table>
                 <tr>
                     <td>Piezas afectadas:</td>
@@ -65,28 +64,36 @@
                     <td>Nueva nota</td>
                     <td><input type="text" name="not_tec" /></td>
                 </tr>
-                <input type="hidden" name="id_part" value="'.$id_part.'" />
-                <input type="hidden" name="id_emp" value="'.$fila['id'].'" />
                 <tr>
-                    <td colspan="2">
-                        <input type="submit" name="Editar parte" value="Editar parte" onclick=this.form.action="insertparte.php" />
-                        <input type="submit" name="Cerrar parte" value="Cerrar parte" onclick=this.form.action="cierraparte.php" />
+                    <td>Función</td>
+                    <td>
+                        <select name="funcion">
+                            <option value="insertparte">Actualizar parte</option>
+                            <option value="cierraparte">Cerrar parte</option>
+                        </select>
+                    </td>
+                </tr>
+                <input type="hidden" name="id_part" value="'.$incidence->id.'" />
+                <input type="hidden" name="id_emp" value="'.$incidence->solver->id.'" />
+                <tr>
+                    <td>
+                        <input type="submit" name="Guardar" value="Guardar" />
                     </td>
                 </tr>
             </table>';
         }
         return $response;
     }
-    function buttons($id, int $state, $user, $maker)
+    function buttonsView($id, int $state, $user, $maker)
     {
-        $permissions = permissions($user);
+        $_GET['id'] = $user->id;
         //State
-        //0: New
-        //1: Attended
-        //2: Closed
-        //3: Hidden
+        //1: New
+        //2: Attended
+        //3: Closed
+        //4: Hidden
         $data = "";
-        if ($state == 0 && in_array(5, $permissions)&& $maker == $user->id) {
+        if ($state == 0 && in_array(6, $user->permissions)&& $maker == $user->id) {
             $data = $data.'
             <td>
                 <a href="veremp.php?id_part='.$id.'&funcion=Borrar_parte">Borrar</a>
@@ -95,134 +102,33 @@
                 <a href="veremp.php?funcion=Editar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Editar</a>
             </td>';
         }
-        else if ($state == 0 && (in_array(2, $permissions) || in_array(9, $permissions)) && $maker != $user->id) {
+        else if ($state == 1 && (in_array(3, $user->permissions) || in_array(10, $user->permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Atender_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Atender</a></td>';
         }
-        else if ($state == 1 && (in_array(4, $permissions) || in_array(10, $permissions)) && $maker != $user->id) {
+        else if ($state == 2 && (in_array(5, $user->permissions) || in_array(11, $user->permissions)) && $maker != $user->id) {
             $data = $data.'<td colspan="2"><a href="veremp.php?funcion=Modificar_parte&id_emp='.$user->id.'&dni='.$user->dni.'&id_part='.$id.'">Modificar</a></td>';
         }
-        else if ($state == 2 && in_array(7, $permissions)) {
+        else if ($state == 3 && in_array(22, $user->permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Ocultar_parte">Ocultar</a></td>';
         }
-        else if ($state == 3 && in_array(8, $permissions)) {
+        else if ($state == 4 && in_array(9, $user->permissions)) {
             $data = $data.'<td colspan="2"><a href="veremp.php?id_part='.$id.'&funcion=Mostrar_parte">Mostrar</a></td>';
         }
         return $data;
     }
-    function personalData($user)
+    function personalDataView($user)
 	{
 		return '
-        <br />'.htmlMaker("table", htmlMaker("tr", htmlMaker("th", "Datos personales"))).'<br />
+        <br />'.htmlMakerView("table", htmlMakerView("tr", htmlMakerView("th", "Datos personales"))).'<br />
         
-            '.htmlMaker("table", htmlMaker("tr", htmlMaker("td", "Id Empleado").htmlMaker("td", $user->id))
-            .htmlMaker("tr", htmlMaker("td", "DNI").htmlMaker("td", $user->dni))
-            .htmlMaker("tr", htmlMaker("td", "Nombre").htmlMaker("td", $user->name))
-            .htmlMaker("tr", htmlMaker("td", "Primer apellido").htmlMaker("td", $user->surname1))
-            .htmlMaker("tr", htmlMaker("td", "Segundo apellido").htmlMaker("td", $user->surname2))
-            .htmlMaker("tr", htmlMaker("td", "Tipo").htmlMaker("td", $user->tipo))).'<br />';
+            '.htmlMakerView("table", htmlMakerView("tr", htmlMakerView("td", "Id Empleado").htmlMakerView("td", $user->id))
+            .htmlMakerView("tr", htmlMakerView("td", "DNI").htmlMakerView("td", $user->dni))
+            .htmlMakerView("tr", htmlMakerView("td", "Nombre").htmlMakerView("td", $user->name))
+            .htmlMakerView("tr", htmlMakerView("td", "Primer apellido").htmlMakerView("td", $user->surname1))
+            .htmlMakerView("tr", htmlMakerView("td", "Segundo apellido").htmlMakerView("td", $user->surname2))
+            .htmlMakerView("tr", htmlMakerView("td", "Tipo").htmlMakerView("td", $user->tipo))).'<br />';
     }
-    function permissions($user)
-	{
-		//Lectura
-
-		//Tecnico
-		//Permiso 0 -> Datos personales
-		//Permiso 1 -> Estadísticas
-		//Permiso 2 -> Partes abiertos de empleados
-		//Permiso 3 -> Partes cerrados de empleados
-        //Permiso 4 -> Partes atendidos de empleados
-        //Permiso 16 -> Estadísticas
-        //Permiso 18 -> Piezas eportadas
-
-		//Empleado
-		//Permiso 0 -> Datos personales
-		//Permiso 5 -> Partes abiertos creados por el mismo
-		//Permiso 6 -> Partes atendidos creados por el mismo
-		//Permiso 7 -> Partes cerrados (visibles) creados por el mismo
-		//Permiso 8 -> Partes cerrados (ocultos) creados por el mismo
-
-		//Admin
-		//Permiso 0 -> Datos personales
-		//Permiso 1 -> Estadísticas
-		//Permiso 5 -> Partes abiertos creados por el mismo
-		//Permiso 6 -> Partes atendidos creados por el mismo
-		//Permiso 7 -> Partes cerrados (visibles) creados por el mismo
-		//Permiso 8 -> Partes cerrados (ocultos) creados por el mismo
-		//Permiso 9 -> Partes abiertos de empleados (no propios)
-		//Permiso 10 -> Partes cerrados de empleados (no propios)
-        //Permiso 11 -> Partes atendidos de empleados (no propios)
-        //Permiso 15 -> Lista de empleados
-        //Permiso 16 -> Estadísticas
-        //Permiso 17 -> Estadísticas globales
-        //Permiso 18 -> Piezas eportadas
-
-		//Escritura
-
-		//Tecnico
-        //Permiso 11 -> Atender parte de empleados
-        //Permiso 21 -> Modificar parte de empleados
-
-		//Empleado
-		//Permiso 12 -> Crear parte
-		//Permiso 13 -> Borrar parte propio no atendido
-
-		//Admin
-		//Permiso 12 -> Crear parte
-		//Permiso 13 -> Borrar parte propio no atendido
-        //Permiso 14 -> Atender parte de empleados (no propios)
-        //Permiso 19 -> Crear empleado
-        //Permiso 20 -> Editar empleado
-        //Permiso 21 -> Modificar parte de empleados
-
-		if($user->tipo == 'Tecnico')
-		{
-			$permissions[0] = 0;
-			$permissions[1] = 1;
-			$permissions[2] = 2;
-			$permissions[3] = 3;
-			$permissions[4] = 4;
-            $permissions[5] = 11;
-            $permissions[6] = 16;
-            $permissions[7] = 18;
-            $permissions[8] = 21;
-
-        }
-        else if ($user->tipo == 'Admin')
-		{
-			$permissions[0] = 0;
-			$permissions[1] = 1;
-			$permissions[2] = 5;
-			$permissions[3] = 6;
-			$permissions[4] = 7;
-			$permissions[5] = 8;
-			$permissions[6] = 9;
-			$permissions[7] = 10;
-			$permissions[8] = 11;
-			$permissions[9] = 12;
-			$permissions[10] = 13;
-            $permissions[11] = 14;
-            $permissions[12] = 15;
-            $permissions[13] = 16;
-            $permissions[14] = 17;
-            $permissions[15] = 18;
-            $permissions[16] = 19;
-            $permissions[17] = 20;
-            $permissions[18] = 21;
-		}
-		else
-		{
-			$permissions[0] = 0;
-			$permissions[1] = 5;
-			$permissions[2] = 6;
-			$permissions[3] = 7;
-			$permissions[4] = 8;
-			$permissions[5] = 12;
-			$permissions[6] = 13;
-		}
-
-		return $permissions;
-    }
-    function checkInput($input)
+    function checkInputFn($input)
 	{
 		if($input == "" || $input == null)
 		{
@@ -233,49 +139,53 @@
 			return $input;
 		}
     }
-    function htmlMaker($tag, $data)
+    function htmlMakerView($tag, $data)
     {
         return '<'.$tag.'>'.$data.'</'.$tag.'>';
     }
-    function links($user, $nums)
+    function linksView($user)
     {
         $table = "";
-        $permissions = permissions($user);
-        if(in_array(12, $permissions))
+        $_GET['id'] = $user->id;
+        $partes = structureFn($user->permissions);
+        if(in_array(13, $user->permissions))
         {
             $table = $table.'<a class="link" href="veremp.php?funcion=Agregar_parte&id_emp='.$user->id.'&dni='.$user->dni.'">Crear parte</a>';
         }
-        if($nums[0] > 0 || $nums[1] > 0)
+        if($partes > 0)
         {
             $table = $table.'&nbsp'.'<a class="link" href="veremp.php?id_emp='.$user->id.'&dni='.$user->dni.'&funcion=Partes">Ver partes</a>';
-        }	
-        if(in_array(1, $permissions))
+        }
+        if(in_array(2, $user->permissions) && $partes > 0)
         {
             $table=$table.'&nbsp<a class="link" href="veremp.php?funcion=Estadisticas&id_emp='.$user->id.'&dni='.$user->dni.'">Estadísticas</a>';
         }
-        if(in_array(15, $permissions))
+        if(in_array(16, $user->permissions))
         {
             $table = $table.'&nbsp<a class="link" href="veremp.php?funcion=Lista&id_emp='.$user->id.'&dni='.$user->dni.'">Lista empleados</a>';
         }
-        $table = $table.'<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>';
+        if (in_array(1, $user->permissions)) {
+            $table = $table.'<a class="link" href="veremp.php?funcion=Datos_personales&id_emp='.$user->id.'&dni='.$user->dni.'">Datos personales</a>';
+        }
+        
         return $table;
     }
-    function readIncidences($con, $user, int $state)
+    function readIncidencesView($incidences, int $state)
     {
         $response = "";
-        while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
+        foreach ($incidences as $incidence) 
         {
             $response = $response.'
             <tr>
-                <td><a href="veremp.php?id_part='.$fila['id_part'].'&funcion=Ver_parte&state='.$state.'">'.$fila['id_part'].'</a></td>
-                <td>'.checkInput($fila['fecha_hora_creacion']).'</td>
-                <td>'.checkInput($fila['inf_part']).'</td>
-                <td>'.checkInput($fila['pieza']).'</td>
+            <td><a href="veremp.php?id_part='.$incidence->id.'&funcion=Ver_parte&state='.$state.'">'.$incidence->id.'</a></td>
+                <td>'.checkInputFn($incidence->initDateTime).'</td>
+                <td>'.checkInputFn($incidence->issueDesc).'</td>
+                <td>'.checkInputFn($incidence->piece).'</td>
             </tr>';
         }
         return $response;
     }
-    function showParteview($con, $user, int $state)
+    function showParteView($incidences, int $state)
     {
         return '
         <table>
@@ -284,25 +194,31 @@
                 <th>Fecha de creación</th>
                 <th>Información</th>
                 <th>Piezas afectadas</th>
-            </tr>'.readIncidences($con, $user, $state).'
+            </tr>'.readIncidencesView($incidences, $state).'
         </table><br />';
     }
-    function showPartes($conexion, $user)
+    function showPartesView($conexion, $user)
     {
-        $permissions = permissions($user);
+        $_GET['id'] = $user->id;
         $response = "";
-        if (in_array(5, $permissions)) {
+        if (in_array(6, $user->permissions)) {
             //Partes abiertos propios (empleado o admin)
-            $con = selectNewPartes($conexion, $user);
-            if ($con->num_rows>0) {
-                $response = $response.headerData('Partes abiertos', 'colspan="10"');
-                $response = $response.showParteview($con, $user, 0);
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 1);
+            });
+            if (count($new_array) >0) {
+                $response = $response.headerDataView('Partes abiertos', 'colspan="10"');
+                $response = $response.showParteView($new_array, 1);
             }
         }
-        if (in_array(6, $permissions)) {
+        if (in_array(7, $user->permissions)) {
             //Partes atendidos propios (empleado o admin)
-            $con = selectOwnPartes($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 2);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -310,30 +226,28 @@
                         <th colspan="10">Partes atendidos</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteview($con, $user, 1);
+                $response = $response.showParteView($new_array, 2);
             }
         }
-        if (in_array(7, $permissions)) {
+        if (in_array(8, $user->permissions)) {
             //Partes cerrados propios (empleado o admin)
-            $num = countOldPartes($conexion, $user);
-            if ($num>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 3);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
                     <tr>
-                        <th colspan="10">Partes cerrados</th>
+                        <th colspan="10">Partes cerrados propios</th>
                     </tr>
-                </table>';
-            }
-            $con = selectOldPartes($conexion, $user);	
-            if ($con->num_rows > 0)
-            {
-                $response = $response.showParteview($con, $user, 2);
+                </table>'.showParteView($new_array, 3);
             }
         }
-        if (in_array(8, $permissions)) {
+        if (in_array(9, $user->permissions)) {
             //Partes propios ocultos (Empleado)
-            $data = countHiddenPartes($conexion, $user);
+            $data = countHiddenPartesSql($conexion, $user);
             if ($data > 0)
             {
                 $response = $response.'
@@ -346,10 +260,13 @@
                 </table><br />';
             }
         }
-        if (in_array(2, $permissions) || in_array(9, $permissions)) {
+        if (in_array(3, $user->permissions) || in_array(10, $user->permissions)) {
             //Partes abiertos no propios (Técnico o Admin)
-            $con = selectNewOtherPartes($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id != $_GET['id_emp'] && $array->state == 1);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -357,13 +274,16 @@
                         <th colspan="10">Partes abiertos</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteview($con, $user, 0);
+                $response = $response.showParteView($new_array, 1);
             }
         }
-        if (in_array(3, $permissions) || in_array(10, $permissions)) {
+        if (in_array(4, $user->permissions) || in_array(11, $user->permissions)) {
             //Partes atendidos no propios (Técnico o Admin)
-            $con = selectOtherPartes($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id != $_GET['id_emp'] && $array->solver->id == $_GET['id'] && $array->state == 2);
+            });
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -371,13 +291,17 @@
                         <th colspan="10">Partes atendidos</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteview($con, $user, 1);
+                $response = $response.showParteView($new_array, 2);
             }
         }
-        if (in_array(4, $permissions) || in_array(11, $permissions)) {
+        if (in_array(5, $user->permissions) || in_array(12, $user->permissions)) {
             //Partes cerrados no propios (Técnico o Admin)
-            $con = selectOldOtherPartes($conexion, $user);
-            if ($con->num_rows > 0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id != $_GET['id_emp'] && $array->solver->id == $_GET['id'] && $array->state == 3);
+            });
+
+            if (count($new_array) >0)
             {
                 $response = $response.'
                 <table>
@@ -385,16 +309,15 @@
                         <th>Partes cerrados</th>
                     </tr>
                 </table><br />';
-                $response = $response.showParteview($con, $user, 2);
+                $response = $response.showParteView($new_array, 3);
             }
         }
         return $response;
     }
-    function getNotes($conexion, $id_part, $user)
+    function getNotesView($incidence)
     {
         $response = "";
-        $con = selectNotes($conexion, $id_part);
-        if ($con->num_rows >0) {
+        if ($incidence->notes != null  && count($incidence->notes) >0) {
             $response = $response.'
             <br /><table>
                 <tr>
@@ -406,14 +329,13 @@
                     <th>Nota</th>
                     <th>Fecha</th>
                 </tr>';
-            while ($result = $con->fetch_array(MYSQLI_ASSOC)) 
-            {
-                $response = $response.'
-                <tr>
-                    <td>'.$result['noteStr'].'</td>
-                    <td>'.$result['date'].'</td>
-                </tr>';
-            }
+                foreach ($incidence->notes as $note) {
+                    $response = $response.'
+                    <tr>
+                        <td>'.$note->noteStr.'</td>
+                        <td>'.$note->date.'</td>
+                    </tr>';
+                }
             $response = $response.'</table><br />';
         }
         return $response;
@@ -421,49 +343,45 @@
     function showDetailParteView($conexion, $user, $id_part)
     {
         $id_part = $_GET['id_part'];
-		$state = $_GET['state'];
-		$fila = selectIncidence($conexion, $id_part);
+        $incidence = getIncidenceByIdFn();
+        $state = $incidence->state;
         return '
-        <br />'.headerData('Ver Parte').'
+        <br />'.headerDataView('Ver Parte').'
 		<table>
 			<tr>
 				<td>Nº parte</td>
-				<td>'.checkInput($fila['id_part']).'</td>
+				<td>'.checkInputFn($incidence->id).'</td>
 			</tr>
 			<tr>
 				<td>Empleado</td>
-				<td>'.checkInput($fila['emp_crea']).'</td>
+				<td>'.checkInputFn($incidence->owner->id).'</td>
             </tr>
             <tr>
 				<td>Información</td>
-				<td>'.checkInput($fila['inf_part']).'</td>
+				<td>'.checkInputFn($incidence->issueDesc).'</td>
             </tr>
 			<tr>
 				<td>Tecnico a cargo</td>
-				<td>'.checkInput($fila['tec_res']).'</td>
+				<td>'.checkInputFn($incidence->solver->id).'</td>
 			</tr>
 			<tr>
 				<td>Fecha de creación</td>
-				<td>'.checkInput($fila['fecha_hora_creacion']).'</td>
-			</tr>
-			<tr>
-				<td>Información</td>
-				<td>'.checkInput($fila['inf_part']).'</td>
+				<td>'.checkInputFn($incidence->initDateTime).'</td>
 			</tr>
 			<tr>
 				<td>Piezas afectadas</td>
-				<td>'.checkInput($fila['pieza']).'</td>
+				<td>'.checkInputFn($incidence->piece).'</td>
 			</tr>
-			<tr>'.buttons($id_part, $state, $user, $fila['emp_crea']).'</tr>
-        </table>'.getNotes($conexion, $id_part, $user);
+			<tr>'.buttonsView($id_part, $state, $user, $incidence->owner->id).'</tr>
+        </table>'.getNotesView($incidence);
     }
-    function addParte($user)
+    function addParteView($user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(12, $permissions)) {
+        $_GET['id'] = $user->id;
+        if (in_array(13, $user->permissions)) {
             $response = $response.'
-            <form class="crearP" action="funciones.php" method="post">
+            <form class="crearP" action="veremp.php" method="post">
                 <input type="hidden" name="funcion" value="Crear_parte">
                 <label>Descripción del problema:</label><br />
                 <textarea name="descripcion" rows="10" cols="40" required placeholder="resumen del fallo"></textarea><br />
@@ -484,29 +402,32 @@
         }
         return $response;
     }
-    function showHiddenPartes($conexion, $user)
+    function showHiddenPartesView($conexion, $user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(8, $permissions)) 
+        $_GET['id'] = $user->id;
+        if (in_array(9, $user->permissions)) 
         {
-            $con = selectHiddenPartes($conexion, $user);
-            if($con->num_rows>0)
+            $incidences = getIncidencesListFn();
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id_emp'] && $array->state == 4);
+            });
+            if (count($new_array) >0)
             {
-                $response = $response.headerData('Partes ocultos', 'colspan="10"');
-                $response = $response.showParteview($con, $user, $state);
+                $response = $response.headerDataView('Partes ocultos', 'colspan="10"');
+                $response = $response.showParteView($new_array, 4);
             }
         }
         return $response;
     }
-    function editParte($conexion)
+    function editParteView($conexion)
     {
         $id_part = $_GET['id_part'];
-		$con = selectParte($conexion, $id_part);
+		$con = selectParteSql($conexion, $id_part);
 		$fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
 		$nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
 		return '
-		<br />'.headerData('Editar parte').'
+		<br />'.headerDataView('Editar parte').'
 		<form action="veremp.php" method="post">
 			<input type="hidden" name="id_part" value="'.$fila['id_part'].'" />
 			<input type="hidden" name="funcion" value="Actualizar_parte" />
@@ -528,19 +449,19 @@
 			</table>
 		</form>';
     }
-    function editEmployee($conexion, $user)
+    function editEmployeeView($conexion, $user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(20, $permissions)) 
+        $_GET['id'] = $user->id;
+        if (in_array(20, $user->permissions)) 
         {
             $id_emp = $_GET['id_emp'];
-            $con = selectEmpleadoNoAdmin($conexion);
+            $con = selectEmpleadoNoAdminSql($conexion);
             $fila = mysqli_fetch_array($con, MYSQLI_ASSOC);
             $nombreCom = $fila['nombre'].' '.$fila['apellido1'].' '.$fila['apellido2'];
             $response = $response.'
-            <br />'.headerData('Editar empleado').'
-            <form action="funciones.php" method="post">
+            <br />'.headerDataView('Editar empleado').'
+            <form action="veremp.php" method="post">
                 <input type="hidden" name="id_emp" value="'.$id_emp.'" />
                 <input type="hidden" name="funcion" value="Actualizar_empleado" />
                 <table>
@@ -565,13 +486,13 @@
         }
         return $response;
     }
-    function showGlobalStatistics($user_data, $conexion)
+    function showGlobalStatisticsView($user_data, $conexion)
     {
         $response = "";
-        $permissions = permissions($user_data);
-        if(in_array(17, $permissions))
+        $_GET['id'] = $user_data->id;
+        if(in_array(17, $user_data->permissions))
         {
-            $tiempo_medio_global = tiempoMedioAdmin($conexion);
+            $tiempo_medio_global = tiempoMedioAdminSql($conexion);
             if ($tiempo_medio_global->num_rows > 0)
             {
                 $response = $response.'
@@ -590,7 +511,7 @@
                     //insercion partes (html)
                     $response = $response.'
                     <tr>
-                        <td>'.tiempo($fila3['tiempo_medio'], 0).'</td>
+                        <td>'.SecondsToTimeFn($fila3['tiempo_medio']).'</td>
                         <td>'.$fila3['nom_tec'].'</td>
                     </tr>';
                 }
@@ -599,13 +520,13 @@
         }
         return $response;
     }
-    function reportedPieces($conexion, $user)
+    function reportedPiecesView($conexion, $user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(18, $permissions)) 
+        $_GET['id'] = $user->id;
+        if (in_array(18, $user->permissions)) 
         {
-            $piez = countPiezas($conexion);
+            $piez = countPiezasSql($conexion);
             if ($piez->num_rows > 0)
             {
                 $response = $response.'
@@ -629,25 +550,25 @@
         }
         return $response;
     }
-    function showStadistics($conexion, $user)
+    function showStadisticsView($conexion, $user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(16, $permissions)) 
+        $_GET['id'] = $user->id;
+        if (in_array(2, $user->permissions)) 
         { 
-            $tiempo_medio = tiempoMedio($conexion, $user);           
+            $tiempo_medio = tiempoMedioSql($conexion, $user);           
             $rows = $tiempo_medio->num_rows;
             if ($rows > 0)
             {
                 $fila2 = $tiempo_medio->fetch_array(MYSQLI_ASSOC);
-                $response = $response.headerData('Estadisticas', 'colspan="2"').'
+                $response = $response.headerDataView('Estadisticas', 'colspan="2"').'
                 <table>
                     <tr>
                         <th>Tiempo medio</th>
                         <th>Partes resueltos</th>
                     </tr>
                     <tr>
-                        <td>'.tiempo($fila2['tiempo_medio'], 0).'</td>
+                        <td>'.SecondsToTimeFn($fila2['tiempo_medio']).'</td>
                         <td>'.$fila2['cantidad_partes'].'</td>
                     </tr>
                 </table><br />';
@@ -655,7 +576,7 @@
         }
         return $response;
     }
-    function headerData(string $headerData, ?string $extraData = null)
+    function headerDataView(string $headerData, ?string $extraData = null)
     {
         if ($extraData != null) 
         {
@@ -675,14 +596,14 @@
             </table><br />';
         }
     }
-    function employeeList($conexion, $user)
+    function employeeListView($conexion, $user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(15, $permissions)) 
+        $_GET['id'] = $user->id;
+        if (in_array(16, $user->permissions)) 
         {
                     //Lista de empleados
-            $con = selectEmpleados($conexion);
+            $con = selectEmpleadosSql($conexion);
             //comprobación partes existentes no cerrados
             if($con->num_rows>0)		
             {
@@ -690,7 +611,7 @@
                 $users = array();
                 //recorrer datos de los empleados
                 $response = $response.'
-                <br />'.headerData('Lista de empleados').'
+                <br />'.headerDataView('Lista de empleados').'
                 <table>
                     <tr>
                         <th>ID de empleado</th>
@@ -703,9 +624,6 @@
                     </tr>';
                 while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
                 {
-                    $user = getEmployee($fila);
-
-                    array_push($users, $user);
                     //insercion partes (html) 
                     $response = $response.'
                     <tr>
@@ -715,7 +633,7 @@
                         <td>'.$fila['apellido1'].'</td>
                         <td>'.$fila['apellido2'].'</td>
                         <td>'.$fila['tipo'].'</td>
-                        <td><a href="funciones.php?id_emp='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
+                        <td><a href="veremp.php?id='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
                         <td><a href="veremp.php?funcion=Editar_empleado&id_emp='.$fila['id'].'&dni='.$fila['dni'].'">Editar</a></td>
                     </tr>';
                 }
@@ -729,46 +647,27 @@
         }
         return $response;
     }
-    function addEmployee($user)
+    function addEmployeeView($user)
     {
         $response = "";
-        $permissions = permissions($user);
-        if (in_array(19, $permissions)) {
+        $_GET['id'] = $user->id;
+        if (in_array(19, $user->permissions)) {
             $response = $response.'
-            <script>
-            var usuario = 
-            {
-                name = document.getElementByName("nombre"),
-                surname1 = document.getElementByName("apellido1"),
-                surname2 = document.getElementByName("apellido2"),
-                dni = document.getElementByName("dni"),
-                tipo = document.getElementByName("tipo")
-            }
-    
-            //document.getElementByName("Submit").onclick = function() {myFunction()};
-            document.getElementById("Submit").addEventListener("click", myFunction);
-            function myFunction() {
-                  var textarea = document.createElement("textarea");
-                  var texto = document.getElementById("dni").value;
-                  var body = document.getElementById("body");
-                  textarea.appendChild(texto);
-                  body.appendChild(textarea);
-                  document.forms[0].submit();
-            }
-            </script>
-            <form class="nuevoemp" action="funciones.php" method="post" id="formulario">
-                <input type="hidden" name="funcion" value="Crear_empleado">
+            <form class="nuevoemp" action="veremp.php" method="post" id="formulario">
+                <input type="hidden" name="funcion" value="Crear_empleado" />
                 <h1>Hoja del nuevo empleado:</h1><br />
                 <label>DNI:</label>
-                <input type="text" name="dni" required><br />
+                <input type="text" name="dni" required /><br />
                 <label>Nombre:</label>
-                <input type="text" name="nombre" required><br />
+                <input type="text" name="nombre" required /><br />
                 <label>Primer Apellido:</label>
-                <input type="text" name="apellido1" required><br />
+                <input type="text" name="apellido1" required /><br />
                 <label>Segundo Apellido:</label>
-                <input type="text" name="apellido2" ><br />
+                <input type="text" name="apellido2" /><br />
+                <label>Username:</label>
+                <input type="username" name="username" required /><br />
                 <label>Contraseña:</label>
-                <input type="password" name="pass" required><br />
+                <input type="password" name="pass" required /><br />
                 <p> ¿Que tipo de empleado es?:</p>
                 <p>
                     <select name="tipo" required>
@@ -779,10 +678,141 @@
                         <option value="Temporal">Uno temporal</option>
                         <option value="Otro">Otro tipo aún no definido</option>
                     </select>
-                </p>
-                <input type="hidden" name="user" id="user"><br />
-                </form><br/>
-                <button name="Submit" id="Submit">Añadir empleado</button>';
+                </p><br />
+                <input type="Submit"id="Submit />
+            </form><br/>';
+        }
+        return $response;
+    }
+    function mainStrutureView($funcion, $conexion, $user)
+    {
+        $response = "";
+        switch ($funcion) {
+            case 'Admin':
+                $id = $_GET['id_emp'];
+                $dni = $_GET['dni'];
+                $con = selectEmployeeSql($conexion);
+                $result = $con->fetch_array(MYSQLI_ASSOC);
+                $userA = getUserFn($dni, $result['nombre'], $result['apellido1'], $result['apellido2'], $result['tipo'], $id);
+                $permissions = getPermissionsFn($userA);
+                $userA->permissions = $permissions;
+                $response = $response.personalDataView($userA);
+                $response = $response.showPartesView($conexion, $userA);
+                $response = $response.showStadisticsView($conexion, $userA);
+                $response = $response.showGlobalStatisticsView($userA, $conexion);
+                $response = $response.reportedPiecesView($conexion, $userA);
+                break;
+            case 'Datos_personales':
+                //Vista Datos personales
+                $response = $response.personalDataView($user);
+                break;
+    
+            case 'Ver_parte':
+                //Vista ver parte
+                $id_part = $_GET['id_part'];
+                $response = $response.showDetailParteView($conexion, $user, $id_part);
+                break;
+    
+            case 'Borrar_parte':
+                //Borrar parte no atendido
+                $id_part = $_GET['id_part'];
+                $id_emp = $user->id;
+                deleteParteSql($conexion, $id_part, $user);
+                $_SESSION['funcion'] = 'Partes';
+                break;
+    
+            case 'Ocultar_parte':
+                //Ocultar parte cerrado
+                $id_part = $_GET['id_part'];
+                hideParteSql($conexion, $user, $id_part);
+                $_SESSION['funcion'] = 'Partes';
+                break;
+    
+            case 'Mostrar_parte':
+                //Mostrar parte oculto
+                $id_part = $_GET['id_part'];
+                showHiddenParteSql($conexion, $id_part);
+                $_SESSION['funcion'] = 'Partes'; 
+                break;
+    
+            case 'Partes':
+                //Vista Partes
+                $response = $response.showPartesView($conexion, $user);
+                break;
+    
+            case 'Agregar_parte':
+                //Vista Agregar parte
+                $response = $response.addParteView($user);
+                break;
+    
+            case 'Ocultos':
+                //Vista Partes ocultos
+                $response = $response.showHiddenPartesView($conexion, $user);
+                break;
+    
+            case 'Editar_parte':
+                //Vista Editar parte
+                $response = $response.editParteView($conexion);
+                break;
+    
+            case 'Estadisticas':
+                //Vista Estadísticas
+                $response = $response.showStadisticsView($conexion, $user);
+                $response = $response.showGlobalStatisticsView($user, $conexion);
+                $response = $response.reportedPiecesView($conexion, $user);
+                break;
+    
+            case 'Lista':
+                //Vista Lista de empleados
+                $response = $response.employeeListView($conexion, $user);
+                break;
+    
+            case 'Agregar_empleado':
+                //Vista Agregar empleado
+                $response = $response.addEmployeeView($user);
+                break;
+    
+            case 'Editar_empleado':
+                //Vista Editar empleado
+                $response = $response.editEmployeeView($conexion, $user);
+                break;
+    
+            case 'Atender_parte':
+                //Vista Atender parte
+                $response = $response.modParteView($conexion, $user);
+                break;
+    
+            case 'Modificar_parte':
+                //Vista Modificar parte
+                $response = $response.modParteView($conexion, $user);
+                break;
+            case 'Actualizar_parte':
+                updateNotesFn($conexion, $user);
+                break;
+            case 'Crear_empleado':
+                //addEmployeeFn($username, $password, $dni, $name, $surname1, $surname2, $type)
+                buildEmployeeFn($conexion, $user);
+                break;
+            case 'insertparte':
+                updateParteFn($conexion, $user);
+                break;
+            case 'cierraparte':
+                closeParteFn($conexion, $user);
+                break;
+            case 'Crear_parte':
+                buildParteFn($conexion, $user);
+                break;
+            case 'Borrar_empleado':
+                removeEmployeeFn();
+                break;
+            case 'Logout':
+                logoutFn();
+                break;
+            case 'Actualizar_empleado':
+                Actualizar_empleadoFn($conexion);
+                break;
+            default:
+                break;
         }
         return $response;
     }

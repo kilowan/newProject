@@ -1,352 +1,247 @@
 <?php
-include 'classes.php';
-include 'sql.php';
-include 'html.php';
-    function tiempo($n, $i)
-	{
-		if($i == 0 && $n == 86400)
-		{
-			$_SESSION['time'] = "1 día";
-		}
-		elseif($i == 0 && $n >= 86400 && $n <= 86460)
-		{
-			$segundos = $n%60;
-			$_SESSION['time'] = "1 día y $segundos segundo(s)";
-		}
-		elseif($i == 0 && $n >= 90000 && $n <= 90060)
-		{
-			$segundos=$n%60;
-			$_SESSION['time'] = "1 día, 1 hora y $segundos segundo(s)";
-		}
-		elseif($i == 0 && $n == 3600)
-		{
-			$_SESSION['time'] = "1 hora";
-		}	
-		elseif($i == 0 && $n >= 3600 && $n <= 3660)
-		{
-			$segundos = $n%60;
-			$_SESSION['time'] = "1 hora y $segundos segundo(s)";
-		}
-		elseif($i == 0 && $n <= 60)
-		{
-			$_SESSION['time'] = "$n segundos";
-		}
-		elseif($i == 0 && $n>60)
-		{
-			$segundos = $n%60;
-			$n = intdiv($n,60);
-			$i++;
-		}
-		if($i == 1 && $n > 60)
-		{
-			$minutos=$n%60;
-			$n=intdiv($n,60);
-			$i++;	
-		}
-		elseif($i==1 && $n<=60)
-		{
-			$_SESSION['time']="$n minuto(s) y $segundos segundo(s)";
-		}
-		if($i == 2 && $n>24)
-		{
-			$horas = $n%24;
-			$n = intdiv($n,24);
-			$i++;
-		}
-		elseif($i == 2 && $n<24)
-		{
-			$_SESSION['time'] = "$n hora(s), $minutos minuto(s) y $segundos segundo(s)";
-		}
-		if($i == 3 && $n>365)
-		{
-			$dias = $n%365;
-			$n = intdiv($n,365);				
-			$_SESSION['time'] = "$n año(s), $dias día(s), $horas hora(s), $minutos minuto(s) y $segundos segundo(s)";
-			$i++;
-		}
-		elseif($i == 3 && $n <= 365)
-		{
-			$_SESSION['time'] = "$n día(s), $horas hora(s), $minutos minuto(s) y $segundos segundo(s)";
-		}
-		return $_SESSION['time'];
-	}
-    function check($GET, $SESSION)
-	{
-		$data = null;
-		if(isset($GET))
-		{
-			$data = $GET;
-		}
-		else
-		{
-			$data = $SESSION;
-			$SESSION = null;
-		}
-		return $data;
-	}
-    function structure($user, $conexion)
+include 'newFunctions.php';
+    define('OneMonth', 2592000);
+    define('OneWeek', 604800);
+    define('OneDay', 86400);
+    define('OneHour', 3600);
+    define('OneMinute', 60);
+    function SecondsToTimeFn($seconds)
+    { 
+        $num_units = setNumUnitsFn($seconds);
+        $time_descr = array( 
+            "meses" => floor($seconds / OneMonth), 
+            "semanas" => floor(($seconds%OneMonth) / OneWeek), 
+            "días" => floor(($seconds%OneWeek) / OneDay), 
+            "horas" => floor(($seconds%OneDay) / OneHour), 
+            "minutos" => floor(($seconds%OneHour) / OneMinute), 
+            "segundos" => floor($seconds%OneMinute), 
+        );
+        $res = ""; $counter = 0;
+        foreach ($time_descr as $k => $v) 
+        { 
+            if ($v) 
+            { 
+                $res.=$v." ".$k; $counter++; 
+                if($counter>=$num_units) break; 
+                elseif($counter) 
+                $res.=", "; 
+            } 
+        }
+        $_SESSION['time'] = $res;
+        return $_SESSION['time'];
+    }
+    function setNumUnitsFn($seconds)
     {
-        if($user->tipo != 'Tecnico' && $user->tipo != 'Admin')
+        switch ($seconds) {
+            case $seconds>= OneMonth:
+                return 6;
+
+            case $seconds>= OneWeek:
+                return 5;
+
+            case $seconds>= OneDay:
+                return 4;
+
+            case $seconds>= OneHour:
+                return 3;
+
+            case $seconds>= OneMinute:
+                return 2;
+
+            default:
+                return 1;
+                break;
+        }
+    }
+    function checkFn($input)
+    {
+        if($input == "")
         {
-            //partes no ocultos propios (empleado)
-            $nums[0] = countOwnPartes($conexion, $user->dni);
-            $nums[1] = 0;
+            return false;
         }
         else
         {
-            if($user->tipo == 'Tecnico')
-            {
-                //Partes sin atender (tecnico)
-                $nums[0] = countNewPartes($conexion);
-                //Partes atendidos propios (tecnico)
-                $nums[1] = countPartes($conexion, $user->id);
-            }
-            else
-            {
-                //Lista de partes (admin)
-                $nums[0] = countNewPartes($conexion);
-                $nums[1] = countPartes($conexion, $user->id);
-                $nums[2] = countOwnPartes($conexion, $user->dni);
-            }
+            return true;
         }
-        return $nums;
     }
-    function getEmployee($fila)
-    {
-        $user = new user;
-        $user->dni = $fila['dni'];
-        $user->name = $fila['nombre'];
-        $user->surname1 = $fila['apellido1'];
-        $user->surname2 = $fila['apellido2'];
-        $user->tipo = $fila['tipo'];
-        $user->id = $fila['id'];
-        return $user;
+    function structureFn($permissions)
+    {        
+        $partes = 0;
+        $incidences = getIncidencesListFn();
+        if(in_array(7, $permissions) && in_array(8, $permissions) && in_array(9, $permissions))
+        {
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->owner->id == $_GET['id']);
+            });
+            $partes = count($new_array);
+        }
+        else if (in_array(3, $permissions) && in_array(4, $permissions) && in_array(5, $permissions))
+        {
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->solver->id == $_GET['id'] || $array->state == 1);
+            });
+            $partes = count($new_array);
+        }
+        else if (in_array(6, $permissions) && in_array(7, $permissions) && in_array(8, $permissions) && in_array(9, $permissions) && in_array(10, $permissions) && in_array(11, $permissions) && in_array(12, $permissions)) 
+        {
+            $new_array = array_filter($incidences, function($array) {
+                return ($array->solver->id == $_GET['id'] || ($array->state == 1 || $array->state == 2 || $array->state == 3 || $array->state == 4) || $array->owner->id == $_GET['id']);
+            });
+            $partes = count($new_array);
+        }
+        return $partes;
     }
-    function updateNotes($conexion, $user)
+    function updateNotesFn($conexion, $user)
     {
         $id_part = $_POST['id_part'];
 		$inf_part = $_POST['inf_part'];
-        insertNote($id_part, $user, $inf_part);
+        insertNoteSql($id_part, $user, $inf_part);
     }
-    function mainStruture($funcion, $conexion, $user)
+    function buildEmployeeFn($conexion, $user)
     {
-        $response = "";
-        switch ($funcion) {
-            case 'Admin':
-                $id = $_GET['id_emp'];
-                $dni = $_GET['dni'];
-                $con = selectEmployee($conexion);
-                $result = $con->fetch_array(MYSQLI_ASSOC);
-                $userA = new user();
-                $userA->tipo = $result['tipo'];
-                $userA->name = $result['nombre'];
-                $userA->surname1 = $result['apellido1'];
-                $userA->surname2 = $result['apellido2'];
-                $userA->dni = $dni;
-                $userA->id = $id;
-                $response = $response.personalData($userA);
-                $response = $response.showPartes($conexion, $userA);
-                $response = $response.showStadistics($conexion, $userA);
-                $response = $response.showGlobalStatistics($userA, $conexion);
-                $response = $response.reportedPieces($conexion, $userA);
-                break;
-            case 'Datos_personales':
-                //Vista Datos personales
-                $response = $response.personalData($user);
-                break;
-    
-            case 'Ver_parte':
-                //Vista ver parte
-                $id_part = $_GET['id_part'];
-                $response = $response.showDetailParteView($conexion, $user, $id_part);
-                break;
-    
-            case 'Borrar_parte':
-                //Borrar parte no atendido
-                $id_part = $_GET['id_part'];
-                $id_emp = $user->id;
-                deleteParte($conexion, $id_part, $user);
-                $_SESSION['funcion'] = 'Partes';
-                break;
-    
-            case 'Ocultar_parte':
-                //Ocultar parte cerrado
-                $id_part = $_GET['id_part'];
-                hideParte($conexion, $user, $id_part);
-                $_SESSION['funcion'] = 'Partes';
-                break;
-    
-            case 'Mostrar_parte':
-                //Mostrar parte oculto
-                $id_part = $_GET['id_part'];
-                showHiddenParte($conexion, $id_part);
-                $_SESSION['funcion'] = 'Partes'; 
-                break;
-    
-            case 'Partes':
-                //Vista Partes
-                $response = $response.showPartes($conexion, $user);
-                break;
-    
-            case 'Agregar_parte':
-                //Vista Agregar parte
-                $response = $response.addParte($user);
-                break;
-    
-            case 'Ocultos':
-                //Vista Partes ocultos
-                $response = $response.showHiddenPartes($conexion, $user);
-                break;
-    
-            case 'Editar_parte':
-                //Vista Editar parte
-                $response = $response.editParte($conexion);
-                break;
-    
-            case 'Estadisticas':
-                //Vista Estadísticas
-                $response = $response.showStadistics($conexion, $user);
-                $response = $response.showGlobalStatistics($user, $conexion);
-                $response = $response.reportedPieces($conexion, $user);
-                break;
-    
-            case 'Lista':
-                //Vista Lista de empleados
-                $response = $response.employeeList($conexion, $user);
-                break;
-    
-            case 'Agregar_empleado':
-                //Vista Agregar empleado
-                $response = $response.addEmployee($user);
-                break;
-    
-            case 'Editar_empleado':
-                //Vista Editar empleado
-                $response = $response.editEmployee($conexion, $user);
-                break;
-    
-            case 'Atender_parte':
-                //Vista Atender parte
-                $response = $response.modParte($conexion, $user);
-                break;
-    
-            case 'Modificar_parte':
-                //Vista Modificar parte
-                $response = $response.modParte($conexion, $user);
-                break;
-            case 'Actualizar_parte':
-                updateNotes($conexion, $user);
-                break;
-            default:
-                break;
+        $_GET['id'] = $user->id;
+        if (in_array(19, $user->permissions)) {
+            makeEmployeeFn($conexion, $_POST['username'], $_POST['pass'], $_POST['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo']);
+            $_SESSION['funcion'] = 'Lista';
         }
-        return $response;
     }
-    function connnection()
+    function closeParteFn($conexion, $user)
     {
-        $sql_data = new sql;
-        $sql_data->host_db = "localhost";
-        $sql_data->user_db = "Ad";
-        $sql_data->pass_db = "1234";
-        $sql_data->db_name = "Fabrica";
-        $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
-        $_SESSION['sql'] = json_encode($sql_data);
-        return $conexion;
-    }
-    function checkLoging($credentials, $conexion)
-    {
-        $response = false;
-        //$credentials = new credentials($username, $password);
-        $con = checkCredentialsData($credentials, $conexion);
-        //$data = $con->fetch_array(MYSQLI_ASSOC);
-        if ($con->num_rows > 0)
+        $id_part = $_POST['id_part'];
+        $not_tec = $_POST['not_tec'];
+        $pieza = $_POST['pieza'];
+        if($pieza == '--')
         {
-            $_SESSION['loggedin'] = true;
-            $_SESSION['start'] = time();
-            $_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
-            $response = true;
+            closeParte1Sql($conexion, $id_part, $user);
         }
-        return $response;
-        //return $data;
-    }
-    function getEmployeeData($credentials)
-    {
-        $conexion = connnection();
-        //return checkLoging($credentials, $conexion);
-        if(checkLoging($credentials, $conexion))
+        else
         {
-            $user_info = new user;
-            $user_info->dni = $credentials->username;
-            $con = $conexion->query("SELECT * 
-            FROM Empleados 
-            WHERE dni='$credentials->username'");
-
-            //extrae datos personales
-            $fila = $con->fetch_array(MYSQLI_ASSOC);
-            $user_info->tipo = $fila['tipo'];
-            $user_info->comName = $fila['nombre']." ".$fila['apellido1']." ".$fila['apellido2'];
-            $user_info->id = $fila['id'];
-            $user_info->name = $fila['nombre'];
-            $user_info->surname1 = $fila['apellido1'];
-            $user_info->surname2 = $fila['apellido2'];
-            $_SESSION['user'] =  json_encode($user_info);
-            return $user_info;
+            closeParte2Sql($conexion, $pieza, $id_part, $user);
         }
-        else 
+        updateNoteListSql($conexion, $user, $id_part, $not_tec);
+        $_SESSION['funcion'] = 'Partes';
+    }
+    function updateParteFn($conexion, $user)
+    {
+        $id_part = $_POST['id_part'];
+        $not_tec = $_POST['not_tec'];
+        $pieza = $_POST['pieza'];
+        if($pieza == '--')
         {
-            echo 'error desconocido';
+            updateParte1Sql($conexion, $id_part, $user);
         }
+        else
+        {
+            updateparte2Sql($conexion, $pieza, $id_part, $user);
+        }
+        updateNoteListSql($conexion, $user, $id_part, $not_tec);
+        $_SESSION['funcion'] = 'Partes';
     }
-    function takeEmployee($emp_crea)
+    function buildParteFn($conexion, $user)
     {
-        $sql_data = new sql;
-        $sql_data->host_db = "localhost";
-        $sql_data->user_db = "Ad";
-        $sql_data->pass_db = "1234";
-        $sql_data->db_name = "Fabrica";
-        $conexion = new mysqli($sql_data->host_db, $sql_data->user_db, $sql_data->pass_db, $sql_data->db_name);
-        $con = $conexion->query("SELECT nombre, apellido1, apellido2, tipo, dni FROM Empleados WHERE id = $emp_crea");
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        $user = new user;
-        $user->name = $data['nombre'];
-        $user->surname1 = $data['apellido1'];
-        $user->surname2 = $data['apellido2'];
-        $user->comName = $data['nombre'].' '.$data['apellido1'].' '.$data['apellido2'];
-        $user->dni = $data['dni'];
-        $user->tipo = $data['tipo'];
-        $user->id = $emp_crea;
-        return $user;
+		$pieza = $_POST['pieza'];
+		$descripcion = $_POST['descripcion'];
+		if($pieza != "--")
+		{	
+            insertParte1Sql($conexion, $user, $descripcion, $pieza);
+		}
+		else
+		{
+            insertParte2Sql($conexion, $user, $descripcion);
+		}
+		$_SESSION['funcion'] = 'Partes';
     }
-	if (!isset($_GET['funcion'])) {
-        $funcion = "";
-    } else {
-        $funcion = $_GET['funcion'];
-    }
-    if ($_SERVER['REQUEST_METHOD'] == 'GET' && $funcion == 'GET')
+    function loginFn($username, $password)
     {
-        $emp_crea = $_GET['id_emp'];
-        $user = takeEmployee($emp_crea);
-        header('Content-Type: application/json');
-        echo json_encode($user);
-        exit();
-    }
-    else if ($_SERVER['REQUEST_METHOD'] == 'POST') 
-    {
-        $json = file_get_contents('php://input');
-        $obj = json_decode($json);
-        if ($obj->funcion == 'TAKE') {
-            $credentials = new credentials($obj->username, $obj->password);
-            $_SESSION['credentials'] = json_encode($credentials);
-            $user = getEmployeeData($credentials);
-            if ($user != 'error desconocido') {
-                header('Content-Type: application/json');
-                echo json_encode($user);
-                exit();
+        $conexion = connectionFn();
+        if ($conexion->connect_error)
+        {
+            $_SESSION['mensaje'] = die("La conexión falló: " . $conexion->connect_error);
+            header('Location: login.html');
+        }
+        else
+        {
+            $credentials = new credentials($username, $password);
+            $con = checkCredentialsSql($credentials, $conexion);
+            if ($con->num_rows > 0)
+            {
+                $creds = $con->fetch_array(MYSQLI_ASSOC);
+                sessionStartFn();
+                $credentials->employee = $creds['employee'];
+                $con = selectEmployeeDataSql($conexion, $credentials);
+                //extrae datos personales
+                $fila = $con->fetch_array(MYSQLI_ASSOC);
+                $user_info = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
+                $permissions = getPermissionsFn($user_info);
+                $user_info->permissions = $permissions;
+                $_SESSION['user'] =  json_encode($user_info);
+                header('Location: menu.php');
             }
-            else {
-                echo $user;
-                exit();
+            else
+            {
+                $_SESSION['mensaje'] = '<p class="respuesta">Username o Password estan incorrectos.</p>';
+                header('Location: login.php');
             }
         }
     }
+    function logoutFn()
+    {
+        $_SESSION = array();
+		if (ini_get("session.use_cookies")) {
+		$params = session_get_cookie_params();
+		setcookie(session_name(), '', time() - 42000,
+			$params["path"], $params["domain"],
+			$params["secure"], $params["httponly"]
+		);
+		}
+		session_destroy();
+		header("Location: login.php");
+    }
+    function Actualizar_empleadoFn($conexion)
+    {
+        $olduser = getUserDataFn($conexion, $_POST['dni']);
+        updateEmployeeFn($conexion, $fila['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo'], $olduser);
+        $_SESSION['funcion'] = 'Lista';
+    }
+        /*Lectura
+		Tecnico
+		Permiso 1 -> Datos personales
+		Permiso 2 -> Estadísticas
+		Permiso 3 -> Partes abiertos de empleados
+		Permiso 4 -> Partes cerrados de empleados
+        Permiso 5 -> Partes atendidos de empleados
+        Permiso 18 -> Piezas reportadas
+		Empleado
+		Permiso 1 -> Datos personales
+		Permiso 6 -> Partes abiertos creados por el mismo
+		Permiso 7 -> Partes atendidos creados por el mismo
+		Permiso 8 -> Partes cerrados (visibles) creados por el mismo
+		Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
+		Admin
+		Permiso 1 -> Datos personales
+		Permiso 2 -> Estadísticas
+		Permiso 6 -> Partes abiertos creados por el mismo
+		Permiso 7 -> Partes atendidos creados por el mismo
+		Permiso 8 -> Partes cerrados (visibles) creados por el mismo
+		Permiso 9 -> Partes cerrados (ocultos) creados por el mismo
+		Permiso 10 -> Partes abiertos de empleados (no propios)
+		Permiso 11 -> Partes cerrados de empleados (no propios)
+        Permiso 12 -> Partes atendidos de empleados (no propios)
+        Permiso 16 -> Lista de empleados
+        Permiso 17 -> Estadísticas globales
+        Permiso 18 -> Piezas eportadas
+		Escritura
+		Tecnico
+        Permiso 21 -> Modificar parte de empleados
+		Empleado
+		Permiso 13 -> Crear parte
+        Permiso 14 -> Borrar parte propio no atendido
+        Permiso 22 -> Ocultar parte propio cerrado
+		Admin
+		Permiso 13 -> Crear parte
+		Permiso 14 -> Borrar parte propio no atendido
+        Permiso 15 -> Atender parte de empleados (no propios)
+        Permiso 19 -> Crear empleado
+        Permiso 20 -> Editar empleado
+        Permiso 21 -> Modificar parte de empleados*/
 ?>
