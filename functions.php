@@ -85,7 +85,7 @@ include 'newFunctions.php';
         else if (in_array(6, $permissions) && in_array(7, $permissions) && in_array(8, $permissions) && in_array(9, $permissions) && in_array(10, $permissions) && in_array(11, $permissions) && in_array(12, $permissions)) 
         {
             $new_array = array_filter($incidences, function($array) {
-                return ($array->solver->id == $_GET['id'] || $array->state == 1 || $array->owner->id == $_GET['id']);
+                return ($array->solver->id == $_GET['id'] || ($array->state == 1 || $array->state == 2 || $array->state == 3 || $array->state == 4) || $array->owner->id == $_GET['id']);
             });
             $partes = count($new_array);
         }
@@ -138,7 +138,7 @@ include 'newFunctions.php';
         updateNoteListSql($conexion, $user, $id_part, $not_tec);
         $_SESSION['funcion'] = 'Partes';
     }
-    function buildParteFn($conexion)
+    function buildParteFn($conexion, $user)
     {
 		$pieza = $_POST['pieza'];
 		$descripcion = $_POST['descripcion'];

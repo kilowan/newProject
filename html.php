@@ -810,7 +810,7 @@
                 closeParteFn($conexion, $user);
                 break;
             case 'Crear_parte':
-                buildParteFn($conexion);
+                buildParteFn($conexion, $user);
                 break;
             case 'Borrar_empleado':
                 removeEmployeeFn();
