@@ -4,11 +4,12 @@ include 'classes.php';
     function makeEmployeeFn($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type)
     {
         $credentials = new credentials($username, $password);
-        $con = getEmployeeByUsernameSql($conexion, $dni);
-        if ($con->num_rows >0)
+        $olduser = getEmployeeByUsernameFn($username);
+        
+
+        if (count($olduser) >0)
         {
             //update
-            $olduser = getUserDataFn($conexion, $dni);
             $user = updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser);
             insertCredentials2Sql($conexion, $credentials, $olduser->id);
         } 
@@ -16,8 +17,8 @@ include 'classes.php';
         {
             //insert
             $usertmp = getUserFn($dni, $name, $surname1, $surname2, $type, null, 0, null);
-            insertEmployeeSql($conexion, $usertmp, $credentials);
-            $user = getUserDataFn($conexion, $dni);
+            insertEmployeeSql($conexion, $usertmp, $credentials, setPermissionsFn($type));
+            $user = getEmployeeByUsernameFn($dni);
         }
         return $user;
     }
@@ -43,13 +44,6 @@ include 'classes.php';
                     break;
             }
         });
-    }
-    function getUserDataFn($conexion, $dni)
-    {
-        $con = getEmployeeByUsernameSql($conexion, $dni);
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        $permissions = getPermissionsFn($data['id']);
-        return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $permissions, $data['borrado'], $data['id']);
     }
     function connectionFn()
     {
@@ -83,11 +77,21 @@ include 'classes.php';
     }
     function getEmployeeByUsernameFn($username)
     {
-        $conexion = connectionFn();
-        $con = getEmployeeByUsernameSql($conexion, $username);
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        $permissions = getPermissionsFn($emp1['id']);
-        return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $permissions, $data['borrado'], $data['id']);
+        $empty = [];
+        $users = getEmpolyeeListFn();
+        $_SESSION['var'] = $username;
+        $users = getEmpolyeeListFn();
+        $new_array = array_filter($users, function($array) {
+            return ($array->dni == $_SESSION['var']);
+        });
+
+        if (count($new_array) == 0 || $new_array == null) {
+            return $empty;
+        }
+        else 
+        {
+            return array_pop($new_array);
+        }
     }
     function getIncidencesListFn()
     {
@@ -108,17 +112,11 @@ include 'classes.php';
                 $noteList[$count] = $note;
                 $count++;
             }
-            $con3 = getEmployeeSql($conexion, $fila['emp_crea']);
-            $emp1 = $con3->fetch_array(MYSQLI_ASSOC);
-            $permissions = getPermissionsFn($emp1['id']);
-            $owner = getUserFn($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $permissions, $emp1['borrado'], $emp1['id']);
+            $owner = getEmployeeByIdFn($fila['emp_crea']);
 
 
             if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
-                $con3 = getEmployeeSql($conexion, $fila['tec_res']);
-                $emp2 = $con3->fetch_array(MYSQLI_ASSOC);
-                $permissions = getPermissionsFn($emp2['id']);
-                $tec = getUserFn($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $permissions, $emp2['borrado'], $emp1['id']);
+                $tec = getEmployeeByIdFn($fila['tec_res']);
             }
 
             $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
@@ -147,12 +145,12 @@ include 'classes.php';
         }
         return $employees;
     }
-    function getEmployeeByIdFn()
+    function getEmployeeByIdFn($id)
     {
-        $conexion = connectionFn();
+        $_SESSION['var'] = $id;
         $users = getEmpolyeeListFn();
         $new_array = array_filter($users, function($array) {
-            return ($array->id == $_GET['id']);
+            return ($array->id == $_SESSION['var']);
         });
         return array_pop($new_array);
     }
@@ -165,19 +163,10 @@ include 'classes.php';
         });
         return array_pop($new_array);
     }
-    function getEmployeeByDniFn()
-    {
-        $conexion = connectionFn();
-        $users = getEmpolyeeListFn();
-        $new_array = array_filter($users, function($array) {
-            return ($array->dni == $_GET['dni']);
-        });
-        return array_pop($new_array);
-    }
     function removeEmployeeFn()
     {
         $conexion = connectionFn();
-        $user = getEmployeeByIdFn();
+        $user = getEmployeeByIdFn($_GET['id']);
         deleteEmployeeSql($conexion, $user);
         return $user;
     }
@@ -201,9 +190,26 @@ include 'classes.php';
     }
     function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser)
     {
-        $permissions = getPermissionsFn($olduser->id);
-        $user = getUserFn($dni, $name, $surname1, $surname2, $type, $permissions, 0, $olduser->id);
-        insertEmployee2Sql($conexion, $user);
+        $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $olduser->id);
+        updateEmployeeSql($conexion, $user, setPermissionsFn($type));
         return $user;
+    }
+    function setPermissionsFn($tipo)
+    {
+        $permissions = null;
+        switch ($tipo) {
+            case 'Tecnico':
+                $permissions = [1,2,3,4,5,18,21];
+                break;
+
+            case 'Admin':
+                $permissions = [1,2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+                break;
+            
+            default:
+                $permissions = [1,6,7,8,9,13,14,22];
+                break;
+        }
+        return $permissions;
     }
 ?>

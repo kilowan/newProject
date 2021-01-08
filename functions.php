@@ -198,7 +198,7 @@ include 'newFunctions.php';
     }
     function Actualizar_empleadoFn($conexion)
     {
-        $olduser = getUserDataFn($conexion, $_POST['dni']);
+        $olduser = getEmployeeByUsernameFn($_POST['dni']);
         updateEmployeeFn($conexion, $fila['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo'], $olduser);
         $_SESSION['funcion'] = 'Lista';
     }

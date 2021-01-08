@@ -15,11 +15,6 @@
         GROUP BY pieza");
     }
     //new
-	function getEmployeeByUsernameSql($conexion, $dni)
-	{
-        return $conexion->query("SELECT * FROM Empleados WHERE dni = '$dni'");
-    }
-    //new
     function getEmployeeSql($conexion, $id)
 	{
         return $conexion->query("SELECT * FROM Empleados WHERE id = $id");
@@ -86,28 +81,14 @@
         WHERE incidence=$id_part");
     }
     //new
-    function insertEmployeeSql($conexion, $user, $credentials)
+    function insertEmployeeSql($conexion, $user, $credentials, $permissions)
     {
         $conexion->query("INSERT INTO empleados (dni, nombre, apellido1, apellido2, tipo)
         VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
-        $con = getEmployeeByUsernameSql($conexion, $user->dni);
+        $con = $conexion->query("SELECT * FROM Empleados WHERE dni = '$user->dni'");
         $data = $con->fetch_array(MYSQLI_ASSOC);
         $id = $data['id'];
         $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', '$credentials->password', $id)");
-        $permissions = null;
-        switch ($user->tipo) {
-            case 'Tecnico':
-                $permissions = [1,2,3,4,5,18,21];
-                break;
-
-            case 'Admin':
-                $permissions = [1,2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
-                break;
-            
-            default:
-                $permissions = [1,6,7,8,9,13,14,22];
-                break;
-        }
         foreach ($permissions as $permission) {
             $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
         }
@@ -164,15 +145,14 @@
     {
         $conexion->query("UPDATE empleados SET borrado=1 WHERE id = $user->id");
     }
-    function updateEmployeeSql($conexion, $user)
+    function updateEmployeeSql($conexion, $user, $permissions)
     {
         $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
         WHERE id = $user->id");
-    }
-    //new
-    function insertEmployee2Sql($conexion, $user)
-    {
-        $conexion->query("UPDATE empleados SET nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', borrado=0 WHERE id=$user->id");
+        $conexion->query("DELETE employee_permissions WHERE employee=$user->id)");
+        foreach ($permissions as $permission) {
+            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+        }
     }
     //new
     function selectIncidencesSql($conexion)

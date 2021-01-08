@@ -15,10 +15,7 @@ include 'newFunctions.php';
     
     switch ($funcion) {
         case 'getEmployeeById':
-            showFn(getEmployeeByIdFn());
-            break;
-        case 'getEmployeeByDni':
-            showFn(getEmployeeByDniFn());
+            showFn(getEmployeeByIdFn($_GET['id']));
             break;
 
         case 'getAllincidences':
@@ -48,6 +45,9 @@ include 'newFunctions.php';
         case 'getIncidenceById':
             showFn(getIncidenceByIdFn());
             break;
+        case 'getEmployeeByUsername':
+            showFn(getEmployeeByUsernameFn($_GET['username']));
+            break;
         case 'addEmployee':
             $json = file_get_contents('php://input');
             $obj = json_decode($json);
@@ -57,7 +57,7 @@ include 'newFunctions.php';
             showFn(removeEmployeeFn());
             break;
         case 'getPermissions':
-            showFn(getEmployeeByIdFn()->permissions);
+            showFn(getEmployeeByIdFn($_GET['id'])->permissions);
             break;
         default:
             break;
