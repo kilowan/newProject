@@ -84,6 +84,39 @@ CREATE TABLE parte (
     ON UPDATE CASCADE
 );
 
+CREATE TABLE piece_type (
+	id INT(50) PRIMARY KEY NOT NULL auto_increment,
+	name VARCHAR(100) NOT NULL,
+	description VARCHAR(500)
+);
+CREATE TABLE piece (
+	id INT(50) PRIMARY KEY NOT NULL auto_increment,
+	type INT(50) NOT NULL,
+	name VARCHAR(100) NOT NULL,
+	price DECIMAL(6,2) NOT NULL,
+	description VARCHAR(500),
+    CONSTRAINT piece_type
+    FOREIGN KEY (type)
+    REFERENCES piece_type (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+CREATE TABLE incidence_piece (
+	id INT(50) PRIMARY KEY NOT NULL auto_increment,
+	piece INT(50) NOT NULL,
+	incidence INT(50) NOT NULL,
+	CONSTRAINT piece_id
+    FOREIGN KEY (piece)
+    REFERENCES piece (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+	CONSTRAINT incidence_id
+    FOREIGN KEY (incidence)
+    REFERENCES parte (id_part)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
 CREATE TABLE state (
     id INT(50) PRIMARY KEY NOT NULL auto_increment,
     name VARCHAR(50) NOT NULL
