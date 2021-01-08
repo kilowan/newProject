@@ -171,9 +171,8 @@ include 'newFunctions.php';
                 $con = selectEmployeeDataSql($conexion, $credentials);
                 //extrae datos personales
                 $fila = $con->fetch_array(MYSQLI_ASSOC);
-                $user_info = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['borrado'], $fila['id']);
-                $permissions = getPermissionsFn($user_info);
-                $user_info->permissions = $permissions;
+                $permissions = getPermissionsFn($fila['id']);
+                $user_info = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $permissions, $fila['borrado'], $fila['id']);
                 $_SESSION['user'] =  json_encode($user_info);
                 header('Location: menu.php');
             }

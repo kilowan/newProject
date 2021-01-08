@@ -57,7 +57,7 @@ include 'newFunctions.php';
             showFn(removeEmployeeFn());
             break;
         case 'getPermissions':
-            showFn(getPermissionsFn(getEmployeeByIdFn()));
+            showFn(getEmployeeByIdFn()->permissions);
             break;
         default:
             break;

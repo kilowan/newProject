@@ -15,11 +15,9 @@ include 'classes.php';
         else 
         {
             //insert
-            $usertmp = getUserFn($dni, $name, $surname1, $surname2, $type, null);
-            insertEmployeeSql($conexion, $usertmp);
+            $usertmp = getUserFn($dni, $name, $surname1, $surname2, $type, null, 0, null);
+            insertEmployeeSql($conexion, $usertmp, $credentials);
             $user = getUserDataFn($conexion, $dni);
-            insertPermissionsFn($user);
-            insertCredentialsSql($conexion, $credentials, $user->id);
         }
         return $user;
     }
@@ -50,7 +48,8 @@ include 'classes.php';
     {
         $con = getEmployeeByUsernameSql($conexion, $dni);
         $data = $con->fetch_array(MYSQLI_ASSOC);
-        return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
+        $permissions = getPermissionsFn($data['id']);
+        return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $permissions, $data['borrado'], $data['id']);
     }
     function connectionFn()
     {
@@ -69,7 +68,7 @@ include 'classes.php';
         $_SESSION['start'] = time();
         $_SESSION['expire'] = $_SESSION['start'] + (5 * 60);
     }
-    function getUserFn($dni, $name, $surname1, $surname2, $type, $id=null)
+    function getUserFn($dni, $name, $surname1, $surname2, $type, $permissions = null, $borrado = 0, $id=null)
     {
         $user = new user();
         $user->dni = $dni;
@@ -78,6 +77,8 @@ include 'classes.php';
         $user->surname2 = $surname2;
         $user->tipo = $type;
         $user->id = $id;
+        $user->permissions = $permissions;
+        $user->borrado = $borrado;
         return $user;
     }
     function getEmployeeByUsernameFn($username)
@@ -85,7 +86,8 @@ include 'classes.php';
         $conexion = connectionFn();
         $con = getEmployeeByUsernameSql($conexion, $username);
         $data = $con->fetch_array(MYSQLI_ASSOC);
-        return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $data['id']);
+        $permissions = getPermissionsFn($emp1['id']);
+        return getUserFn($data['dni'], $data['nombre'], $data['apellido1'], $data['apellido2'], $data['tipo'], $permissions, $data['borrado'], $data['id']);
     }
     function getIncidencesListFn()
     {
@@ -108,13 +110,15 @@ include 'classes.php';
             }
             $con3 = getEmployeeSql($conexion, $fila['emp_crea']);
             $emp1 = $con3->fetch_array(MYSQLI_ASSOC);
-            $owner = getUserFn($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $emp1['id']);
+            $permissions = getPermissionsFn($emp1['id']);
+            $owner = getUserFn($emp1['dni'], $emp1['nombre'], $emp1['apellido1'], $emp1['apellido2'], $emp1['tipo'], $permissions, $emp1['borrado'], $emp1['id']);
 
 
             if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
                 $con3 = getEmployeeSql($conexion, $fila['tec_res']);
                 $emp2 = $con3->fetch_array(MYSQLI_ASSOC);
-                $tec = getUserFn($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $emp2['id']);
+                $permissions = getPermissionsFn($emp2['id']);
+                $tec = getUserFn($emp2['dni'], $emp2['nombre'], $emp2['apellido1'], $emp2['apellido2'], $emp2['tipo'], $permissions, $emp2['borrado'], $emp1['id']);
             }
 
             $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
@@ -136,9 +140,8 @@ include 'classes.php';
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
         {
-            $employee = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
-            $permissions = getPermissionsFn($employee);
-            $employee->permissions = $permissions;
+            $permissions = getPermissionsFn($fila['id']);
+            $employee = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $permissions, $fila['borrado'], $fila['id']);
             $employees[$employee_count] = $employee;
             $employee_count++;
         }
@@ -183,10 +186,10 @@ include 'classes.php';
         $conexion = connectionFn();
         return makeEmployeeFn($conexion, $username, $password, $dni, $name, $surname1, $surname2, $type);
     }
-    function getPermissionsFn($user)
+    function getPermissionsFn($id)
     {
         $conexion = connectionFn();
-        $con = getPermissionsSql($conexion, $user);
+        $con = getPermissionsSql($conexion, $id);
         $permission = 0;
         $permissions = null;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -198,31 +201,9 @@ include 'classes.php';
     }
     function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser)
     {
-        $user = getUserFn($dni, $name, $surname1, $surname2, $type, $olduser->id);
+        $permissions = getPermissionsFn($olduser->id);
+        $user = getUserFn($dni, $name, $surname1, $surname2, $type, $permissions, 0, $olduser->id);
         insertEmployee2Sql($conexion, $user);
         return $user;
-    }
-
-    function insertPermissionsFn($user)
-    {
-        $permissions = null;
-        switch ($user->tipo) {
-            case 'Tecnico':
-                $permissions = [1,2,3,4,5,18,21];
-                break;
-
-            case 'Admin':
-                $permissions = [1,2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
-                break;
-            
-            default:
-                $permissions = [1,6,7,8,9,13,14,22];
-                break;
-        }
-        $conexion = connectionFn();
-        foreach ($permissions as $permission) {
-            insertPermissionsSql($conexion, $user, $permission);
-        }
-        return $permissions;
     }
 ?>

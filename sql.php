@@ -86,15 +86,31 @@
         WHERE incidence=$id_part");
     }
     //new
-    function insertEmployeeSql($conexion, $user)
+    function insertEmployeeSql($conexion, $user, $credentials)
     {
-        $conexion->query("INSERT INTO Empleados (dni, nombre, apellido1, apellido2, tipo)
+        $conexion->query("INSERT INTO empleados (dni, nombre, apellido1, apellido2, tipo)
         VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
-    }
-    //new
-    function insertCredentialsSql($conexion, $credentials, $id)
-    {
+        $con = getEmployeeByUsernameSql($conexion, $user->dni);
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        $id = $data['id'];
         $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', '$credentials->password', $id)");
+        $permissions = null;
+        switch ($user->tipo) {
+            case 'Tecnico':
+                $permissions = [1,2,3,4,5,18,21];
+                break;
+
+            case 'Admin':
+                $permissions = [1,2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+                break;
+            
+            default:
+                $permissions = [1,6,7,8,9,13,14,22];
+                break;
+        }
+        foreach ($permissions as $permission) {
+            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+        }
     }
     //new
     function insertCredentials2Sql($conexion, $credentials, $id)
@@ -164,14 +180,9 @@
         return $conexion->query("SELECT * FROM parte");
     }
     //new
-    function getPermissionsSql($conexion, $user)
+    function getPermissionsSql($conexion, $id)
     {
-        return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$user->id");
-    }
-    //new
-    function insertPermissionsSql($conexion, $user, $permission)
-    {
-        $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
+        return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$id");
     }
     function updateIncidence($conexion, $inf_part, $id_part)
     {
