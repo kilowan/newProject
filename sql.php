@@ -19,13 +19,6 @@
     {
         return $conexion->query("SELECT * FROM Empleados");
     }
-    //new
-    function selectEmployeeDataSql($conexion, $credentials)
-    {
-        return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE id='$credentials->employee' OR dni='$credentials->username'");
-    }
 	function tiempoMedioSql($conexion, $user)
 	{
 		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec

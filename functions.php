@@ -168,11 +168,12 @@ include 'newFunctions.php';
                 $creds = $con->fetch_array(MYSQLI_ASSOC);
                 sessionStartFn();
                 $credentials->employee = $creds['employee'];
-                $con = selectEmployeeDataSql($conexion, $credentials);
-                //extrae datos personales
-                $fila = $con->fetch_array(MYSQLI_ASSOC);
-                $permissions = getPermissionsFn($fila['id']);
-                $user_info = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $permissions, $fila['borrado'], $fila['id']);
+                $users = getEmpolyeeListFn();
+                $new_array = array_filter($users, function($array) 
+                {
+                    return ($array->id == $creds['employee'] || $array->dni = $credentials->username);
+                });
+                $user_info = array_pop($new_array);
                 $_SESSION['user'] =  json_encode($user_info);
                 header('Location: menu.php');
             }
