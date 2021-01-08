@@ -67,7 +67,7 @@
         }
     }
     //new
-    function insertCredentials2Sql($conexion, $credentials, $id)
+    function updateCredentialsSql($conexion, $credentials, $id)
     {
         $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
     }

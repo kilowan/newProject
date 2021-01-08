@@ -11,7 +11,7 @@ include 'classes.php';
         {
             //update
             $user = updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser);
-            insertCredentials2Sql($conexion, $credentials, $olduser->id);
+            updateCredentialsSql($conexion, $credentials, $olduser->id);
         } 
         else 
         {
