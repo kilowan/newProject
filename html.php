@@ -598,19 +598,20 @@
             </table><br />';
         }
     }
-    function employeeListView($conexion, $user)
+    function employeeListView($user)
     {
         $response = "";
         $_GET['id'] = $user->id;
         if (in_array(16, $user->permissions)) 
         {
-                    //Lista de empleados
-            $con = selectEmpleadosSql($conexion);
+            //Lista de empleados
+            $users = getEmpolyeeListFn();
+            $new_array = array_filter($users, function($array) {
+                return ($array->tipo != 'Admin' && $array->borrado == 0);
+            });
             //comprobación partes existentes no cerrados
-            if($con->num_rows>0)		
+            if(count($new_array)>0)
             {
-                //insercion titulos tabla (html)
-                $users = array();
                 //recorrer datos de los empleados
                 $response = $response.'
                 <br />'.headerDataView('Lista de empleados').'
@@ -624,19 +625,18 @@
                         <th>Tipo de empleado</th>
                         <th colspan="3">--</th>
                     </tr>';
-                while($fila = mysqli_fetch_array($con, MYSQLI_ASSOC))
-                {
+                foreach ($new_array as $user) {
                     //insercion partes (html) 
                     $response = $response.'
                     <tr>
-                        <td><a href="veremp.php?id_emp='.$fila['id'].'&dni='.$fila['dni'].'&funcion=Admin&tipo=Admin">'.$fila['id'].'</a></td>
-                        <td>'.$fila['dni'].'</td>
-                        <td>'.$fila['nombre'].'</td>
-                        <td>'.$fila['apellido1'].'</td>
-                        <td>'.$fila['apellido2'].'</td>
-                        <td>'.$fila['tipo'].'</td>
-                        <td><a href="veremp.php?id='.$fila['id'].'&funcion=Borrar_empleado">Borrar</a></td>
-                        <td><a href="veremp.php?funcion=Editar_empleado&id_emp='.$fila['id'].'&dni='.$fila['dni'].'">Editar</a></td>
+                        <td><a href="veremp.php?id_emp='.$user->id.'&dni='.$user->dni.'&funcion=Admin&tipo=Admin">'.$user->id.'</a></td>
+                        <td>'.$user->dni.'</td>
+                        <td>'.$user->name.'</td>
+                        <td>'.$user->surname1.'</td>
+                        <td>'.$user->surname2.'</td>
+                        <td>'.$user->tipo.'</td>
+                        <td><a href="veremp.php?id='.$user->id.'&funcion=Borrar_empleado">Borrar</a></td>
+                        <td><a href="veremp.php?funcion=Editar_empleado&id_emp='.$user->id.'&dni='.$user->dni.'">Editar</a></td>
                     </tr>';
                 }
                 $response = $response.'
@@ -692,11 +692,7 @@
         switch ($funcion) {
             case 'Admin':
                 $id = $_GET['id_emp'];
-                $dni = $_GET['dni'];
-                $con = selectEmployeeSql($conexion);
-                $result = $con->fetch_array(MYSQLI_ASSOC);
-                $permissions = getPermissionsFn($fila['id']);
-                $userA = getUserFn($result['dni'], $result['nombre'], $result['apellido1'], $result['apellido2'], $result['tipo'], $permissions, $result['borrado'], $id);
+                $userA = getEmployeeByIdFn($_GET['id_emp']);
                 $response = $response.personalDataView($userA);
                 $response = $response.showPartesView($conexion, $userA);
                 $response = $response.showStadisticsView($conexion, $userA);
@@ -765,7 +761,7 @@
     
             case 'Lista':
                 //Vista Lista de empleados
-                $response = $response.employeeListView($conexion, $user);
+                $response = $response.employeeListView($user);
                 break;
     
             case 'Agregar_empleado':

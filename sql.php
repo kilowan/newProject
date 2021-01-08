@@ -15,29 +15,9 @@
         GROUP BY pieza");
     }
     //new
-    function getEmployeeSql($conexion, $id)
-	{
-        return $conexion->query("SELECT * FROM Empleados WHERE id = $id");
-    }
-    //new
     function getAllEmployeeDataSql($conexion)
     {
         return $conexion->query("SELECT * FROM Empleados");
-    }
-	function selectEmpleadosSql($conexion)
-	{
-		//Lista de empleados no administradores.
-		return $conexion->query("SELECT id, dni, nombre, apellido1, apellido2, tipo
-		FROM Empleados
-		WHERE tipo NOT IN ('Admin') AND borrado=0");
-    }
-    function selectEmployeeSql($conexion)
-    {
-        $id_emp = $_GET['id_emp'];
-        $dni = $_GET['dni'];
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE id=$id_emp AND dni='$dni'");
     }
     //new
     function selectEmployeeDataSql($conexion, $credentials)
