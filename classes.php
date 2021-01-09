@@ -58,5 +58,18 @@
 			$this->piece = $piece;
 			$this->notes = $notes;
 		}
-    }
+	}
+	class piece
+	{
+		public ?int $id = null;
+		public string $name = "";
+		public $price = 0;
+		public string $description = "";
+		public $type = null;
+	}
+	class pieceType
+	{
+		public string $description = "";
+		public string $name = "";
+	}
 ?>
