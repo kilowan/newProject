@@ -7,7 +7,7 @@
         if (in_array(21, $user->permissions))
         {
             //Extrae datos parte
-            $incidence = getIncidenceByIdFn();
+            $incidence = getIncidenceByIdFn($_GET['id_part']);
             $response = $response.'<br />'.headerDataView('Editar Parte').'
             <table>
                 <tr>
@@ -26,11 +26,23 @@
                     <td>Fecha de creación</td>
                     <td>'.checkInputFn($incidence->initDateTime).'</td>
                 </tr>
-                <tr>
-                    <td>Pieza afectada</td>
-                    <td>'.checkInputFn($incidence->piece).'</td>
-                </tr>
             </table>'.getNotesView($incidence).'
+            <table>
+                <tr>
+                    <th>Piezas afectadas</th>
+                </tr>';
+                foreach ($incidence->pieces as $piece) {
+                    $response = $response.'
+                    <tr>
+                        <td>Nombre</td>
+                        <td>'.checkInputFn($piece->name).'</td>
+                    </tr>
+                    <tr>
+                        <td>Descripcion</td>
+                        <td>'.checkInputFn($piece->description).'</td>
+                    </tr>';
+                }
+            $response = $response.'</table>
             <form action="veremp.php" method="post">
             <table>
                 <tr>
@@ -180,7 +192,6 @@
             <td><a href="veremp.php?id_part='.$incidence->id.'&funcion=Ver_parte&state='.$state.'">'.$incidence->id.'</a></td>
                 <td>'.checkInputFn($incidence->initDateTime).'</td>
                 <td>'.checkInputFn($incidence->issueDesc).'</td>
-                <td>'.checkInputFn($incidence->piece).'</td>
             </tr>';
         }
         return $response;
@@ -193,7 +204,6 @@
                 <th>Nº parte</th>
                 <th>Fecha de creación</th>
                 <th>Información</th>
-                <th>Piezas afectadas</th>
             </tr>'.readIncidencesView($incidences, $state).'
         </table><br />';
     }
@@ -346,8 +356,30 @@
     function showDetailParteView($conexion, $user, $id_part)
     {
         $id_part = $_GET['id_part'];
-        $incidence = getIncidenceByIdFn();
+        $incidence = getIncidenceByIdFn($_GET['id_part']);
         $state = $incidence->state;
+        if (count($incidence->pieces) >0)
+        {
+            $data = '
+            <table>
+                <tr>
+                    <th>Piezas afectadas</th>
+                </tr>
+            </table><br />
+            <table>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripcion</th>
+                </tr>';
+            foreach ($incidence->pieces as $piece) {
+                $data = $data.'
+                <tr>
+                    <td>'.$piece->name.'</td>
+                    <td>'.$piece->description.'</td>
+                </tr>';
+            }
+            $data = $data.'</table>';
+        }
         return '
         <br />'.headerDataView('Ver Parte').'
 		<table>
@@ -371,12 +403,8 @@
 				<td>Fecha de creación</td>
 				<td>'.checkInputFn($incidence->initDateTime).'</td>
 			</tr>
-			<tr>
-				<td>Piezas afectadas</td>
-				<td>'.checkInputFn($incidence->piece).'</td>
-			</tr>
 			<tr>'.buttonsView($id_part, $state, $user, $incidence->owner->id).'</tr>
-        </table>'.getNotesView($incidence);
+        </table>'.getNotesView($incidence).$data;
     }
     function addParteView($user)
     {
@@ -425,7 +453,7 @@
     }
     function editParteView()
     {
-        $incidence = getIncidenceByIdFn();
+        $incidence = getIncidenceByIdFn($_GET['id_part']);
 		return '
 		<br />'.headerDataView('Editar parte').'
 		<form action="veremp.php" method="post">

@@ -167,13 +167,12 @@ include 'newFunctions.php';
             {
                 $creds = $con->fetch_array(MYSQLI_ASSOC);
                 $_SESSION['var'] = $creds['employee'];
-                $_SESSION['var2'] = $credentials->username;
                 sessionStartFn();
                 $credentials->employee = $creds['employee'];
                 $users = getEmpolyeeListFn();
                 $new_array = array_filter($users, function($array) 
                 {
-                    return ($array->id == $_SESSION['var'] || $array->dni = $_SESSION['var2']);
+                    return ($array->id == $_SESSION['var']);
                 });
                 $user_info = array_pop($new_array);
                 $_SESSION['user'] =  json_encode($user_info);

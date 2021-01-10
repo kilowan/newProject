@@ -118,13 +118,15 @@ include 'classes.php';
             if ($fila['tec_res'] != null && $fila['tec_res'] != "") {
                 $tec = getEmployeeByIdFn($fila['tec_res']);
             }
+            $pieces = getPiecesFn($fila['id_part']);
 
-            $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $fila['pieza'], $noteList);
+            $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $pieces, $noteList);
             $incidence->solver = $tec;
             $incidence->finishTime = $fila['hora_resolucion'];
             $incidence->finishDate = $fila['fecha_resolucion'];
             $incidence->state = $fila['state'];
             $incidence->id = $fila['id_part'];
+            $incidence->pieces = $pieces;
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -154,12 +156,13 @@ include 'classes.php';
         });
         return array_pop($new_array);
     }
-    function getIncidenceByIdFn()
+    function getIncidenceByIdFn($id)
     {
         $conexion = connectionFn();
         $incidences = getIncidencesListFn();
+        $_SESSION['var'] = $id;
         $new_array = array_filter($incidences, function($array) {
-            return ($array->id == $_GET['id_part']);
+            return ($array->id == $_SESSION['var']);
         });
         return array_pop($new_array);
     }
@@ -221,12 +224,13 @@ include 'classes.php';
         while ($fila = $con->fetch_array(MYSQLI_ASSOC))
         {
             $piece = new piece();
+            $piece->id = $fila['piece'];
             $piece->name = $fila['piece_name'];
             $piece->price = $fila['price'];
             $piece->description = $fila['piece_description'];
             $piece->type = new pieceType();
             $piece->type->name = $fila['piece_type_name'];
-            $piece->type->description = $fila['piece_description'];
+            $piece->type->description = $fila['piece_type_description'];
             $pieces[$counter] = $piece;
             $counter++;
         }

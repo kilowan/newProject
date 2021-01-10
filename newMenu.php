@@ -43,7 +43,7 @@ include 'newFunctions.php';
             showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getIncidenceById':
-            showFn(getIncidenceByIdFn());
+            showFn(getIncidenceByIdFn($_GET['id_part']));
             break;
         case 'getEmployeeByUsername':
             showFn(getEmployeeByUsernameFn($_GET['username']));
