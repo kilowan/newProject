@@ -212,4 +212,24 @@ include 'classes.php';
         }
         return $permissions;
     }
+    function getPiecesFn($id)
+    {
+        $conexion = connectionFn();
+        $con = getPiecesSql($conexion, $id);
+        $pieces = null;
+        $counter = 0;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC))
+        {
+            $piece = new piece();
+            $piece->name = $fila['piece_name'];
+            $piece->price = $fila['price'];
+            $piece->description = $fila['piece_description'];
+            $piece->type = new pieceType();
+            $piece->type->name = $fila['piece_type_name'];
+            $piece->type->description = $fila['piece_description'];
+            $pieces[$counter] = $piece;
+            $counter++;
+        }
+        return $pieces;
+    }
 ?>

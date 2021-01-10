@@ -144,7 +144,7 @@
     //new
     function getPiecesSql($conexion, $id)
     {
-        $conexion->query("SELECT ip.piece, ip.incidence, p.name AS 'piece_name', p.price, p.quantity, p.description AS 'piece_description', pt.name AS 'piece_type_name', pt.description AS 'piece_description'
+        return $conexion->query("SELECT ip.piece, ip.incidence, p.name AS 'piece_name', p.price, p.quantity, p.description AS 'piece_description', pt.name AS 'piece_type_name', pt.description AS 'piece_description'
         FROM incidence_piece ip INNER JOIN piece p
         ON ip.piece=p.id
         INNER JOIN piece_type pt

@@ -59,6 +59,9 @@ include 'newFunctions.php';
         case 'getPermissions':
             showFn(getEmployeeByIdFn($_GET['id'])->permissions);
             break;
+        case 'getPieces':
+            showFn(getPiecesFn($_GET['id']));
+            break;
         default:
             break;
     }
