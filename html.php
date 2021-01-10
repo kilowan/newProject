@@ -464,14 +464,12 @@
 					<th>Nº parte</th>
 					<th>Fecha de creación</th>
 					<th>Información</th>
-					<th>Piezas afectadas</th>
 					<th>--</th>
 				</tr>
 				<tr>
 					<td>'.$incidence->id.'</td>
 					<td>'.$incidence->initDateTime.'</td>
 					<td><input type="text" name="inf_part" value="'.$incidence->issueDesc.'" required /></td>
-					<td>'.$incidence->piece.'</td>
 					<td><input type="submit" value="Guardar" /></td>
 				</tr>
 			</table>
