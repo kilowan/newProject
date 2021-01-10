@@ -45,17 +45,17 @@
         public $finishTime = null;
         public $finishDate = null;
         public string $issueDesc = "";
-        public string $piece = "";
+        public $pieces = null;
 		public ?array $notes = null;
 		public int $state = 1;
 		public ?int $id = null;
 		
-		public function __construct($owner, $initDateTime, string $issueDesc, string $piece, ?array $notes)
+		public function __construct($owner, $initDateTime, string $issueDesc, $pieces, ?array $notes)
 		{
 			$this->owner = $owner;
 			$this->initDateTime = $initDateTime;
 			$this->issueDesc = $issueDesc;
-			$this->piece = $piece;
+			$this->pieces = $pieces;
 			$this->notes = $notes;
 		}
 	}
