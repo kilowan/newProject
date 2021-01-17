@@ -68,6 +68,14 @@ include 'newFunctions.php';
     function showFn($new_array)
     {
         header('Content-Type: application/json');
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method == "OPTIONS") {
+            die();
+        }
+
         echo json_encode($new_array);
         exit();
     }

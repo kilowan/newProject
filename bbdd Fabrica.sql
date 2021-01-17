@@ -56,6 +56,16 @@ INSERT INTO permissionlist (id, name) VALUES
 (21, 'Modificar parte de empleados'),
 (22, 'Ocultar parte propio cerrado');
 
+CREATE TABLE state (
+    id INT(50) PRIMARY KEY NOT NULL auto_increment,
+    name VARCHAR(50) NOT NULL
+);
+
+INSERT INTO state (name) VALUES 
+('Nuevo'),
+('En curso'),
+('Cerrado');
+
 CREATE TABLE parte (
     id_part INT(50) PRIMARY KEY auto_increment,
     emp_crea INT(50) NOT NULL,
@@ -142,11 +152,6 @@ CREATE TABLE incidence_piece (
     ON UPDATE CASCADE
 );
 
-CREATE TABLE state (
-    id INT(50) PRIMARY KEY NOT NULL auto_increment,
-    name VARCHAR(50) NOT NULL
-);
-
  CREATE TABLE Notes (
     Id INT(50) PRIMARY KEY NOT NULL auto_increment,
     employee INT(50) NOT NULL,
@@ -177,11 +182,6 @@ CREATE TABLE state (
     ON UPDATE CASCADE
     ON DELETE CASCADE
  );
-
-INSERT INTO state (name) VALUES 
-('Nuevo'),
-('En curso'),
-('Cerrado');
 
 INSERT INTO Empleados (dni, nombre, apellido1, apellido2, tipo) VALUES 
 ('12345678Z', 'Jose Javier', 'Valero', 'Fuentes', 'Tecnico'),
