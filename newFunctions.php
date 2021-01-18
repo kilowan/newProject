@@ -120,13 +120,7 @@ include 'classes.php';
             }
             $pieces = getPiecesFn($fila['id_part']);
 
-            $incidence = new incidence($owner, $fila['fecha_hora_creacion'], $fila['inf_part'], $pieces, $noteList);
-            $incidence->solver = $tec;
-            $incidence->finishTime = $fila['hora_resolucion'];
-            $incidence->finishDate = $fila['fecha_resolucion'];
-            $incidence->state = $fila['state'];
-            $incidence->id = $fila['id_part'];
-            $incidence->pieces = $pieces;
+            $incidence = makeIncidenceFn($owner, $info, $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -236,4 +230,62 @@ include 'classes.php';
         }
         return $pieces;
     }
+    function addIncidenceFn($obj)
+    {
+        $conexion = connectionFn();
+        $owner = getUserFn($obj->owner->dni, $obj->owner->name, $obj->owner->surname1, $obj->owner->surname2, $obj->owner->type, $obj->owner->permissions, $obj->owner->borrado, $obj->owner->id);
+        $id = insertIncidenceSql($conexion, $owner, $issueDesc);
+        insertPiecesSql($conexion, $obj->pieces, $id);
+        makeIncidenceFn($obj->owner, $obj->issueDesc, $obj->pieces);
+        return getIncidenceByIdFn($id);
+    }
+    function makeIncidenceFn($owner, $info, $pieces, $noteList = null, $state = 1, $tec = null, $init_date = null, $finishTime = null, $finishDate = null, $id = null)
+    {
+        $incidence = new incidence($owner, $init_date, $info, $pieces, $noteList);
+        $incidence->solver = $tec;
+        $incidence->finishTime = $finishTime;
+        $incidence->finishDate = $finishDate;
+        $incidence->state = $state;
+        $incidence->id = $id;
+        $incidence->pieces = $pieces;
+    }
+    /* Incidence Example Object JSON
+        "owner": {
+            "name": "",
+            "surname1": "",
+            "surname2": "",
+            "dni": "",
+            "tipo": "",
+            "id": NULL,
+            "permissions": [
+
+            ],
+            "borrado": 0,
+        },
+        "solver": null,
+        "initDateTime": null,
+        "finishTime": null,
+        "finishDate": null,
+        "issueDesc": "",
+        "pieces": [
+            {
+                "id": null,
+                "name": "",
+                "price": 0,
+                "description": "",
+                "type": {
+                    "description": "",
+		            "name": "",
+                },
+            },
+        ],
+		"notes": [
+            {
+                "noteStr": "",
+		        "date": null,
+            },
+        ],
+		"state": null,
+		"id": null,
+    */
 ?>

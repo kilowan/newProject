@@ -53,6 +53,10 @@ include 'newFunctions.php';
             $obj = json_decode($json);
             showFn(addEmployeeFn($obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type));
             break;
+        case 'addIncidence':
+            $json = file_get_contents('php://input');
+            $obj = json_decode($json);
+            showFn(addIncidenceFn($obj));
         case 'removeEmployee':
             showFn(removeEmployeeFn());
             break;

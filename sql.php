@@ -151,4 +151,19 @@
         ON p.type=pt.id
         WHERE incidence=$id");
     }
+    //new
+    function insertIncidenceSql($conexion, $owner, $pieces, $issueDesc)
+    {
+        $conexion->query("INSERT INTO parte (emp_crea, inf_part, state) VALUES ($owner->id, $incidence->issueDesc, 1)");
+        $id=mysql_insert_id();
+        return $id;
+    }
+    //new 
+    function insertPiecesSql($conexion, $pieces, $id)
+    {
+        foreach ($pieces as $piece) {
+            $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $id)");
+        }
+    }
+
 ?>
