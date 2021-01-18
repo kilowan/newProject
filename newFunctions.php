@@ -236,7 +236,6 @@ include 'classes.php';
         $owner = getUserFn($obj->owner->dni, $obj->owner->name, $obj->owner->surname1, $obj->owner->surname2, $obj->owner->type, $obj->owner->permissions, $obj->owner->borrado, $obj->owner->id);
         $id = insertIncidenceSql($conexion, $owner, $issueDesc);
         insertPiecesSql($conexion, $obj->pieces, $id);
-        makeIncidenceFn($obj->owner, $obj->issueDesc, $obj->pieces);
         return getIncidenceByIdFn($id);
     }
     function makeIncidenceFn($owner, $info, $pieces, $noteList = null, $state = 1, $tec = null, $init_date = null, $finishTime = null, $finishDate = null, $id = null)
@@ -248,6 +247,7 @@ include 'classes.php';
         $incidence->state = $state;
         $incidence->id = $id;
         $incidence->pieces = $pieces;
+        return $incidence;
     }
     /* Incidence Example Object JSON
         "owner": {
