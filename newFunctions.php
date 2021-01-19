@@ -120,7 +120,7 @@ include 'classes.php';
             }
             $pieces = getPiecesFn($fila['id_part']);
 
-            $incidence = makeIncidenceFn($owner, $info, $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
+            $incidence = makeIncidenceFn($owner, $fila['inf_part'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -230,15 +230,48 @@ include 'classes.php';
         }
         return $pieces;
     }
+    function getPiecesByIdsFn($pieces)
+    {
+        $conexion = connectionFn();
+        $pieces = null;
+        $counter = 0;
+        foreach ($pieces as $piece) {
+            $con = getPieceByIdSql($conexion, $piece);
+            $fila = $con->fetch_array(MYSQLI_ASSOC);
+            $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
+            $type = getPieceTypeSql($conexion, $fila['type']);
+            $fila2 = $type->fetch_array(MYSQLI_ASSOC);
+            $type = makePieceType($fila2['name'], $fila2['description']);
+            $piece->type = $type;
+            $pieces[$counter] = $piece;
+        }
+        return $pieces;
+    }
+    function getPieceById($pieces)
+    {
+        $con = getPiecesByIds($conexion, $pieces);
+        $pieces = null;
+        $count = 0;
+        while ($fila = $con->fetch_array(MYSQLI_ASSOC))
+        {
+            $con2 = getPieceTypeSql($conexion, $fila['id']);
+            $fila2 = $con->fetch_array(MYSQLI_ASSOC);
+            $type = makePieceType($fila2['name'], $fila2['description']);
+            makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description'], $type);
+            $pieces[$count];
+            $count++;
+        }
+        return $pieces;
+    }
     function addIncidenceFn($obj)
     {
         $conexion = connectionFn();
-        $owner = getUserFn($obj->owner->dni, $obj->owner->name, $obj->owner->surname1, $obj->owner->surname2, $obj->owner->type, $obj->owner->permissions, $obj->owner->borrado, $obj->owner->id);
-        $id = insertIncidenceSql($conexion, $owner, $issueDesc);
+        $owner = getEmployeeByIdFn($obj->ownerId);
+        $id = insertIncidenceSql($conexion, $owner, $obj->issueDesc);
         insertPiecesSql($conexion, $obj->pieces, $id);
         return getIncidenceByIdFn($id);
     }
-    function makeIncidenceFn($owner, $info, $pieces, $noteList = null, $state = 1, $tec = null, $init_date = null, $finishTime = null, $finishDate = null, $id = null)
+    function makeIncidenceFn($owner, string $info, $pieces, $noteList = null, ?int $state = 1, $tec = null, $init_date = null, $finishTime = null, $finishDate = null, ?int $id = null)
     {
         $incidence = new incidence($owner, $init_date, $info, $pieces, $noteList);
         $incidence->solver = $tec;
@@ -249,43 +282,21 @@ include 'classes.php';
         $incidence->pieces = $pieces;
         return $incidence;
     }
-    /* Incidence Example Object JSON
-        "owner": {
-            "name": "",
-            "surname1": "",
-            "surname2": "",
-            "dni": "",
-            "tipo": "",
-            "id": NULL,
-            "permissions": [
-
-            ],
-            "borrado": 0,
-        },
-        "solver": null,
-        "initDateTime": null,
-        "finishTime": null,
-        "finishDate": null,
-        "issueDesc": "",
-        "pieces": [
-            {
-                "id": null,
-                "name": "",
-                "price": 0,
-                "description": "",
-                "type": {
-                    "description": "",
-		            "name": "",
-                },
-            },
-        ],
-		"notes": [
-            {
-                "noteStr": "",
-		        "date": null,
-            },
-        ],
-		"state": null,
-		"id": null,
-    */
+    function makePiece(int $id, string $name, $price, string $description, $pieceType = null)
+    {
+        $piece = new piece();
+        $piece->id = $id;
+        $piece->name = $name;
+        $piece->price = $price;
+        $piece->description = $description;
+        $piece->type = $pieceType;
+        return $piece;
+    }
+    function makePieceType(string $name, string $description)
+    {
+        $type = new pieceType();
+        $type->name = $name;
+        $type->description = $description;
+        return $type;
+    }
 ?>

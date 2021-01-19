@@ -49,14 +49,11 @@ include 'newFunctions.php';
             showFn(getEmployeeByUsernameFn($_GET['username']));
             break;
         case 'addEmployee':
-            $json = file_get_contents('php://input');
-            $obj = json_decode($json);
+            $obj = getPostData();
             showFn(addEmployeeFn($obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type));
             break;
         case 'addIncidence':
-            $json = file_get_contents('php://input');
-            $obj = json_decode($json);
-            showFn(addIncidenceFn($obj));
+            showFn(addIncidenceFn(getPostData()));
         case 'removeEmployee':
             showFn(removeEmployeeFn());
             break;
@@ -65,6 +62,9 @@ include 'newFunctions.php';
             break;
         case 'getPieces':
             showFn(getPiecesFn($_GET['id']));
+            break;
+        case 'getPiecesByIdsFn':
+            showFn(getPiecesByIdsFn(getPostData()));
             break;
         default:
             break;
@@ -82,5 +82,10 @@ include 'newFunctions.php';
 
         echo json_encode($new_array);
         exit();
+    }
+    function getPostData()
+    {
+        $json = file_get_contents('php://input');
+        return json_decode($json);
     }
 ?>

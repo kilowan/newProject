@@ -152,14 +152,42 @@
         WHERE incidence=$id");
     }
     //new
-    function insertIncidenceSql($conexion, $owner, $pieces, $issueDesc)
+    function getPieceTypeSql($conexion, int $id)
     {
-        $conexion->query("INSERT INTO parte (emp_crea, inf_part, state) VALUES ($owner->id, $incidence->issueDesc, 1)");
-        $id=mysql_insert_id();
-        return $id;
+        return $conexion->query("SELECT * FROM piece_type WHERE id=$id");
+    }
+    //new
+    function getPieceByIdSql($conexion, $id)
+    {
+        return $conexion->query("SELECT * FROM piece WHERE id=$id");
+    }
+    //NEW
+    function getPiecesByIdsSql($conexion, $pieces)
+    {
+        $count = 0;
+        $response = "";
+        foreach ($pieces as $piece) {
+            if ($count < $pieces-1) {
+                $response += $piece;
+            }
+            else 
+            {
+                $response += $piece +=", ";
+            }
+            $count++;
+        }
+        return $conexion->query("SELECT * FROM piece WHERE id IN($response)");
+    }
+    //new
+    function insertIncidenceSql($conexion, $owner, string $issueDesc)
+    {
+        $conexion->query("INSERT INTO parte (emp_crea, inf_part, state) VALUES ($owner->id, '$issueDesc', 1)");
+        $con = $conexion->query("SELECT MAX(id_part) AS 'id_part' FROM parte");
+        $fila = $con->fetch_array(MYSQLI_ASSOC);
+        return $fila['id_part'];
     }
     //new 
-    function insertPiecesSql($conexion, $pieces, $id)
+    function insertPiecesSql($conexion, $pieces, int $id)
     {
         foreach ($pieces as $piece) {
             $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $id)");
