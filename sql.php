@@ -161,23 +161,6 @@
     {
         return $conexion->query("SELECT * FROM piece WHERE id=$id");
     }
-    //NEW
-    function getPiecesByIdsSql($conexion, $pieces)
-    {
-        $count = 0;
-        $response = "";
-        foreach ($pieces as $piece) {
-            if ($count < $pieces-1) {
-                $response += $piece;
-            }
-            else 
-            {
-                $response += $piece +=", ";
-            }
-            $count++;
-        }
-        return $conexion->query("SELECT * FROM piece WHERE id IN('$response')");
-    }
     //new
     function insertIncidenceSql($conexion, $owner, string $issueDesc)
     {
@@ -192,6 +175,11 @@
         foreach ($pieces as $piece) {
             $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $id)");
         }
+    }
+    //new
+    function getPiecesListSql($conexion)
+    {
+        return $conexion->query("SELECT * FROM piece");
     }
 
 ?>

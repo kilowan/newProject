@@ -230,17 +230,28 @@ include 'classes.php';
         }
         return $pieces;
     }
+    function getPieceByIdFn($id)
+    {
+        $conexion = connectionFn();
+        $con = getPieceByIdSql($conexion, $id);
+        $fila = $con->fetch_array(MYSQLI_ASSOC);
+        $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
+        $con2 = getPieceTypeSql($conexion, $fila['type']);
+        $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
+        $type = makePieceType($fila2['name'], $fila2['description']);
+        $piece->type = $type;
+        return $piece;
+    }
     function getPiecesByIdsFn($pieces)
     {
         $conexion = connectionFn();
-        $pieces = null;
         $counter = 0;
         foreach ($pieces as $piece) {
             $con = getPieceByIdSql($conexion, $piece);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-            $type = getPieceTypeSql($conexion, $fila['type']);
-            $fila2 = $type->fetch_array(MYSQLI_ASSOC);
+            $con2 = getPieceTypeSql($conexion, $fila['type']);
+            $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
             $type = makePieceType($fila2['name'], $fila2['description']);
             $piece->type = $type;
             $pieces[$counter] = $piece;
@@ -248,19 +259,21 @@ include 'classes.php';
         }
         return $pieces;
     }
-    function getPieceById($pieces)
+    function getPiecesListFn()
     {
-        $con = getPiecesByIds($conexion, $pieces);
+        $conexion = connectionFn();
+        $con = getPiecesListSql($conexion);
         $pieces = null;
-        $count = 0;
+        $counter = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC))
         {
-            $con2 = getPieceTypeSql($conexion, $fila['id']);
-            $fila2 = $con->fetch_array(MYSQLI_ASSOC);
+            $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
+            $con2 = getPieceTypeSql($conexion, $fila['type']);
+            $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
             $type = makePieceType($fila2['name'], $fila2['description']);
-            makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description'], $type);
-            $pieces[$count];
-            $count++;
+            $piece->type = $type;
+            $pieces[$counter] = $piece;
+            $counter++;
         }
         return $pieces;
     }

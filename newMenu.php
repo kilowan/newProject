@@ -63,8 +63,14 @@ include 'newFunctions.php';
         case 'getPieces':
             showFn(getPiecesFn($_GET['id']));
             break;
-        case 'getPiecesByIdsFn':
-            showFn(getPiecesByIdsFn(getPostData()));
+        case 'getPiecesByIds':
+            showFn(getPiecesByIdsFn(getPostData()->pieces));
+            break;
+        case 'getPiecesList':
+            showFn(getPiecesListFn());
+            break;
+        case 'getPieceById':
+            showFn(getPieceByIdFn($_GET['id']));
             break;
         default:
             break;
