@@ -176,7 +176,7 @@
             }
             $count++;
         }
-        return $conexion->query("SELECT * FROM piece WHERE id IN($response)");
+        return $conexion->query("SELECT * FROM piece WHERE id IN('$response')");
     }
     //new
     function insertIncidenceSql($conexion, $owner, string $issueDesc)

@@ -244,6 +244,7 @@ include 'classes.php';
             $type = makePieceType($fila2['name'], $fila2['description']);
             $piece->type = $type;
             $pieces[$counter] = $piece;
+            $counter++;
         }
         return $pieces;
     }
