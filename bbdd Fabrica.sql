@@ -152,11 +152,20 @@ CREATE TABLE incidence_piece (
     ON UPDATE CASCADE
 );
 
+CREATE TABLE note_type (
+    id INT(50) PRIMARY KEY NOT NULL auto_increment,
+    name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO note_type (name) VALUES
+('ownerNote'),
+('solverNote');
+
  CREATE TABLE Notes (
     Id INT(50) PRIMARY KEY NOT NULL auto_increment,
     employee INT(50) NOT NULL,
     incidence INT(50) NOT NULL,
-    noteType VARCHAR(50) NOT NULL,
+    noteType INT(50) PRIMARY KEY NOT NULL,
     noteStr VARCHAR(200) NOT NULL,
     date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     CONSTRAINT notes_employee
@@ -167,6 +176,11 @@ CREATE TABLE incidence_piece (
     CONSTRAINT notes_incidence
     FOREIGN KEY (incidence)
     REFERENCES parte (id_part)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    CONSTRAINT notes_type
+    FOREIGN KEY (noteType)
+    REFERENCES note_type (id)
     ON UPDATE CASCADE
     ON DELETE CASCADE
  );
