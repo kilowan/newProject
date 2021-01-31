@@ -72,6 +72,9 @@ include 'newFunctions.php';
         case 'getPieceById':
             showFn(getPieceByIdFn($_GET['id']));
             break;
+        case 'checkCredentials':
+            showFn(checkCredentialsFn($_GET['username'], $_GET['pass']));
+            break;
         default:
             break;
     }

@@ -313,4 +313,14 @@ include 'classes.php';
         $type->description = $description;
         return $type;
     }
+    function checkCredentialsFn($username, $password)
+    {
+        $conexion = connectionFn();
+        $credentials = new credentials($username, $password);
+        $con = checkCredentialsSql($credentials, $conexion);
+        if ($con->num_rows > 0)
+        {
+            return $credentials;
+        }
+    }
 ?>
