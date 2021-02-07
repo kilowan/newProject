@@ -6,7 +6,7 @@
         ON E.id=C.employee
 		WHERE E.borrado=0 AND C.username='$credentials->username' AND C.password='$credentials->password'");
     }
-
+    //old
     function countPiezasSql($conexion)
     {
         return $conexion->query("SELECT pieza, COUNT(pieza) AS 'numeroP' 
@@ -14,63 +14,22 @@
         WHERE state IN (3, 4)
         GROUP BY pieza");
     }
-	function countHiddenPartesSql($conexion, $user)
-	{
-		$con = $conexion->query("SELECT COUNT(*) AS Partes
-		FROM parte 
-        WHERE state=4 AND emp_crea = $user->id");
-        $result = $con->fetch_array(MYSQLI_ASSOC);
-        return $result['Partes'];
-    }
-	function selectParteSql($conexion, $id_part)
-	{
-		return $conexion->query("SELECT *
-		FROM parte
-		WHERE id_part=$id_part AND state=1");
-	}
     //new
-	function getEmployeeByUsernameSql($conexion, $dni)
-	{
-        return $conexion->query("SELECT * FROM Empleados WHERE dni = '$dni'");
-    }
-    //new
-    function getEmployeeSql($conexion, $id)
-	{
-        return $conexion->query("SELECT * FROM Empleados WHERE id = $id");
+    function piecesCountSql($conexion)
+    {
+        return $conexion->query("SELECT p.name AS pieceName, COUNT(ip.piece) AS 'pieceNumber' 
+        FROM incidence_piece ip 
+        INNER JOIN piece p
+        ON p.id = ip.piece
+        INNER JOIN parte pa
+        ON ip.incidence = pa.id_part
+        WHERE pa.state IN (3, 4)
+        GROUP BY piece");
     }
     //new
     function getAllEmployeeDataSql($conexion)
     {
         return $conexion->query("SELECT * FROM Empleados");
-    }
-	function selectEmpleadoNoAdminSql($conexion)
-	{
-		$id_emp = $_GET['id_emp'];
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE tipo NOT IN ('Admin') AND id=$id_emp");
-	}
-	function selectEmpleadosSql($conexion)
-	{
-		//Lista de empleados no administradores.
-		return $conexion->query("SELECT id, dni, nombre, apellido1, apellido2, tipo
-		FROM Empleados
-		WHERE tipo NOT IN ('Admin') AND borrado=0");
-    }
-    function selectEmployeeSql($conexion)
-    {
-        $id_emp = $_GET['id_emp'];
-        $dni = $_GET['dni'];
-		return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE id=$id_emp AND dni='$dni'");
-    }
-    //new
-    function selectEmployeeDataSql($conexion, $credentials)
-    {
-        return $conexion->query("SELECT *
-		FROM Empleados
-		WHERE id='$credentials->employee' OR dni='$credentials->username'");
     }
 	function tiempoMedioSql($conexion, $user)
 	{
@@ -107,25 +66,27 @@
         WHERE incidence=$id_part");
     }
     //new
-    function insertEmployeeSql($conexion, $user)
+    function insertEmployeeSql($conexion, $user, $credentials, $permissions)
     {
-        $conexion->query("INSERT INTO Empleados (dni, nombre, apellido1, apellido2, tipo)
+        $conexion->query("INSERT INTO empleados (dni, nombre, apellido1, apellido2, tipo)
         VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
-    }
-    //new
-    function insertCredentialsSql($conexion, $credentials, $id)
-    {
+        $con = $conexion->query("SELECT * FROM Empleados WHERE dni = '$user->dni'");
+        $data = $con->fetch_array(MYSQLI_ASSOC);
+        $id = $data['id'];
         $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', '$credentials->password', $id)");
+        foreach ($permissions as $permission) {
+            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+        }
     }
     //new
-    function insertCredentials2Sql($conexion, $credentials, $id)
+    function updateCredentialsSql($conexion, $credentials, $id)
     {
         $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
     }
-    function insertNoteSql($id_part, $user, $inf_part)
+    /*function insertNoteSql($conexion, $id_part, $user, $inf_part)
     {
         $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
-    }
+    }*/
     function updateNoteListSql($conexion, $user, $id_part, $not_tec)
     {
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, '$user->tipo', '$not_tec')");
@@ -169,15 +130,14 @@
     {
         $conexion->query("UPDATE empleados SET borrado=1 WHERE id = $user->id");
     }
-    function updateEmployeeSql($conexion, $user)
+    function updateEmployeeSql($conexion, $user, $permissions)
     {
         $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
         WHERE id = $user->id");
-    }
-    //new
-    function insertEmployee2Sql($conexion, $user)
-    {
-        $conexion->query("UPDATE empleados SET nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', borrado=0 WHERE id=$user->id");
+        $conexion->query("DELETE employee_permissions WHERE employee=$user->id)");
+        foreach ($permissions as $permission) {
+            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+        }
     }
     //new
     function selectIncidencesSql($conexion)
@@ -185,13 +145,53 @@
         return $conexion->query("SELECT * FROM parte");
     }
     //new
-    function getPermissionsSql($conexion, $user)
+    function getPermissionsSql($conexion, $id)
     {
-        return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$user->id");
+        return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$id");
+    }
+    function updateIncidence($conexion, $inf_part, $id_part)
+    {
+        $conexion->query("UPDATE parte SET inf_part='$inf_part' WHERE id_part=$id_part");
     }
     //new
-    function insertPermissionsSql($conexion, $user, $permission)
+    function getPiecesSql($conexion, $id)
     {
-        $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
+        return $conexion->query("SELECT ip.piece, ip.incidence, p.name AS 'piece_name', p.price, p.quantity, p.description AS 'piece_description', pt.name AS 'piece_type_name', pt.description AS 'piece_type_description'
+        FROM incidence_piece ip INNER JOIN piece p
+        ON ip.piece=p.id
+        INNER JOIN piece_type pt
+        ON p.type=pt.id
+        WHERE incidence=$id");
     }
+    //new
+    function getPieceTypeSql($conexion, int $id)
+    {
+        return $conexion->query("SELECT * FROM piece_type WHERE id=$id");
+    }
+    //new
+    function getPieceByIdSql($conexion, $id)
+    {
+        return $conexion->query("SELECT * FROM piece WHERE id=$id");
+    }
+    //new
+    function insertIncidenceSql($conexion, $owner, string $issueDesc)
+    {
+        $conexion->query("INSERT INTO parte (emp_crea, inf_part, state) VALUES ($owner->id, '$issueDesc', 1)");
+        $con = $conexion->query("SELECT MAX(id_part) AS 'id_part' FROM parte");
+        $fila = $con->fetch_array(MYSQLI_ASSOC);
+        return $fila['id_part'];
+    }
+    //new 
+    function insertPiecesSql($conexion, $pieces, int $id)
+    {
+        foreach ($pieces as $piece) {
+            $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $id)");
+        }
+    }
+    //new
+    function getPiecesListSql($conexion)
+    {
+        return $conexion->query("SELECT * FROM piece");
+    }
+
 ?>

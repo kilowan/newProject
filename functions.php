@@ -1,58 +1,5 @@
 <?php
 include 'newFunctions.php';
-    define('OneMonth', 2592000);
-    define('OneWeek', 604800);
-    define('OneDay', 86400);
-    define('OneHour', 3600);
-    define('OneMinute', 60);
-    function SecondsToTimeFn($seconds)
-    { 
-        $num_units = setNumUnitsFn($seconds);
-        $time_descr = array( 
-            "meses" => floor($seconds / OneMonth), 
-            "semanas" => floor(($seconds%OneMonth) / OneWeek), 
-            "días" => floor(($seconds%OneWeek) / OneDay), 
-            "horas" => floor(($seconds%OneDay) / OneHour), 
-            "minutos" => floor(($seconds%OneHour) / OneMinute), 
-            "segundos" => floor($seconds%OneMinute), 
-        );
-        $res = ""; $counter = 0;
-        foreach ($time_descr as $k => $v) 
-        { 
-            if ($v) 
-            { 
-                $res.=$v." ".$k; $counter++; 
-                if($counter>=$num_units) break; 
-                elseif($counter) 
-                $res.=", "; 
-            } 
-        }
-        $_SESSION['time'] = $res;
-        return $_SESSION['time'];
-    }
-    function setNumUnitsFn($seconds)
-    {
-        switch ($seconds) {
-            case $seconds>= OneMonth:
-                return 6;
-
-            case $seconds>= OneWeek:
-                return 5;
-
-            case $seconds>= OneDay:
-                return 4;
-
-            case $seconds>= OneHour:
-                return 3;
-
-            case $seconds>= OneMinute:
-                return 2;
-
-            default:
-                return 1;
-                break;
-        }
-    }
     function checkFn($input)
     {
         if($input == "")
@@ -91,11 +38,11 @@ include 'newFunctions.php';
         }
         return $partes;
     }
-    function updateNotesFn($conexion, $user)
+    function updateNotesFn($conexion)
     {
         $id_part = $_POST['id_part'];
 		$inf_part = $_POST['inf_part'];
-        insertNoteSql($id_part, $user, $inf_part);
+        updateIncidence($conexion, $inf_part, $id_part);
     }
     function buildEmployeeFn($conexion, $user)
     {
@@ -166,14 +113,15 @@ include 'newFunctions.php';
             if ($con->num_rows > 0)
             {
                 $creds = $con->fetch_array(MYSQLI_ASSOC);
+                $_SESSION['var'] = $creds['employee'];
                 sessionStartFn();
                 $credentials->employee = $creds['employee'];
-                $con = selectEmployeeDataSql($conexion, $credentials);
-                //extrae datos personales
-                $fila = $con->fetch_array(MYSQLI_ASSOC);
-                $user_info = getUserFn($fila['dni'], $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], $fila['id']);
-                $permissions = getPermissionsFn($user_info);
-                $user_info->permissions = $permissions;
+                $users = getEmpolyeeListFn();
+                $new_array = array_filter($users, function($array) 
+                {
+                    return ($array->id == $_SESSION['var']);
+                });
+                $user_info = array_pop($new_array);
                 $_SESSION['user'] =  json_encode($user_info);
                 header('Location: menu.php');
             }
@@ -199,7 +147,7 @@ include 'newFunctions.php';
     }
     function Actualizar_empleadoFn($conexion)
     {
-        $olduser = getUserDataFn($conexion, $_POST['dni']);
+        $olduser = getEmployeeByUsernameFn($_POST['dni']);
         updateEmployeeFn($conexion, $fila['dni'], $_POST['nombre'], $_POST['apellido1'], $_POST['apellido2'], $_POST['tipo'], $olduser);
         $_SESSION['funcion'] = 'Lista';
     }

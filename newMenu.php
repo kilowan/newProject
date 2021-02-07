@@ -15,10 +15,7 @@ include 'newFunctions.php';
     
     switch ($funcion) {
         case 'getEmployeeById':
-            showFn(getEmployeeByIdFn());
-            break;
-        case 'getEmployeeByDni':
-            showFn(getEmployeeByDniFn());
+            showFn(getEmployeeByIdFn($_GET['id']));
             break;
 
         case 'getAllincidences':
@@ -46,26 +43,71 @@ include 'newFunctions.php';
             showFn(filterFn(getIncidencesListFn()));
             break;
         case 'getIncidenceById':
-            showFn(getIncidenceByIdFn());
+            showFn(getIncidenceByIdFn($_GET['id_part']));
+            break;
+        case 'getEmployeeByUsername':
+            showFn(getEmployeeByUsernameFn($_GET['username']));
             break;
         case 'addEmployee':
-            $json = file_get_contents('php://input');
-            $obj = json_decode($json);
+            $obj = getPostData();
             showFn(addEmployeeFn($obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type));
             break;
+        case 'addIncidence':
+            showFn(addIncidenceFn(getPostData()));
         case 'removeEmployee':
             showFn(removeEmployeeFn());
             break;
         case 'getPermissions':
-            showFn(getPermissionsFn(getEmployeeByIdFn()));
+            showFn(getEmployeeByIdFn($_GET['id'])->permissions);
+            break;
+        case 'getPieces':
+            showFn(getPiecesFn($_GET['id']));
+            break;
+        case 'getPiecesByIds':
+            showFn(getPiecesByIdsFn(getPostData()->pieces));
+            break;
+        case 'getPiecesList':
+            showFn(getPiecesListFn());
+            break;
+        case 'getPieceById':
+            showFn(getPieceByIdFn($_GET['id']));
+            break;
+        case 'checkCredentials':
+            showFn(checkCredentialsFn($_GET['username'], $_GET['pass']));
+            break;
+        case 'getStatistics':
+            showFn(getStatisticsFn($_GET['id']));
+            break;
+        case 'getReportedPieces':
+            showFn(getReportedPiecesFn());
+            break;
+        case 'getGlobalStatistics':
+            showFn(getGlobalStatisticsFn());
+            break;
+        case 'getEmpolyeeList':
+            showFn(getEmpolyeeListFn());
             break;
         default:
             break;
     }
     function showFn($new_array)
     {
+        header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/json');
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method == "OPTIONS") {
+            die();
+        }
+
         echo json_encode($new_array);
         exit();
+    }
+    function getPostData()
+    {
+        $json = file_get_contents('php://input');
+        return json_decode($json);
     }
 ?>

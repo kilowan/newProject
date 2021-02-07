@@ -56,6 +56,16 @@ INSERT INTO permissionlist (id, name) VALUES
 (21, 'Modificar parte de empleados'),
 (22, 'Ocultar parte propio cerrado');
 
+CREATE TABLE state (
+    id INT(50) PRIMARY KEY NOT NULL auto_increment,
+    name VARCHAR(50) NOT NULL
+);
+
+INSERT INTO state (name) VALUES 
+('Nuevo'),
+('En curso'),
+('Cerrado');
+
 CREATE TABLE parte (
     id_part INT(50) PRIMARY KEY auto_increment,
     emp_crea INT(50) NOT NULL,
@@ -84,16 +94,78 @@ CREATE TABLE parte (
     ON UPDATE CASCADE
 );
 
-CREATE TABLE state (
-    id INT(50) PRIMARY KEY NOT NULL auto_increment,
-    name VARCHAR(50) NOT NULL
+CREATE TABLE piece_type (
+	id INT(50) PRIMARY KEY NOT NULL auto_increment,
+	name VARCHAR(100) NOT NULL,
+	description VARCHAR(500)
 );
+
+INSERT INTO piece_type (name, description) VALUES 
+('Interno', 'Componentes relativos al interior de la torre (fuente, placa base, procesador memoria principal, memorias secundarias, etc.)'),
+('Externo', 'Componentes periféricos (monitor, impresora, teclado, ratón, etc.)'),
+('Otros', 'Componentes adicionales (pendrive, pincho wifi, cables eléctricos, regletas, pilas, etc.)');
+
+CREATE TABLE piece (
+	id INT(50) PRIMARY KEY NOT NULL auto_increment,
+	type INT(50) NOT NULL,
+	name VARCHAR(100) NOT NULL,
+	price DECIMAL(6,2) NOT NULL,
+	description VARCHAR(500),
+    CONSTRAINT piece_type
+    FOREIGN KEY (type)
+    REFERENCES piece_type (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+INSERT INTO piece (type, name, price, quantity, description) VALUES
+(1, 'Placa base', 99.99, 20, 'Elemento principal del equipo sobre el cual se montan el resto de elementos.'),
+(1, 'HDD', 49.99, 20, 'Memoria secundaria del equipo (SATA III 600MB/s 7200rpm 3,5 pulgadas).'),
+(1, 'SSD', 60.99, 20, 'Memoria secundaria del equipo, mucho más rápida que un HDD (SATAIII 600MB/s).'),
+(1, 'SSD', 70.99, 20, 'Memoria secundaria del equipo, mucho más rápida que un HDD (M2 SATAIII 600MB/s).'),
+(1, 'SSD', 104.99, 20, 'Memoria secundaria del equipo, mucho más rápida que un HDD (M2 NVME x4 3200MB/s).'),
+(1, 'Procesador', 235.99, 20, 'Elemento principal de procesamiento (4 núcleos 8 hilos).'),
+(1, 'Gráfica', 300.99, 20, 'Elemento principal de procesamiento de gráficos(8 GB GDDR6 12TFlops).'),
+(1, 'RAM', 40.99, 20, 'Memoria principal (16GB DDR4 3200MHZ 16ms).'),
+(2, 'Monitor', 300.99, 20, 'Monitor Gaming 4k 32 pulgadas 144Hz 2ms Freesync.'),
+(2, 'Ratón', 70.99, 20, 'Ratón Gaming óptico 3000dpi RGB.'),
+(2, 'Teclado', 50.99, 20, 'Ratón Gaming RGB cherry.'),
+(2, 'Impresora', 100.99, 20, 'Impresora laser color wifi.'),
+(3, 'Pendrive', 75.99, 20, 'Memoria usb 3.2 300MB/s lectura 300 MB/s escritura.'),
+(3, 'Pendrive', 75.99, 20, 'Memoria usb 3.2 300MB/s lectura 300 MB/s escritura.'),
+(3, 'Router wifi', 300.99, 20, 'Router wifi mimo 3000Mb/s 8 conectores 10G (compatibles con 2.5G y 5G)'),
+(3, 'Regleta smart', 300.99, 20, 'Regleta enchufes con protección de sobretension y control mediante app (alexa, google home, etc)');
+
+CREATE TABLE incidence_piece (
+	id INT(50) PRIMARY KEY NOT NULL auto_increment,
+	piece INT(50) NOT NULL,
+	incidence INT(50) NOT NULL,
+	CONSTRAINT piece_id
+    FOREIGN KEY (piece)
+    REFERENCES piece (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+	CONSTRAINT incidence_id
+    FOREIGN KEY (incidence)
+    REFERENCES parte (id_part)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE note_type (
+    id INT(50) PRIMARY KEY NOT NULL auto_increment,
+    name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO note_type (name) VALUES
+('ownerNote'),
+('solverNote');
 
  CREATE TABLE Notes (
     Id INT(50) PRIMARY KEY NOT NULL auto_increment,
     employee INT(50) NOT NULL,
     incidence INT(50) NOT NULL,
-    noteType VARCHAR(50) NOT NULL,
+    noteType INT(50) PRIMARY KEY NOT NULL,
     noteStr VARCHAR(200) NOT NULL,
     date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     CONSTRAINT notes_employee
@@ -104,6 +176,11 @@ CREATE TABLE state (
     CONSTRAINT notes_incidence
     FOREIGN KEY (incidence)
     REFERENCES parte (id_part)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    CONSTRAINT notes_type
+    FOREIGN KEY (noteType)
+    REFERENCES note_type (id)
     ON UPDATE CASCADE
     ON DELETE CASCADE
  );
@@ -119,11 +196,6 @@ CREATE TABLE state (
     ON UPDATE CASCADE
     ON DELETE CASCADE
  );
-
-INSERT INTO state (name) VALUES 
-('Nuevo'),
-('En curso'),
-('Cerrado');
 
 INSERT INTO Empleados (dni, nombre, apellido1, apellido2, tipo) VALUES 
 ('12345678Z', 'Jose Javier', 'Valero', 'Fuentes', 'Tecnico'),
