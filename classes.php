@@ -72,4 +72,15 @@
 		public string $description = "";
 		public string $name = "";
 	}
+	class statistics
+	{
+		public ?string $employeeName = null;
+		public ?string $average = null;
+		public ?int $solvedIncidences = null;
+	}
+	class reportedPiece
+	{
+		public ?string $pieceName = null;
+		public ?string $pieceNumber = null;
+	}
 ?>

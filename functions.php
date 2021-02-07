@@ -1,58 +1,5 @@
 <?php
 include 'newFunctions.php';
-    define('OneMonth', 2592000);
-    define('OneWeek', 604800);
-    define('OneDay', 86400);
-    define('OneHour', 3600);
-    define('OneMinute', 60);
-    function SecondsToTimeFn($seconds)
-    { 
-        $num_units = setNumUnitsFn($seconds);
-        $time_descr = array( 
-            "meses" => floor($seconds / OneMonth), 
-            "semanas" => floor(($seconds%OneMonth) / OneWeek), 
-            "días" => floor(($seconds%OneWeek) / OneDay), 
-            "horas" => floor(($seconds%OneDay) / OneHour), 
-            "minutos" => floor(($seconds%OneHour) / OneMinute), 
-            "segundos" => floor($seconds%OneMinute), 
-        );
-        $res = ""; $counter = 0;
-        foreach ($time_descr as $k => $v) 
-        { 
-            if ($v) 
-            { 
-                $res.=$v." ".$k; $counter++; 
-                if($counter>=$num_units) break; 
-                elseif($counter) 
-                $res.=", "; 
-            } 
-        }
-        $_SESSION['time'] = $res;
-        return $_SESSION['time'];
-    }
-    function setNumUnitsFn($seconds)
-    {
-        switch ($seconds) {
-            case $seconds>= OneMonth:
-                return 6;
-
-            case $seconds>= OneWeek:
-                return 5;
-
-            case $seconds>= OneDay:
-                return 4;
-
-            case $seconds>= OneHour:
-                return 3;
-
-            case $seconds>= OneMinute:
-                return 2;
-
-            default:
-                return 1;
-                break;
-        }
-    }
     function checkFn($input)
     {
         if($input == "")

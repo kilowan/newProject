@@ -75,11 +75,21 @@ include 'newFunctions.php';
         case 'checkCredentials':
             showFn(checkCredentialsFn($_GET['username'], $_GET['pass']));
             break;
+        case 'getStatistics':
+            showFn(getStatisticsFn($_GET['id']));
+            break;
+        case 'getReportedPieces':
+            showFn(getReportedPiecesFn());
+            break;
+        case 'getGlobalStatistics':
+            showFn(getGlobalStatisticsFn());
+            break;
         default:
             break;
     }
     function showFn($new_array)
     {
+        header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/json');
         header("Access-Control-Allow-Origin: *");
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");

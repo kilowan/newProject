@@ -6,13 +6,25 @@
         ON E.id=C.employee
 		WHERE E.borrado=0 AND C.username='$credentials->username' AND C.password='$credentials->password'");
     }
-
+    //old
     function countPiezasSql($conexion)
     {
         return $conexion->query("SELECT pieza, COUNT(pieza) AS 'numeroP' 
         FROM parte
         WHERE state IN (3, 4)
         GROUP BY pieza");
+    }
+    //new
+    function piecesCountSql($conexion)
+    {
+        return $conexion->query("SELECT p.name AS pieceName, COUNT(ip.piece) AS 'pieceNumber' 
+        FROM incidence_piece ip 
+        INNER JOIN piece p
+        ON p.id = ip.piece
+        INNER JOIN parte pa
+        ON ip.incidence = pa.id_part
+        WHERE pa.state IN (3, 4)
+        GROUP BY piece");
     }
     //new
     function getAllEmployeeDataSql($conexion)
