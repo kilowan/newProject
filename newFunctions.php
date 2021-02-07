@@ -382,10 +382,12 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $con = tiempoMedioSql($conexion, getEmployeeByIdFn($id));
-        $fila = $con->fetch_array(MYSQLI_ASSOC);
         $statistics = new statistics();
-        $statistics->average = SecondsToTimeFn($fila['tiempo_medio']);
-        $statistics->solvedIncidences = $fila['cantidad_partes'];
+        if ($con->num_rows > 0) {
+            $fila = $con->fetch_array(MYSQLI_ASSOC);
+            $statistics->average = SecondsToTimeFn($fila['tiempo_medio']);
+            $statistics->solvedIncidences = $fila['cantidad_partes'];
+        }
         return $statistics;
     }
     function getReportedPiecesFn()
