@@ -84,6 +84,9 @@ include 'newFunctions.php';
         case 'getGlobalStatistics':
             showFn(getGlobalStatisticsFn());
             break;
+        case 'getEmpolyeeList':
+            showFn(getEmpolyeeListFn());
+            break;
         default:
             break;
     }
