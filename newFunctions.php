@@ -86,7 +86,7 @@ include 'classes.php';
                 case 'getOtherIncidences':
                     return ($array->solver->dni == $_GET['dni'] && $array->state == 2);
                 case 'getNewIncidences':
-                    return ($array->state == 1);
+                    return ($array->state == 1 && $array->owner->dni != $_GET['dni']);
                 case 'getOwnOldIncidences':
                     return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
                 case 'getOwnIncidences':
