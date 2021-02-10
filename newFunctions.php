@@ -421,4 +421,26 @@ include 'classes.php';
         }
         return $globalData;
     }
+    function showIncidenceFn($id, $userId)
+    {
+        $conexion = connectionFn();
+        $incidence = getIncidenceByIdFn($id);
+        if ($incidence->state == 4 && $incidence->owner->id == $userId) {
+            showHiddenParteSql($conexion, $id);
+            return getIncidenceByIdFn($id);
+        } else {
+            return 'Error de inserción';
+        }
+    }
+    function hideIncidenceFn($id, $userId)
+    {
+        $conexion = connectionFn();
+        $incidence = getIncidenceByIdFn($id);
+        if ($incidence->state == 3 && $incidence->owner->id == $userId) {
+            hideParteSql($conexion, $id);
+            return getIncidenceByIdFn($id);
+        } else {
+            return 'Error de inserción';
+        }
+    }
 ?>

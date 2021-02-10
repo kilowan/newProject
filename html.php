@@ -747,7 +747,7 @@
             case 'Ocultar_parte':
                 //Ocultar parte cerrado
                 $id_part = $_GET['id_part'];
-                hideParteSql($conexion, $user, $id_part);
+                hideParteSql($conexion, $id_part);
                 $_SESSION['funcion'] = 'Partes';
                 break;
     

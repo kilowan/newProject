@@ -87,6 +87,12 @@ include 'newFunctions.php';
         case 'getEmpolyeeList':
             showFn(getEmpolyeeListFn());
             break;
+        case 'showIncidence':
+            showFn(showIncidenceFn($_GET['incidenceId'], $_GET['userId']));
+            break;
+        case 'hideIncidence':
+            showFn(hideIncidenceFn($_GET['incidenceId'], $_GET['userId']));
+            break;
         default:
             break;
     }

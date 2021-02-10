@@ -44,9 +44,9 @@
         return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
         GROUP BY nom_tec");
     }
-    function hideParteSql($conexion, $user, $id)
+    function hideParteSql($conexion, $id)
     {
-        return $conexion->query("UPDATE parte SET state=4 WHERE id_part=$id AND emp_crea='$user->id' AND state=3");
+        return $conexion->query("UPDATE parte SET state=4 WHERE id_part=$id");
     }
     function showHiddenParteSql($conexion, $id_part)
     {
