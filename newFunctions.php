@@ -140,13 +140,7 @@ include 'classes.php';
             return ($array->dni == $_SESSION['var']);
         });
 
-        if (count($new_array) == 0 || $new_array == null) {
-            return $empty;
-        }
-        else 
-        {
-            return array_pop($new_array);
-        }
+        return count($new_array) == 0 || $new_array == null? $empty : array_pop($new_array);
     }
     function getIncidencesListFn()
     {
@@ -159,7 +153,8 @@ include 'classes.php';
             
             $noteList = null;
             $count = 0;
-            $con2 = selectNotesSql($conexion, $fila['id_part']);
+            $con2 = selectnewNotesSql($conexion, $fila['id_part'], 'Technician');
+            //$con2 = selectNotesSql($conexion, $fila['id_part']);
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $note = new note();
                 $note->noteStr = $notes['noteStr'];
@@ -167,6 +162,8 @@ include 'classes.php';
                 $noteList[$count] = $note;
                 $count++;
             }
+            $con3 = selectnewNotesSql($conexion, $fila['id_part'], 'Employee');
+            $note2 = $con3->fetch_array(MYSQLI_ASSOC);
             $owner = getEmployeeByIdFn($fila['emp_crea']);
 
 
@@ -175,7 +172,8 @@ include 'classes.php';
             }
             $pieces = getPiecesFn($fila['id_part']);
 
-            $incidence = makeIncidenceFn($owner, $fila['inf_part'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
+            //$incidence = makeIncidenceFn($owner, $fila['inf_part'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
+            $incidence = makeIncidenceFn($owner, $note2['noteStr'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -442,5 +440,23 @@ include 'classes.php';
         } else {
             return 'Error de inserción';
         }
+    }
+    function updateNotesFn($note, $incidenceId, $employeeId)
+    {
+        $conexion = connectionFn();
+        updateNoteSql($conexion, $note, $incidenceId, $employeeId);
+        return 'OK';
+    }
+    function insertemployeeNoteFn($NoteDesc, $incidencesId, $userId)
+    {
+        $conexion = connectionFn();
+        insertNoteSql($conexion, $incidencesId, $userId, 'Technician', $NoteDesc);
+        return 'OK';
+    }
+    function inserttechnicianNoteFn($NoteDesc, $incidencesId, $userId)
+    {
+        $conexion = connectionFn();
+        insertNoteSql($conexion, $incidencesId, $userId, 'Employee', $NoteDesc);
+        return 'OK';
     }
 ?>

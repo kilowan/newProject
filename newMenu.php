@@ -93,6 +93,17 @@ include 'newFunctions.php';
         case 'hideIncidence':
             showFn(hideIncidenceFn($_GET['incidenceId'], $_GET['userId']));
             break;
+        case 'updateNotes':
+            $obj = getPostData();
+            showFn(updateNotesFn($obj->incidenceDesc, $obj->incidenceId, $obj->employeeId));
+            break;
+        case 'insertemployeeNote':
+            $obj = getPostData();
+            insertemployeeNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId);
+            break;
+        case 'inserttechnicianNote':
+            showFn(inserttechnicianNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId));
+            break;
         default:
             break;
     }

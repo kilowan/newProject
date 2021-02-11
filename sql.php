@@ -59,6 +59,14 @@
         WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
     }
     //new
+    function selectnewNotesSql($conexion, $incidenceId, $noteType)
+    {
+        return $conexion->query("SELECT * 
+        FROM notes
+        WHERE incidence=$incidenceId 
+        AND noteType='$noteType'");
+    }
+    //old
     function selectNotesSql($conexion, $id_part)
     {
         return $conexion->query("SELECT * 
@@ -83,10 +91,11 @@
     {
         $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
     }
-    /*function insertNoteSql($conexion, $id_part, $user, $inf_part)
+    //new
+    function insertNoteSql($conexion, $incidencesId, $userId, $noteType, $NoteDesc)
     {
-        $conexion->query("INSERT INTO notes VALUES ($id_part, $user->id, '$user->tipo', '$inf_part')");
-    }*/
+        $conexion->query("INSERT INTO notes VALUES ($incidencesId, $userId, '$noteType', '$NoteDesc')");
+    }
     function updateNoteListSql($conexion, $user, $id_part, $not_tec)
     {
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, '$user->tipo', '$not_tec')");
@@ -149,9 +158,16 @@
     {
         return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$id");
     }
+    //old
     function updateIncidence($conexion, $inf_part, $id_part)
     {
         $conexion->query("UPDATE parte SET inf_part='$inf_part' WHERE id_part=$id_part");
+    }
+    //new
+    function updateNoteSql($conexion, $note, $incidenceId, $employeeId)
+    {
+        $conexion->query("DELETE FROM notes WHERE incidence=$incidenceId");
+        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($employeeId, $incidenceId, 'Employee', '$note')");
     }
     //new
     function getPiecesSql($conexion, $id)
