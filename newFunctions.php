@@ -459,4 +459,9 @@ include 'classes.php';
         insertNoteSql($conexion, $incidencesId, $userId, 'Employee', $NoteDesc);
         return 'OK';
     }
+    function deleteIncidenceFn($id_part, $userId)
+    {
+        $conexion = connectionFn();
+        deleteIncidenceSql($conexion, $id_part, $userId);
+    }
 ?>

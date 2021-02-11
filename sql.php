@@ -52,11 +52,18 @@
     {
         return $conexion->query("UPDATE parte SET state=3 WHERE id_part=$id_part");
     }
+    //old
     function deleteParteSql($conexion, $id_part, $user)
     {
         return $conexion->query("DELETE 
         FROM parte 
         WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
+    }
+    //new
+    function deleteIncidenceSql($conexion, $id_part, $userId)
+    {
+        return $conexion->query("UPDATE 
+        parte SET state=5 WHERE id_part=$id_part AND emp_crea=$userId AND state=1");
     }
     //new
     function selectnewNotesSql($conexion, $incidenceId, $noteType)
