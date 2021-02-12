@@ -95,7 +95,7 @@ include 'newFunctions.php';
             break;
         case 'updateNotes':
             $obj = getPostData();
-            showFn(updateNotesFn($obj->incidenceDesc, $obj->incidenceId, $obj->employeeId));
+            showFn(updateNoteFn($obj->incidenceDesc, $obj->incidenceId, $obj->employeeId));
             break;
         case 'insertemployeeNote':
             $obj = getPostData();
@@ -106,7 +106,7 @@ include 'newFunctions.php';
             showFn(inserttechnicianNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId));
             break;
         case'deleteIncidence':
-            showFn(deleteIncidenceFn($GET['incidenceId'], $GET['userId']));
+            showFn(deleteIncidenceFn($_GET['incidenceId'], $_GET['userId']));
             break;
         default:
             break;
