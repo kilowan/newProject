@@ -153,17 +153,19 @@ include 'classes.php';
             
             $noteList = null;
             $count = 0;
-            $con2 = selectnewNotesSql($conexion, $fila['id_part'], 'Technician');
-            //$con2 = selectNotesSql($conexion, $fila['id_part']);
+            $con2 = selectNotesSql($conexion, $fila['id_part']);
+            $inf_part = '';
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $note = new note();
-                $note->noteStr = $notes['noteStr'];
-                $note->date = $notes['date'];
-                $noteList[$count] = $note;
-                $count++;
+                if($notes['noteType'] == 'Employee') {
+                    $inf_part = $notes['noteStr'];
+                } else {
+                    $note->noteStr = $notes['noteStr'];
+                    $note->date = $notes['date'];
+                    $noteList[$count] = $note;
+                    $count++;
+                }
             }
-            $con3 = selectnewNotesSql($conexion, $fila['id_part'], 'Employee');
-            $note2 = $con3->fetch_array(MYSQLI_ASSOC);
             $owner = getEmployeeByIdFn($fila['emp_crea']);
 
 
@@ -172,8 +174,7 @@ include 'classes.php';
             }
             $pieces = getPiecesFn($fila['id_part']);
 
-            //$incidence = makeIncidenceFn($owner, $fila['inf_part'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
-            $incidence = makeIncidenceFn($owner, $note2['noteStr'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
+            $incidence = makeIncidenceFn($owner, $inf_part, $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -334,7 +335,8 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $owner = getEmployeeByIdFn($obj->ownerId);
-        $id = insertIncidenceSql($conexion, $owner, $obj->issueDesc);
+        $id = insertIncidenceSql($conexion, $owner);
+        insertNoteSql($conexion, $id, $owner->id, 'Employee', $obj->issueDesc);
         insertPiecesSql($conexion, $obj->pieces, $id);
         return getIncidenceByIdFn($id);
     }
@@ -441,7 +443,7 @@ include 'classes.php';
             return 'Error de inserción';
         }
     }
-    function updateNotesFn($note, $incidenceId, $employeeId)
+    function updateNoteFn($note, $incidenceId, $employeeId)
     {
         $conexion = connectionFn();
         updateNoteSql($conexion, $note, $incidenceId, $employeeId);

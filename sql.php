@@ -99,13 +99,13 @@
         $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
     }
     //new
-    function insertNoteSql($conexion, $incidencesId, $userId, $noteType, $NoteDesc)
+    function insertNoteSql($conexion, $incidenceId, $userId, $noteType, $NoteDesc)
     {
-        $conexion->query("INSERT INTO notes VALUES ($incidencesId, $userId, '$noteType', '$NoteDesc')");
+        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($userId, $incidenceId, '$noteType', '$NoteDesc')");
     }
     function updateNoteListSql($conexion, $user, $id_part, $not_tec)
     {
-        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, '$user->tipo', '$not_tec')");
+        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, 'Technician', '$not_tec')");
     }
     function updateParte1Sql($conexion, $id_part, $user)
     {
@@ -197,9 +197,9 @@
         return $conexion->query("SELECT * FROM piece WHERE id=$id");
     }
     //new
-    function insertIncidenceSql($conexion, $owner, string $issueDesc)
+    function insertIncidenceSql($conexion, $owner)
     {
-        $conexion->query("INSERT INTO parte (emp_crea, inf_part, state) VALUES ($owner->id, '$issueDesc', 1)");
+        $conexion->query("INSERT INTO parte (emp_crea, state) VALUES ($owner->id, 1)");
         $con = $conexion->query("SELECT MAX(id_part) AS 'id_part' FROM parte");
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         return $fila['id_part'];
