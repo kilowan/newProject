@@ -111,6 +111,11 @@ include 'newFunctions.php';
         case 'updateIncidence':
             $obj = getPostData();
             showFn(updateIncidenceFn($obj->incidenceId, $obj->userId, $obj->note, $obj->pieces));
+            break;
+        case'updateEmployee':
+            $obj = getPostData();
+            showFn(updateEmployeeFn(connectionFn(), $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type, getEmployeeByUsernameFn($obj->dni)));
+            break;
         default:
             break;
     }
@@ -119,6 +124,7 @@ include 'newFunctions.php';
         header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/json');
         header("Access-Control-Allow-Headers: *");
+        header("Access-Control-Allow-Origin: http://localhost:8080");
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
         $method = $_SERVER['REQUEST_METHOD'];
