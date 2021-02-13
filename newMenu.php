@@ -105,9 +105,12 @@ include 'newFunctions.php';
             $obj = getPostData();
             showFn(inserttechnicianNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId));
             break;
-        case'deleteIncidence':
+        case 'deleteIncidence':
             showFn(deleteIncidenceFn($_GET['incidenceId'], $_GET['userId']));
             break;
+        case 'updateIncidence':
+            $obj = getPostData();
+            showFn(updateIncidenceFn($obj->incidenceId, $obj->userId, $obj->note, $obj->pieces));
         default:
             break;
     }

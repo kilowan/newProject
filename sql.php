@@ -107,6 +107,12 @@
     {
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, 'Technician', '$not_tec')");
     }
+    //new
+    function updateIncidenceSql($conexion, $incidenceId, $userId)
+    {
+        $conexion->query("UPDATE parte  SET tec_res = $userId, state=2
+		WHERE id_part = $incidenceId");
+    }
     function updateParte1Sql($conexion, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
@@ -205,10 +211,10 @@
         return $fila['id_part'];
     }
     //new 
-    function insertPiecesSql($conexion, $pieces, int $id)
+    function insertPiecesSql($conexion, $pieces, int $incidenceId)
     {
         foreach ($pieces as $piece) {
-            $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $id)");
+            $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $incidenceId)");
         }
     }
     //new
