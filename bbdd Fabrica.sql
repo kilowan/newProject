@@ -216,12 +216,15 @@ CREATE USER 'Ad'@'localhost' IDENTIFIED BY '1234';
 GRANT ALL PRIVILEGES ON `fabrica`.* TO 'Ad'@'localhost' WITH GRANT OPTION;
 
 CREATE OR REPLACE VIEW Tiempo_resolucion AS 
-SELECT ((((YEAR(fecha_resolucion))-(YEAR(fecha_hora_creacion)))*31536000)+
-(((MONTH(fecha_resolucion))-(MONTH(fecha_hora_creacion)))*2592000)+
-(((DAY(fecha_resolucion))-(DAY(fecha_hora_creacion)))*86400)+
-(((HOUR(hora_resolucion))-(HOUR(fecha_hora_creacion)))*3600)+
-(((MINUTE(hora_resolucion))-(MINUTE(fecha_hora_creacion)))*60)+
-((SECOND(hora_resolucion))-(SECOND(fecha_hora_creacion)))) AS "Tiempo", id_part, tec_res, nom_tec
-FROM parte
-WHERE state=3
+SELECT ((((YEAR(p.fecha_resolucion))-(YEAR(p.fecha_hora_creacion)))*31536000)+
+(((MONTH(p.fecha_resolucion))-(MONTH(p.fecha_hora_creacion)))*2592000)+
+(((DAY(p.fecha_resolucion))-(DAY(p.fecha_hora_creacion)))*86400)+
+(((HOUR(p.hora_resolucion))-(HOUR(p.fecha_hora_creacion)))*3600)+
+(((MINUTE(p.hora_resolucion))-(MINUTE(p.fecha_hora_creacion)))*60)+
+((SECOND(p.hora_resolucion))-(SECOND(p.fecha_hora_creacion)))) AS "Tiempo", 
+p.id_part, p.tec_res, CONCAT(e.nombre, ' ', e.apellido1, ' ', e.apellido2) AS "nom_tec"
+FROM parte p
+INNER JOIN empleados e
+ON p.tec_res = e.id
+WHERE p.state IN (3, 4)
 GROUP BY id_part, tec_res, nom_tec;
