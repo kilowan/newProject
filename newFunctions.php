@@ -86,7 +86,7 @@ include 'classes.php';
                 case 'getOtherIncidences':
                     return ($array->solver->dni == $_GET['dni'] && $array->state == 2);
                 case 'getNewIncidences':
-                    return ($array->state == 1);
+                    return ($array->state == 1 && $array->owner->dni != $_GET['dni']);
                 case 'getOwnOldIncidences':
                     return ($array->owner->dni == $_GET['dni'] && $array->state == 3);
                 case 'getOwnIncidences':
@@ -140,13 +140,7 @@ include 'classes.php';
             return ($array->dni == $_SESSION['var']);
         });
 
-        if (count($new_array) == 0 || $new_array == null) {
-            return $empty;
-        }
-        else 
-        {
-            return array_pop($new_array);
-        }
+        return count($new_array) == 0 || $new_array == null? $empty : array_pop($new_array);
     }
     function getIncidencesListFn()
     {
@@ -160,12 +154,17 @@ include 'classes.php';
             $noteList = null;
             $count = 0;
             $con2 = selectNotesSql($conexion, $fila['id_part']);
+            $inf_part = '';
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $note = new note();
-                $note->noteStr = $notes['noteStr'];
-                $note->date = $notes['date'];
-                $noteList[$count] = $note;
-                $count++;
+                if($notes['noteType'] == 'Employee') {
+                    $inf_part = $notes['noteStr'];
+                } else {
+                    $note->noteStr = $notes['noteStr'];
+                    $note->date = $notes['date'];
+                    $noteList[$count] = $note;
+                    $count++;
+                }
             }
             $owner = getEmployeeByIdFn($fila['emp_crea']);
 
@@ -175,7 +174,7 @@ include 'classes.php';
             }
             $pieces = getPiecesFn($fila['id_part']);
 
-            $incidence = makeIncidenceFn($owner, $fila['inf_part'], $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
+            $incidence = makeIncidenceFn($owner, $inf_part, $pieces, $noteList, $fila['state'], $tec, $fila['fecha_hora_creacion'], $fila['hora_resolucion'], $fila['fecha_resolucion'], $fila['id_part']);
             $incidences[$incidence_count] = $incidence;
             $incidence_count++;
         }
@@ -336,7 +335,8 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $owner = getEmployeeByIdFn($obj->ownerId);
-        $id = insertIncidenceSql($conexion, $owner, $obj->issueDesc);
+        $id = insertIncidenceSql($conexion, $owner);
+        insertNoteSql($conexion, $id, $owner->id, 'Employee', $obj->issueDesc);
         insertPiecesSql($conexion, $obj->pieces, $id);
         return getIncidenceByIdFn($id);
     }
@@ -420,5 +420,62 @@ include 'classes.php';
             $number++;
         }
         return $globalData;
+    }
+    function showIncidenceFn($id, $userId)
+    {
+        $conexion = connectionFn();
+        $incidence = getIncidenceByIdFn($id);
+        if ($incidence->state == 4 && $incidence->owner->id == $userId) {
+            showHiddenParteSql($conexion, $id);
+            return getIncidenceByIdFn($id);
+        } else {
+            return 'Error de inserción';
+        }
+    }
+    function hideIncidenceFn($id, $userId)
+    {
+        $conexion = connectionFn();
+        $incidence = getIncidenceByIdFn($id);
+        if ($incidence->state == 3 && $incidence->owner->id == $userId) {
+            hideParteSql($conexion, $id);
+            return getIncidenceByIdFn($id);
+        } else {
+            return 'Error de inserción';
+        }
+    }
+    function updateNoteFn($note, $incidenceId, $employeeId)
+    {
+        $conexion = connectionFn();
+        updateNoteSql($conexion, $note, $incidenceId, $employeeId);
+        return 'OK';
+    }
+    function insertemployeeNoteFn($NoteDesc, $incidencesId, $userId)
+    {
+        $conexion = connectionFn();
+        insertNoteSql($conexion, $incidencesId, $userId, 'Technician', $NoteDesc);
+        return 'OK';
+    }
+    function inserttechnicianNoteFn($NoteDesc, $incidencesId, $userId)
+    {
+        $conexion = connectionFn();
+        insertNoteSql($conexion, $incidencesId, $userId, 'Employee', $NoteDesc);
+        return 'OK';
+    }
+    function deleteIncidenceFn($id_part, $userId)
+    {
+        $conexion = connectionFn();
+        deleteIncidenceSql($conexion, $id_part, $userId);
+    }
+    function updateIncidenceFn($incidenceId, $userId, $note, $pieces)
+    {
+        $conexion = connectionFn();
+        $incidence = getIncidenceByIdFn($userId);
+        if ($incidence->solver->id == $userId || $incidence->state == 1) {
+            updateIncidenceSql($conexion, $incidenceId, $userId);
+            insertNoteSql($conexion, $incidenceId, $userId, 'Technician', $note);
+            insertPiecesSql($conexion, $pieces, $incidenceId);
+            return getIncidenceByIdFn($userId);
+        }
+        return 'Inserción no satisfactoria';
     }
 ?>
