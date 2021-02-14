@@ -466,12 +466,16 @@ include 'classes.php';
         $conexion = connectionFn();
         deleteIncidenceSql($conexion, $id_part, $userId);
     }
-    function updateIncidenceFn($incidenceId, $userId, $note, $pieces)
+    function updateIncidenceFn($incidenceId, $userId, $note, $pieces, $close)
     {
         $conexion = connectionFn();
-        $incidence = getIncidenceByIdFn($userId);
+        $incidence = getIncidenceByIdFn($incidenceId);
         if ($incidence->solver->id == $userId || $incidence->state == 1) {
-            updateIncidenceSql($conexion, $incidenceId, $userId);
+            if ($close) {
+                closeIncidenceSql($conexion, $incidenceId, $userId);
+            } else {
+                updateIncidenceSql($conexion, $incidenceId, $userId);
+            }
             insertNoteSql($conexion, $incidenceId, $userId, 'Technician', $note);
             insertPiecesSql($conexion, $pieces, $incidenceId);
             return getIncidenceByIdFn($userId);
