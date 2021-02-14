@@ -158,7 +158,7 @@
         WHERE id = $user->id");
         $conexion->query("DELETE employee_permissions WHERE employee=$user->id)");
         foreach ($permissions as $permission) {
-            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
         }
     }
     //new

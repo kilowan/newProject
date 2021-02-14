@@ -113,7 +113,7 @@ include 'newFunctions.php';
             showFn(updateIncidenceFn($obj->incidenceId, $obj->userId, $obj->note, $obj->pieces));
             break;
         case'updateEmployee':
-            showFn(updateEmployeeFn(connectionFn(), $_GET['dni'], $_GET['name'], $_GET['surname1'], $_GET['surname2'], $_GET['type'], getEmployeeByUsernameFn($obj->dni)));
+            showFn(updateEmployeeFn(connectionFn(), $_GET['dni'], $_GET['name'], $_GET['surname1'], $_GET['surname2'], $_GET['type'], getEmployeeByUsernameFn($_GET['dni'])));
             break;
         default:
             break;
