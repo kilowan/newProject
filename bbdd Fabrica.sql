@@ -70,12 +70,9 @@ CREATE TABLE parte (
     id_part INT(50) PRIMARY KEY auto_increment,
     emp_crea INT(50) NOT NULL,
     tec_res INT(50),
-	nom_tec VARCHAR(100),
-    inf_part VARCHAR(200) NOT NULL,
     fecha_resolucion date DEFAULT NULL,
     fecha_hora_creacion timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     hora_resolucion time(5) DEFAULT NULL,
-	pieza VARCHAR(100) DEFAULT NULL,
     state INT(50) DEFAULT 1 NOT NULL,
     CONSTRAINT part_crea_emp
     FOREIGN KEY (emp_crea)
