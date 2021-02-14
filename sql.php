@@ -29,7 +29,7 @@
     //new
     function getAllEmployeeDataSql($conexion)
     {
-        return $conexion->query("SELECT * FROM Empleados");
+        return $conexion->query("SELECT * FROM Empleados WHERE borrado=0");
     }
 	function tiempoMedioSql($conexion, $user)
 	{
