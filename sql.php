@@ -113,6 +113,12 @@
         $conexion->query("UPDATE parte  SET tec_res = $userId, state=2
 		WHERE id_part = $incidenceId");
     }
+    //new
+    function closeIncidenceSql($conexion, $incidenceId, $userId)
+    {
+        $conexion->query("UPDATE parte  SET tec_res=$userId, state=3, fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME()
+		WHERE id_part = $incidenceId");
+    }
     function updateParte1Sql($conexion, $id_part, $user)
     {
         $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
@@ -214,7 +220,7 @@
     function insertPiecesSql($conexion, $pieces, int $incidenceId)
     {
         foreach ($pieces as $piece) {
-            $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece->id, $incidenceId)");
+            $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece, $incidenceId)");
         }
     }
     //new
