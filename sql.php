@@ -6,14 +6,6 @@
         ON E.id=C.employee
 		WHERE E.borrado=0 AND C.username='$credentials->username' AND C.password='$credentials->password'");
     }
-    //old
-    function countPiezasSql($conexion)
-    {
-        return $conexion->query("SELECT pieza, COUNT(pieza) AS 'numeroP' 
-        FROM parte
-        WHERE state IN (3, 4)
-        GROUP BY pieza");
-    }
     //new
     function piecesCountSql($conexion)
     {
@@ -52,26 +44,11 @@
     {
         return $conexion->query("UPDATE parte SET state=3 WHERE id_part=$id_part");
     }
-    //old
-    function deleteParteSql($conexion, $id_part, $user)
-    {
-        return $conexion->query("DELETE 
-        FROM parte 
-        WHERE id_part=$id_part AND emp_crea=$user->id AND tec_res IS NULL");
-    }
     //new
     function deleteIncidenceSql($conexion, $id_part, $userId)
     {
         return $conexion->query("UPDATE 
         parte SET state=5 WHERE id_part=$id_part AND emp_crea=$userId AND state=1");
-    }
-    //new
-    function selectnewNotesSql($conexion, $incidenceId, $noteType)
-    {
-        return $conexion->query("SELECT * 
-        FROM notes
-        WHERE incidence=$incidenceId 
-        AND noteType='$noteType'");
     }
     //old
     function selectNotesSql($conexion, $id_part)
@@ -119,40 +96,6 @@
         $conexion->query("UPDATE parte  SET tec_res=$userId, state=3, fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME()
 		WHERE id_part = $incidenceId");
     }
-    function updateParte1Sql($conexion, $id_part, $user)
-    {
-        $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $conexion->query("UPDATE parte  SET tec_res = $user->id, nom_tec='$nombre_tecnico', state=2
-		WHERE id_part = $id_part AND (tec_res=$user->id OR tec_res IS NULL) AND state IN (1, 2)");
-    }
-    function updateparte2Sql($conexion, $pieza, $id_part, $user)
-    {
-        $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $conexion->query("UPDATE parte SET pieza = '$pieza', nom_tec='$nombre_tecnico', tec_res = $user->id, state=2
-		WHERE id_part = $id_part AND (tec_res=$user->id OR tec_res IS NULL) AND state IN (1, 2)");
-    }
-    function closeParte1Sql($conexion, $id_part, $user)
-    {
-        $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $con = $conexion->query("UPDATE parte SET nom_tec = '$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
-		WHERE id_part = $id_part and (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
-    }
-    function closeParte2Sql($conexion, $pieza, $id_part, $user)
-    {
-        $nombre_tecnico = $user->name.' '.$user->surname1.' '.$user->surname2;
-        $con = $conexion->query("UPDATE parte SET pieza='$pieza', nom_tec='$nombre_tecnico', fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME(), state=3, tec_res=$user->id  
-		WHERE id_part = $id_part AND (tec_res=$user->id or tec_res IS NULL) AND state IN (1, 2)");
-    }
-    function insertParte1Sql($conexion, $user, $descripcion, $pieza)
-    {
-        $conexion->query("INSERT INTO parte (emp_crea, inf_part , pieza)
-        VALUES ($user->id, '$descripcion', '$pieza')");
-    }
-    function insertParte2Sql($conexion, $user, $descripcion)
-    {
-        $conexion->query("INSERT INTO parte (emp_crea, inf_part)
-        VALUES ($user->id, '$descripcion')");
-    }
     //new
     function deleteEmployeeSql($conexion, $user)
     {
@@ -166,11 +109,6 @@
         foreach ($permissions as $permission) {
             $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
         }
-    }
-    //new
-    function selectIncidencesSql($conexion)
-    {
-        return $conexion->query("SELECT * FROM parte");
     }
     //new
     function getPermissionsSql($conexion, $id)
@@ -199,11 +137,6 @@
         WHERE incidence=$id");
     }
     //new
-    function getPieceTypeSql($conexion, int $id)
-    {
-        return $conexion->query("SELECT * FROM piece_type WHERE id=$id");
-    }
-    //new
     function getPieceByIdSql($conexion, $id)
     {
         return $conexion->query("SELECT * FROM piece WHERE id=$id");
@@ -212,6 +145,7 @@
     function insertIncidenceSql($conexion, $owner)
     {
         $conexion->query("INSERT INTO parte (emp_crea, state) VALUES ($owner->id, 1)");
+        //$con = selectSQL($conexion, 'parte', "MAX(id_part) AS 'id_part'");
         $con = $conexion->query("SELECT MAX(id_part) AS 'id_part' FROM parte");
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         return $fila['id_part'];
@@ -228,5 +162,31 @@
     {
         return $conexion->query("SELECT * FROM piece");
     }
-
+    //new
+    function insertSQL($conexion, $table, $columns, $values)
+    {
+        $text = 'INSERT INTO '.$table.' ('.implode(', ', $columns).') VALUES ('.implode(', ', $values).')';
+        return $conexion->query($text);
+    }
+    //new
+    function selectSQL($conexion, $table, $columns, $conditions = null)
+    {
+        $text = 'SELECT '.implode(', ', $columns).' FROM '.$table;
+        if ($conditions) {
+            $text = $text.whereSQL($conditions);
+        }
+        return $conexion->query($text);
+        //return $text;
+    }
+    //new
+    function whereSQL($conditions)
+    {
+        $position = 0;
+        foreach ($conditions as $condition) {
+            $result = $condition->column.' = '.$condition->value;
+            $results[$position] = $result;
+            $position++;
+        }
+        return ' WHERE '.implode(' AND ', $results);
+    }
 ?>

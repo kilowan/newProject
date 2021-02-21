@@ -83,4 +83,9 @@
 		public ?string $pieceName = null;
 		public ?string $pieceNumber = null;
 	}
+	class dictionary
+	{
+		public $column = '';
+		public $value = '';
+	}
 ?>

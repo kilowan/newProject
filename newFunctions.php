@@ -145,7 +145,7 @@ include 'classes.php';
     function getIncidencesListFn()
     {
         $conexion = connectionFn();
-        $con = selectIncidencesSql($conexion);
+        $con = selectSQL($conexion, 'parte', ['*']);
         $incidences = null;
         $incidence_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
@@ -290,9 +290,7 @@ include 'classes.php';
         $con = getPieceByIdSql($conexion, $id);
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-        $con2 = getPieceTypeSql($conexion, $fila['type']);
-        $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
-        $type = makePieceType($fila2['name'], $fila2['description']);
+        $type = getPieceTypeFn($conexion, $fila['type']);
         $piece->type = $type;
         return $piece;
     }
@@ -304,9 +302,7 @@ include 'classes.php';
             $con = getPieceByIdSql($conexion, $piece);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-            $con2 = getPieceTypeSql($conexion, $fila['type']);
-            $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
-            $type = makePieceType($fila2['name'], $fila2['description']);
+            $type = getPieceTypeFn($conexion, $fila['type']);
             $piece->type = $type;
             $pieces[$counter] = $piece;
             $counter++;
@@ -322,15 +318,26 @@ include 'classes.php';
         while ($fila = $con->fetch_array(MYSQLI_ASSOC))
         {
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-            $con2 = getPieceTypeSql($conexion, $fila['type']);
-            $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
-            $type = makePieceType($fila2['name'], $fila2['description']);
+            $type = getPieceTypeFn($conexion, $fila['type']);
             $piece->type = $type;
             $pieces[$counter] = $piece;
             $counter++;
         }
         return $pieces;
     }
+    function getPieceTypeFn($conexion, $type)
+    {
+        $condition = new dictionary();
+        $condition->column = 'id';
+        $condition->value = $type;
+        $conditions = [];
+        array_push($conditions, $condition);
+        $con2 = selectSQL($conexion, 'piece_type', ['*'], $conditions);
+        $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
+        $type = makePieceType($fila2['name'], $fila2['description']);
+        return $type;
+    }
+
     function addIncidenceFn($obj)
     {
         $conexion = connectionFn();
@@ -452,13 +459,13 @@ include 'classes.php';
     function insertemployeeNoteFn($NoteDesc, $incidencesId, $userId)
     {
         $conexion = connectionFn();
-        insertNoteSql($conexion, $incidencesId, $userId, 'Technician', $NoteDesc);
+        insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Employee', $NoteDesc]);
         return 'OK';
     }
     function inserttechnicianNoteFn($NoteDesc, $incidencesId, $userId)
     {
         $conexion = connectionFn();
-        insertNoteSql($conexion, $incidencesId, $userId, 'Employee', $NoteDesc);
+        insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Technician', $NoteDesc]);
         return 'OK';
     }
     function deleteIncidenceFn($id_part, $userId)
