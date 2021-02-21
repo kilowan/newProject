@@ -343,7 +343,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $owner = getEmployeeByIdFn($obj->ownerId);
         $id = insertIncidenceSql($conexion, $owner);
-        insertNoteSql($conexion, $id, $owner->id, 'Employee', $obj->issueDesc);
+        insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$owner->id, $id, 'Employee', $obj->issueDesc]);
         insertPiecesSql($conexion, $obj->pieces, $id);
         return getIncidenceByIdFn($id);
     }
