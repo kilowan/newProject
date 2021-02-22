@@ -183,7 +183,7 @@ include 'classes.php';
     function getEmpolyeeListFn()
     {
         $conexion = connectionFn();
-        $con = getAllEmployeeDataSql($conexion);
+        $con = selectSQL($conexion, 'Empleados', ['*'], makeConditionFn('borrado', 0));
         $employees = null;
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -433,7 +433,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $incidence = getIncidenceByIdFn($id);
         if ($incidence->state == 4 && $incidence->owner->id == $userId) {
-            showHiddenParteSql($conexion, $id);
+            updateSQL($conexion, 'parte', makeConditionFn('state', 3), makeConditionFn('id_part', $id));
             return getIncidenceByIdFn($id);
         } else {
             return 'Error de inserción';
@@ -444,7 +444,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $incidence = getIncidenceByIdFn($id);
         if ($incidence->state == 3 && $incidence->owner->id == $userId) {
-            hideParteSql($conexion, $id);
+            updateSQL($conexion, 'parte', makeConditionFn('state', 4), makeConditionFn('id_part', $id));
             return getIncidenceByIdFn($id);
         } else {
             return 'Error de inserción';
@@ -488,5 +488,14 @@ include 'classes.php';
             return getIncidenceByIdFn($userId);
         }
         return 'Inserción no satisfactoria';
+    }
+    function makeConditionFn($field, $value)
+    {
+        $column = new dictionary();
+        $column->column = $field;
+        $column->value = $value;
+        $columns = [];
+        array_push($columns, $column);
+        return $columns;
     }
 ?>

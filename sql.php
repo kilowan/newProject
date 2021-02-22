@@ -18,11 +18,6 @@
         WHERE pa.state IN (3, 4)
         GROUP BY piece");
     }
-    //new
-    function getAllEmployeeDataSql($conexion)
-    {
-        return $conexion->query("SELECT * FROM Empleados WHERE borrado=0");
-    }
 	function tiempoMedioSql($conexion, $user)
 	{
 		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec
@@ -35,14 +30,6 @@
     {
         return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
         GROUP BY nom_tec");
-    }
-    function hideParteSql($conexion, $id)
-    {
-        return $conexion->query("UPDATE parte SET state=4 WHERE id_part=$id");
-    }
-    function showHiddenParteSql($conexion, $id_part)
-    {
-        return $conexion->query("UPDATE parte SET state=3 WHERE id_part=$id_part");
     }
     //new
     function deleteIncidenceSql($conexion, $id_part, $userId)
@@ -188,5 +175,17 @@
             $position++;
         }
         return ' WHERE '.implode(' AND ', $results);
+    }
+    //new
+    function updateSQL($conexion, $table, $columns, $conditions)
+    {
+        $conditionsValues = [];
+        $position = 0;
+        foreach ($columns as $data) {
+            $conditionsValues[$position] = $data->column.' = '.$data->value;
+            $position++;
+        }
+        $text = 'UPDATE '.$table.' SET '.implode(' AND ', $conditionsValues).whereSQL($conditions);
+        return $conexion->query($text);
     }
 ?>
