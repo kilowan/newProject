@@ -153,7 +153,8 @@ include 'classes.php';
             
             $noteList = null;
             $count = 0;
-            $con2 = selectNotesSql($conexion, $fila['id_part']);
+            $columns = makeConditionsFn(['incidence'], [$fila['id_part']]);
+            $con2 = selectSQL($conexion, 'notes', ['*'], $columns);
             $inf_part = '';
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $note = new note();
@@ -183,7 +184,8 @@ include 'classes.php';
     function getEmpolyeeListFn()
     {
         $conexion = connectionFn();
-        $con = selectSQL($conexion, 'Empleados', ['*'], makeConditionFn('borrado', 0));
+        $columns = makeConditionsFn(['borrado'], [0]);
+        $con = selectSQL($conexion, 'Empleados', ['*'], $columns);
         $employees = null;
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -229,7 +231,8 @@ include 'classes.php';
     function getPermissionsFn($id)
     {
         $conexion = connectionFn();
-        $con = getPermissionsSql($conexion, $id);
+        $columns = makeConditionsFn(['employee'], [$id]);
+        $con = selectSQL($conexion, 'employee_permissions', ['*'], $columns);
         $permission = 0;
         $permissions = null;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -287,7 +290,8 @@ include 'classes.php';
     function getPieceByIdFn($id)
     {
         $conexion = connectionFn();
-        $con = getPieceByIdSql($conexion, $id);
+        $columns = makeConditionsFn(['id'], [$id]);
+        $con = selectSQL($conexion, 'piece', ['*'], $columns);
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
         $type = getPieceTypeFn($conexion, $fila['type']);
@@ -299,7 +303,8 @@ include 'classes.php';
         $conexion = connectionFn();
         $counter = 0;
         foreach ($pieces as $piece) {
-            $con = getPieceByIdSql($conexion, $piece);
+            $columns = makeConditionsFn(['id'], [$piece]);
+            $con = selectSQL($conexion, 'piece', ['*'], $columns);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
             $type = getPieceTypeFn($conexion, $fila['type']);
@@ -312,7 +317,7 @@ include 'classes.php';
     function getPiecesListFn()
     {
         $conexion = connectionFn();
-        $con = getPiecesListSql($conexion);
+        $con = selectSQL($conexion, 'piece', ['*']);
         $pieces = null;
         $counter = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC))
@@ -481,7 +486,7 @@ include 'classes.php';
             if ($close) {
                 closeIncidenceSql($conexion, $incidenceId, $userId);
             } else {
-                updateIncidenceSql($conexion, $incidenceId, $userId);
+                updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state'], [$userId, 2]), makeConditionFn('id_part', $incidenceId));
             }
             insertNoteSql($conexion, $incidenceId, $userId, 'Technician', $note);
             insertPiecesSql($conexion, $pieces, $incidenceId);
@@ -496,6 +501,22 @@ include 'classes.php';
         $column->value = $value;
         $columns = [];
         array_push($columns, $column);
+        return $columns;
+    }
+    function makeNewConditionFn($field, $value)
+    {
+        $column = new dictionary();
+        $column->column = $field;
+        $column->value = $value;
+        return $column;
+    }
+    function makeConditionsFn($fields, $Values)
+    {
+        $columns = [];
+        for ($i=0; $i < count($fields); $i++) { 
+            $column = makeNewConditionFn($fields[$i], $Values[$i]);
+            array_push($columns, $column);
+        }
         return $columns;
     }
 ?>

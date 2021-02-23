@@ -37,13 +37,6 @@
         return $conexion->query("UPDATE 
         parte SET state=5 WHERE id_part=$id_part AND emp_crea=$userId AND state=1");
     }
-    //old
-    function selectNotesSql($conexion, $id_part)
-    {
-        return $conexion->query("SELECT * 
-        FROM notes
-        WHERE incidence=$id_part");
-    }
     //new
     function insertEmployeeSql($conexion, $user, $credentials, $permissions)
     {
@@ -72,12 +65,6 @@
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, 'Technician', '$not_tec')");
     }
     //new
-    function updateIncidenceSql($conexion, $incidenceId, $userId)
-    {
-        $conexion->query("UPDATE parte  SET tec_res = $userId, state=2
-		WHERE id_part = $incidenceId");
-    }
-    //new
     function closeIncidenceSql($conexion, $incidenceId, $userId)
     {
         $conexion->query("UPDATE parte  SET tec_res=$userId, state=3, fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME()
@@ -96,11 +83,6 @@
         foreach ($permissions as $permission) {
             $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
         }
-    }
-    //new
-    function getPermissionsSql($conexion, $id)
-    {
-        return $conexion->query("SELECT * FROM employee_permissions WHERE employee=$id");
     }
     //old
     function updateIncidence($conexion, $inf_part, $id_part)
@@ -124,11 +106,6 @@
         WHERE incidence=$id");
     }
     //new
-    function getPieceByIdSql($conexion, $id)
-    {
-        return $conexion->query("SELECT * FROM piece WHERE id=$id");
-    }
-    //new
     function insertIncidenceSql($conexion, $owner)
     {
         $conexion->query("INSERT INTO parte (emp_crea, state) VALUES ($owner->id, 1)");
@@ -143,11 +120,6 @@
         foreach ($pieces as $piece) {
             $conexion->query("INSERT INTO incidence_piece (piece, incidence) VALUES ($piece, $incidenceId)");
         }
-    }
-    //new
-    function getPiecesListSql($conexion)
-    {
-        return $conexion->query("SELECT * FROM piece");
     }
     //new
     function insertSQL($conexion, $table, $columns, $values)

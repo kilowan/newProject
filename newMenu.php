@@ -115,6 +115,9 @@ include 'newFunctions.php';
         case'updateEmployee':
             showFn(updateEmployeeFn(connectionFn(), $_GET['dni'], $_GET['name'], $_GET['surname1'], $_GET['surname2'], $_GET['type'], getEmployeeByUsernameFn($_GET['dni'])));
             break;
+        case 'makeConditions':
+            $obj = getPostData();
+            showFn(makeConditionsFn($obj->fields, $obj->Values));
         default:
             break;
     }
