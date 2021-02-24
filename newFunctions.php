@@ -347,7 +347,10 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $owner = getEmployeeByIdFn($obj->ownerId);
-        $id = insertIncidenceSql($conexion, $owner);
+        insertSQL($conexion, 'parte', ['emp_crea', 'state'], [$owner->id, 1]);
+        $con = selectSQL($conexion, 'parte', ["MAX(id_part) AS 'id_part'"]);
+        $fila = $con->fetch_array(MYSQLI_ASSOC);
+        $id = $fila['id_part'];
         insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$owner->id, $id, 'Employee', $obj->issueDesc]);
         insertPiecesSql($conexion, $obj->pieces, $id);
         return getIncidenceByIdFn($id);

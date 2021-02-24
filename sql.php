@@ -84,11 +84,6 @@
             $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
         }
     }
-    //old
-    function updateIncidence($conexion, $inf_part, $id_part)
-    {
-        $conexion->query("UPDATE parte SET inf_part='$inf_part' WHERE id_part=$id_part");
-    }
     //new
     function updateNoteSql($conexion, $note, $incidenceId, $employeeId)
     {
@@ -104,15 +99,6 @@
         INNER JOIN piece_type pt
         ON p.type=pt.id
         WHERE incidence=$id");
-    }
-    //new
-    function insertIncidenceSql($conexion, $owner)
-    {
-        $conexion->query("INSERT INTO parte (emp_crea, state) VALUES ($owner->id, 1)");
-        //$con = selectSQL($conexion, 'parte', "MAX(id_part) AS 'id_part'");
-        $con = $conexion->query("SELECT MAX(id_part) AS 'id_part' FROM parte");
-        $fila = $con->fetch_array(MYSQLI_ASSOC);
-        return $fila['id_part'];
     }
     //new 
     function insertPiecesSql($conexion, $pieces, int $incidenceId)
