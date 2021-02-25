@@ -61,12 +61,11 @@ include 'classes.php';
         $credentials = new credentials($username, $password);
         $olduser = getEmployeeByUsernameFn($username);
         
-
         if (count($olduser) >0)
         {
             //update
             $user = updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser);
-            updateCredentialsSql($conexion, $credentials, $olduser->id);
+            updateSQL($conexion, 'credentials', makeConditionsFn(['username', 'password'], [$credentials->username, $credentials->password]), makeConditionsFn(['employee'], [$user->id]));
         } 
         else 
         {

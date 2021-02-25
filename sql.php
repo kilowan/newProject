@@ -42,11 +42,6 @@
         }
     }
     //new
-    function updateCredentialsSql($conexion, $credentials, $id)
-    {
-        $conexion->query("UPDATE credentials SET username='$credentials->username', password='$credentials->password' WHERE employee=$id");
-    }
-    //new
     function insertNoteSql($conexion, $incidenceId, $userId, $noteType, $NoteDesc)
     {
         $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($userId, $incidenceId, '$noteType', '$NoteDesc')");
