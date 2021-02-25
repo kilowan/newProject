@@ -220,7 +220,7 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $user = getEmployeeByIdFn($_GET['id']);
-        deleteEmployeeSql($conexion, $user);
+        updateSQL($conexion, 'empleados', makeConditionFn('borrado', 1), makeConditionFn('id', $_GET['id']));
         return $user;
     }
     function addEmployeeFn($username, $password, $dni, $name, $surname1, $surname2, $type)

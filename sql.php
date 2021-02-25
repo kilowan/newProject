@@ -70,11 +70,6 @@
         $conexion->query("UPDATE parte  SET tec_res=$userId, state=3, fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME()
 		WHERE id_part = $incidenceId");
     }
-    //new
-    function deleteEmployeeSql($conexion, $user)
-    {
-        $conexion->query("UPDATE empleados SET borrado=1 WHERE id = $user->id");
-    }
     function updateEmployeeSql($conexion, $user, $permissions)
     {
         $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
