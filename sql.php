@@ -1,4 +1,5 @@
 <?php
+    //new
     function checkCredentialsSql($credentials, $conexion)
     {
         return $conexion->query("SELECT C.*
@@ -18,6 +19,7 @@
         WHERE pa.state IN (3, 4)
         GROUP BY piece");
     }
+    //old
 	function tiempoMedioSql($conexion, $user)
 	{
 		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec
@@ -25,17 +27,6 @@
 		WHERE tec_res=$user->id
 		GROUP BY nom_tec
 		ORDER BY ROUND(AVG(Tiempo),0) DESC");
-    }
-    function tiempoMedioAdminSql($conexion)
-    {
-        return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', nom_tec FROM Tiempo_resolucion
-        GROUP BY nom_tec");
-    }
-    //new
-    function deleteIncidenceSql($conexion, $id_part, $userId)
-    {
-        return $conexion->query("UPDATE 
-        parte SET state=5 WHERE id_part=$id_part AND emp_crea=$userId AND state=1");
     }
     //new
     function insertEmployeeSql($conexion, $user, $credentials, $permissions)
@@ -109,14 +100,16 @@
         return $conexion->query($text);
     }
     //new
-    function selectSQL($conexion, $table, $columns, $conditions = null)
+    function selectSQL($conexion, $table, $columns, $conditions = null, $group = null)
     {
         $text = 'SELECT '.implode(', ', $columns).' FROM '.$table;
         if ($conditions) {
             $text = $text.whereSQL($conditions);
         }
+        if ($group) {
+            $text = $text.groupBySQL($group);
+        }
         return $conexion->query($text);
-        //return $text;
     }
     //new
     function whereSQL($conditions)
@@ -140,5 +133,16 @@
         }
         $text = 'UPDATE '.$table.' SET '.implode(' AND ', $conditionsValues).whereSQL($conditions);
         return $conexion->query($text);
+    }
+    //new
+    function deleteSQL($conexion, $table, $where)
+    {
+        $text = 'DELETE FROM '.$table.whereSQL($where);
+        return $conexion->query($text);
+    }
+    //new
+    function groupBySQL($fields)
+    {
+        return ' GROUP BY '.implode(', ', $fields);
     }
 ?>

@@ -425,7 +425,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $number = 0;
         $globalData = [];
-        $con = tiempoMedioAdminSql($conexion);
+        $con = selectSQL($conexion, 'Tiempo_resolucion', ["ROUND(AVG(Tiempo),0) AS 'tiempo_medio'", 'nom_tec'], null, ['nom_tec']);
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
             
             $globalStatistics = new statistics();
@@ -479,7 +479,7 @@ include 'classes.php';
     function deleteIncidenceFn($id_part, $userId)
     {
         $conexion = connectionFn();
-        deleteIncidenceSql($conexion, $id_part, $userId);
+        updateSQL($conexion, 'parte', makeConditionsFn(['state'], [5]), makeConditionsFn(['id_part', 'emp_crea', 'state'], [$id_part, $userId, 1]));
     }
     function updateIncidenceFn($incidenceId, $userId, $note, $pieces, $close)
     {
