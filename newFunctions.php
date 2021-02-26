@@ -486,11 +486,11 @@ include 'classes.php';
         $incidence = getIncidenceByIdFn($incidenceId);
         if ($incidence->solver->id == $userId || $incidence->state == 1) {
             if ($close) {
-                closeIncidenceSql($conexion, $incidenceId, $userId);
+                updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state', fecha_resolucion, hora_resolucion], [$userId, 3, 'CURRENT_DATE()', 'CURRENT_TIME()']), makeConditionFn('id_part', $incidenceId));
             } else {
                 updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state'], [$userId, 2]), makeConditionFn('id_part', $incidenceId));
             }
-            insertNoteSql($conexion, $incidenceId, $userId, 'Technician', $note);
+            insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Technician', $NoteDesc]);
             insertPiecesSql($conexion, $pieces, $incidenceId);
             return getIncidenceByIdFn($userId);
         }

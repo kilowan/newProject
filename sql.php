@@ -41,21 +41,6 @@
             $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
         }
     }
-    //new
-    function insertNoteSql($conexion, $incidenceId, $userId, $noteType, $NoteDesc)
-    {
-        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($userId, $incidenceId, '$noteType', '$NoteDesc')");
-    }
-    function updateNoteListSql($conexion, $user, $id_part, $not_tec)
-    {
-        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($user->id, $id_part, 'Technician', '$not_tec')");
-    }
-    //new
-    function closeIncidenceSql($conexion, $incidenceId, $userId)
-    {
-        $conexion->query("UPDATE parte  SET tec_res=$userId, state=3, fecha_resolucion=CURRENT_DATE(), hora_resolucion=CURRENT_TIME()
-		WHERE id_part = $incidenceId");
-    }
     function updateEmployeeSql($conexion, $user, $permissions)
     {
         $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
