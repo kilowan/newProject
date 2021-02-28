@@ -131,7 +131,6 @@ include 'classes.php';
     }
     function getEmployeeByUsernameFn($username)
     {
-        $empty = [];
         $users = getEmpolyeeListFn();
         $_SESSION['var'] = $username;
         $users = getEmpolyeeListFn();
@@ -139,7 +138,7 @@ include 'classes.php';
             return ($array->dni == $_SESSION['var']);
         });
 
-        return count($new_array) == 0 || $new_array == null? $empty : array_pop($new_array);
+        return count($new_array) == 0 || $new_array == null? null : array_pop($new_array);
     }
     function getIncidencesListFn()
     {
@@ -241,11 +240,16 @@ include 'classes.php';
         }
         return $permissions;
     }
-    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser)
+    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $old)
     {
-        $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $olduser->id);
-        updateEmployeeSql($conexion, $user, setPermissionsFn($type));
-        return $user;
+        $oldUser = getEmployeeByUsernameFn($old);
+        if ($oldUser == null) {
+            return 'El usuario no existe';
+        } else {
+            $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $oldUser->id);
+            updateEmployeeSql($conexion, $user, setPermissionsFn($type));
+            return $user;
+        }
     }
     function setPermissionsFn($tipo)
     {

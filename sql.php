@@ -31,30 +31,51 @@
     //new
     function insertEmployeeSql($conexion, $user, $credentials, $permissions)
     {
-        $conexion->query("INSERT INTO empleados (dni, nombre, apellido1, apellido2, tipo)
-        VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
-        $con = $conexion->query("SELECT * FROM Empleados WHERE dni = '$user->dni'");
-        $data = $con->fetch_array(MYSQLI_ASSOC);
-        $id = $data['id'];
-        $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', '$credentials->password', $id)");
-        foreach ($permissions as $permission) {
-            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+        $conexion->autocommit(false);
+        try {
+            $conexion->query("INSERT INTO empleados (dni, nombre, apellido1, apellido2, tipo)
+            VALUES ('$user->dni', '$user->name', '$user->surname1', '$user->surname2' ,'$user->tipo')");
+            $con = $conexion->query("SELECT * FROM Empleados WHERE dni = '$user->dni'");
+            $data = $con->fetch_array(MYSQLI_ASSOC);
+            $id = $data['id'];
+            $conexion->query("INSERT INTO credentials (username, password, employee) VALUES ('$credentials->username', '$credentials->password', $id)");
+            foreach ($permissions as $permission) {
+                $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($id, $permission)");
+            }
+        $conexion->commit();
+        } catch (Exception $e) {
+            $conexion->rollback();
+            echo 'Something fails: ',  $e->getMessage(), "\n";
         }
     }
     function updateEmployeeSql($conexion, $user, $permissions)
     {
-        $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
-        WHERE id = $user->id");
-        $conexion->query("DELETE employee_permissions WHERE employee=$user->id)");
-        foreach ($permissions as $permission) {
-            $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
+        $conexion->autocommit(false);
+        try {
+            $conexion->query("UPDATE empleados SET dni = '$user->dni', nombre='$user->name', apellido1='$user->surname1', apellido2='$user->surname2', tipo='$user->tipo' 
+            WHERE id = $user->id");
+            $conexion->query("DELETE employee_permissions WHERE employee=$user->id)");
+            foreach ($permissions as $permission) {
+                $conexion->query("INSERT INTO employee_permissions (employee, permission) VALUES ($user->id, $permission)");
+            }
+        $conexion->commit();
+        } catch (Exception $e) {
+            $conexion->rollback();
+            echo 'Something fails: ',  $e->getMessage(), "\n";
         }
     }
     //new
     function updateNoteSql($conexion, $note, $incidenceId, $employeeId)
     {
-        $conexion->query("DELETE FROM notes WHERE incidence=$incidenceId");
-        $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($employeeId, $incidenceId, 'Employee', '$note')");
+        $conexion->autocommit(false);
+        try {
+            $conexion->query("DELETE FROM notes WHERE incidence=$incidenceId");
+            $conexion->query("INSERT INTO notes (employee, incidence, noteType, noteStr) VALUES ($employeeId, $incidenceId, 'Employee', '$note')");
+        $conexion->commit();
+        } catch (Exception $e) {
+            $conexion->rollback();
+            echo 'Something fails: ',  $e->getMessage(), "\n";
+        }
     }
     //new
     function getPiecesSql($conexion, $id)
