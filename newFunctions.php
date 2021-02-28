@@ -332,19 +332,6 @@ include 'classes.php';
             $counter++;
         }
         return $pieces;
-        /*$joins = [];
-        $inner = new innerJoin();
-        $inner->tableA = 'parte';
-        $inner->tableB = 'empleados';
-        $inner->conditions = makeNewConditionFn('id_part', 'id');
-        array_push($joins, $inner);
-        $inner = new innerJoin();
-        $inner->tableA = 'parte';
-        $inner->tableB = 'piece';
-        $inner->conditions = makeNewConditionFn('id_part', 'id');
-        array_push($joins, $inner);
-        //return $joins[0]->tableA;
-        return innerJoinSQL($joins);*/
     }
     function getPieceTypeFn($conexion, $type)
     {
