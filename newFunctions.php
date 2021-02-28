@@ -144,7 +144,7 @@ include 'classes.php';
     function getIncidencesListFn()
     {
         $conexion = connectionFn();
-        $con = selectSQL($conexion, 'parte', ['*']);
+        $con = selectSQL($conexion, ['parte'], ['*']);
         $incidences = null;
         $incidence_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
@@ -153,7 +153,7 @@ include 'classes.php';
             $noteList = null;
             $count = 0;
             $columns = makeConditionsFn(['incidence'], [$fila['id_part']]);
-            $con2 = selectSQL($conexion, 'notes', ['*'], $columns);
+            $con2 = selectSQL($conexion, ['notes'], ['*'], $columns);
             $inf_part = '';
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $note = new note();
@@ -184,7 +184,7 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $columns = makeConditionsFn(['borrado'], [0]);
-        $con = selectSQL($conexion, 'Empleados', ['*'], $columns);
+        $con = selectSQL($conexion, ['Empleados'], ['*'], $columns);
         $employees = null;
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -231,7 +231,7 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $columns = makeConditionsFn(['employee'], [$id]);
-        $con = selectSQL($conexion, 'employee_permissions', ['*'], $columns);
+        $con = selectSQL($conexion, ['employee_permissions'], ['*'], $columns);
         $permission = 0;
         $permissions = null;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -290,7 +290,7 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $columns = makeConditionsFn(['id'], [$id]);
-        $con = selectSQL($conexion, 'piece', ['*'], $columns);
+        $con = selectSQL($conexion, ['piece'], ['*'], $columns);
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
         $type = getPieceTypeFn($conexion, $fila['type']);
@@ -303,7 +303,7 @@ include 'classes.php';
         $counter = 0;
         foreach ($pieces as $piece) {
             $columns = makeConditionsFn(['id'], [$piece]);
-            $con = selectSQL($conexion, 'piece', ['*'], $columns);
+            $con = selectSQL($conexion, ['piece'], ['*'], $columns);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
             $type = getPieceTypeFn($conexion, $fila['type']);
@@ -316,7 +316,7 @@ include 'classes.php';
     function getPiecesListFn()
     {
         $conexion = connectionFn();
-        $con = selectSQL($conexion, 'piece', ['*']);
+        $con = selectSQL($conexion, ['piece'], ['*']);
         $pieces = null;
         $counter = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC))
@@ -328,6 +328,19 @@ include 'classes.php';
             $counter++;
         }
         return $pieces;
+        /*$joins = [];
+        $inner = new innerJoin();
+        $inner->tableA = 'parte';
+        $inner->tableB = 'empleados';
+        $inner->conditions = makeNewConditionFn('id_part', 'id');
+        array_push($joins, $inner);
+        $inner = new innerJoin();
+        $inner->tableA = 'parte';
+        $inner->tableB = 'piece';
+        $inner->conditions = makeNewConditionFn('id_part', 'id');
+        array_push($joins, $inner);
+        //return $joins[0]->tableA;
+        return innerJoinSQL($joins);*/
     }
     function getPieceTypeFn($conexion, $type)
     {
@@ -336,7 +349,7 @@ include 'classes.php';
         $condition->value = $type;
         $conditions = [];
         array_push($conditions, $condition);
-        $con2 = selectSQL($conexion, 'piece_type', ['*'], $conditions);
+        $con2 = selectSQL($conexion, ['piece_type'], ['*'], $conditions);
         $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
         $type = makePieceType($fila2['name'], $fila2['description']);
         return $type;
@@ -347,7 +360,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $owner = getEmployeeByIdFn($obj->ownerId);
         insertSQL($conexion, 'parte', ['emp_crea', 'state'], [$owner->id, 1]);
-        $con = selectSQL($conexion, 'parte', ["MAX(id_part) AS 'id_part'"]);
+        $con = selectSQL($conexion, ['parte'], ["MAX(id_part) AS 'id_part'"]);
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         $id = $fila['id_part'];
         insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$owner->id, $id, 'Employee', $obj->issueDesc]);
@@ -408,6 +421,27 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $reportedPieces = [];
+        $joins = [];
+        $inner = new innerJoin();
+        $inner->tableA = 'piece';
+        $inner->tableB = 'parte';
+        $inner->conditions = makeNewConditionFn('id', 'piece');
+        array_push($joins, $inner);
+        $inner = new innerJoin();
+        $inner->tableA = 'incidence_piece';
+        $inner->tableB = 'piece';
+        $inner->conditions = makeNewConditionFn('incidence', 'id_part');
+        array_push($joins, $inner);
+        $condition = new dictionary();
+        $condition->column = 'pa.state';
+        $condition->value = 3;
+        $conditions = [];
+        array_push($conditions, $condition);
+        $condition = new dictionary();
+        $condition->column = 'pa.state';
+        $condition->value = 4;
+        array_push($conditions, $condition);
+        $con = selectSQL($conexion, ['incidence_piece', 'piece', 'parte'], ['pi.name AS pieceName', "COUNT(in.piece) AS 'pieceNumber'"], $conditions, ['piece'], $joins);
         $con = piecesCountSql($conexion);
         $number = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
@@ -424,7 +458,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $number = 0;
         $globalData = [];
-        $con = selectSQL($conexion, 'Tiempo_resolucion', ["ROUND(AVG(Tiempo),0) AS 'tiempo_medio'", 'nom_tec'], null, ['nom_tec']);
+        $con = selectSQL($conexion, ['Tiempo_resolucion'], ["ROUND(AVG(Tiempo),0) AS 'tiempo_medio'", 'nom_tec'], null, ['nom_tec']);
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
             
             $globalStatistics = new statistics();

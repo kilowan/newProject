@@ -80,9 +80,14 @@
         return $conexion->query($text);
     }
     //new
-    function selectSQL($conexion, $table, $columns, $conditions = null, $group = null)
+    function selectSQL($conexion, $tables, $columns, $conditions = null, $group = null, $inner = null)
     {
-        $text = 'SELECT '.implode(', ', $columns).' FROM '.$table;
+        
+        if ($inner) {
+            $text = 'SELECT '.implode(', ', $columns).' FROM '.innerJoinSQL($inner);
+        } else {
+            $text = 'SELECT '.implode(', ', $columns).' FROM '.$tables[0];
+        }
         if ($conditions) {
             $text = $text.whereSQL($conditions);
         }
@@ -124,5 +129,25 @@
     function groupBySQL($fields)
     {
         return ' GROUP BY '.implode(', ', $fields);
+    }
+    //new
+    function innerJoinSQL($innerJoin)
+    {
+        $position = 0;
+        $innerText = '';
+        foreach ($innerJoin as $inner) {
+            if($position == 0)
+            {
+                $innerText = $inner->tableA.' '.$inner->tableA[0].$inner->tableA[1];
+            }
+            $innerText = $innerText.innerSQL($inner->tableA, $inner->tableB, $inner->conditions);
+            $position++;
+        }
+        return $innerText;
+    }
+    //new
+    function innerSQL($a, $b, $conditions)
+    {
+        return ' INNER JOIN '.$b.' '.$b[0].$b[1].' ON '.$a[0].$a[1].'.'.$conditions->column.' = '.$b[0].$b[1].'.'.$conditions->value;
     }
 ?>

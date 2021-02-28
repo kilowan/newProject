@@ -88,4 +88,15 @@
 		public $column = '';
 		public $value = '';
 	}
+	class innerJoin
+	{
+		public $tableA = '';
+		public $tableB = '';
+		public $conditions = null;
+	}
+	class table
+	{
+		public $name = '';
+		public $fields = null;
+	}
 ?>
