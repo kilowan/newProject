@@ -348,12 +348,7 @@ include 'classes.php';
     }
     function getPieceTypeFn($conexion, $type)
     {
-        $condition = new dictionary();
-        $condition->column = 'id';
-        $condition->value = $type;
-        $conditions = [];
-        array_push($conditions, $condition);
-        $con2 = selectSQL($conexion, ['piece_type'], ['*'], $conditions);
+        $con2 = selectSQL($conexion, ['piece_type'], ['*'], makeConditionFn('id', $type));
         $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
         $type = makePieceType($fila2['name'], $fila2['description']);
         return $type;
@@ -412,7 +407,11 @@ include 'classes.php';
     function getStatisticsFn($id)
     {
         $conexion = connectionFn();
-        $con = tiempoMedioSql($conexion, getEmployeeByIdFn($id));
+        $conditions = makeNewConditionFn('tec_res', $id);
+        $orderBy = new order();
+        $orderBy->order = 'DESC';
+        $orderBy->fields = ['ROUND(AVG(Tiempo),0)'];
+        $con = selectSQL($conexion, ['Tiempo_resolucion'], ["ROUND(AVG(Tiempo),0) AS 'tiempo_medio'", "count(nom_tec) AS 'cantidad_partes'", 'nom_tec'], null, ['nom_tec'], null, $orderBy);
         $statistics = new statistics();
         if ($con->num_rows > 0) {
             $fila = $con->fetch_array(MYSQLI_ASSOC);
@@ -426,27 +425,12 @@ include 'classes.php';
         $conexion = connectionFn();
         $reportedPieces = [];
         $joins = [];
-        $inner = new innerJoin();
-        $inner->tableA = 'piece';
-        $inner->tableB = 'parte';
-        $inner->conditions = makeNewConditionFn('id', 'piece');
+        $inner = makeSingleInner('incidence_piece', 'piece', 'piece', 'id');
         array_push($joins, $inner);
-        $inner = new innerJoin();
-        $inner->tableA = 'incidence_piece';
-        $inner->tableB = 'piece';
-        $inner->conditions = makeNewConditionFn('incidence', 'id_part');
+        $inner = makeSingleInner('incidence_piece', 'parte', 'incidence', 'id_part');
         array_push($joins, $inner);
-        $condition = new dictionary();
-        $condition->column = 'pa.state';
-        $condition->value = 3;
-        $conditions = [];
-        array_push($conditions, $condition);
-        $condition = new dictionary();
-        $condition->column = 'pa.state';
-        $condition->value = 4;
-        array_push($conditions, $condition);
-        $con = selectSQL($conexion, ['incidence_piece', 'piece', 'parte'], ['pi.name AS pieceName', "COUNT(in.piece) AS 'pieceNumber'"], $conditions, ['piece'], $joins);
-        $con = piecesCountSql($conexion);
+        $conditions = makeConditionFn('par.state', '(3, 4)', 'IN');
+        $con = selectSQL($conexion, ['incidence_piece', 'piece', 'parte'], ['pie.name AS pieceName', "COUNT(inc.piece) AS 'pieceNumber'"], $conditions, ['piece'], $joins);
         $number = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
             $reportedPiece = new reportedPiece();
@@ -534,19 +518,26 @@ include 'classes.php';
         }
         return 'Inserción no satisfactoria';
     }
-    function makeConditionFn($field, $value)
+    function makeConditionFn($field, $value, $key = null)
     {
-        $column = new dictionary();
-        $column->column = $field;
-        $column->value = $value;
+        $column = makeNewConditionFn($field, $value, $key);
         $columns = [];
         array_push($columns, $column);
         return $columns;
     }
-    function makeNewConditionFn($field, $value)
+    function makeSingleInner($table1, $table2, $condition1, $condition2)
+    {
+        $inner = new innerJoin();
+        $inner->tableA = $table1.' '.$table1[0].$table1[1].$table1[2];
+        $inner->tableB = $table2.' '.$table2[0].$table2[1].$table2[2];
+        $inner->conditions = makeNewConditionFn($table1[0].$table1[1].$table1[2].'.'.$condition1, $table2[0].$table2[1].$table2[2].'.'.$condition2);
+        return $inner;
+    }
+    function makeNewConditionFn($field, $value, $key = null)
     {
         $column = new dictionary();
         $column->column = $field;
+        $column->key = $key;
         $column->value = $value;
         return $column;
     }

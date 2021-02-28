@@ -86,6 +86,7 @@
 	class dictionary
 	{
 		public $column = '';
+		public $key = null;
 		public $value = '';
 	}
 	class innerJoin
@@ -97,6 +98,11 @@
 	class table
 	{
 		public $name = '';
+		public $fields = null;
+	}
+	class order
+	{
+		public $order = null;
 		public $fields = null;
 	}
 ?>

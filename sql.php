@@ -8,27 +8,6 @@
 		WHERE E.borrado=0 AND C.username='$credentials->username' AND C.password='$credentials->password'");
     }
     //new
-    function piecesCountSql($conexion)
-    {
-        return $conexion->query("SELECT p.name AS pieceName, COUNT(ip.piece) AS 'pieceNumber' 
-        FROM incidence_piece ip 
-        INNER JOIN piece p
-        ON p.id = ip.piece
-        INNER JOIN parte pa
-        ON ip.incidence = pa.id_part
-        WHERE pa.state IN (3, 4)
-        GROUP BY piece");
-    }
-    //old
-	function tiempoMedioSql($conexion, $user)
-	{
-		return $conexion->query("SELECT ROUND(AVG(Tiempo),0) AS 'tiempo_medio', count(nom_tec) AS 'cantidad_partes', nom_tec
-		FROM Tiempo_resolucion
-		WHERE tec_res=$user->id
-		GROUP BY nom_tec
-		ORDER BY ROUND(AVG(Tiempo),0) DESC");
-    }
-    //new
     function insertEmployeeSql($conexion, $user, $credentials, $permissions)
     {
         $conexion->autocommit(false);
@@ -101,7 +80,7 @@
         return $conexion->query($text);
     }
     //new
-    function selectSQL($conexion, $tables, $columns, $conditions = null, $group = null, $inner = null)
+    function selectSQL($conexion, $tables, $columns, $conditions = null, $group = null, $inner = null, $orderBy = null)
     {
         
         if ($inner) {
@@ -115,6 +94,10 @@
         if ($group) {
             $text = $text.groupBySQL($group);
         }
+        if ($orderBy)
+        {
+            $text = $text.orderBySQL($orderBy);
+        }
         return $conexion->query($text);
     }
     //new
@@ -122,7 +105,12 @@
     {
         $position = 0;
         foreach ($conditions as $condition) {
-            $result = $condition->column.' = '.$condition->value;
+            if (!$condition->key) {
+                $result = $condition->column.' = '.$condition->value;
+            } else {
+                $result = $condition->column.' '.$condition->key.' '.$condition->value;
+            }
+            
             $results[$position] = $result;
             $position++;
         }
@@ -159,16 +147,21 @@
         foreach ($innerJoin as $inner) {
             if($position == 0)
             {
-                $innerText = $inner->tableA.' '.$inner->tableA[0].$inner->tableA[1];
+                $innerText = $inner->tableA;
             }
-            $innerText = $innerText.innerSQL($inner->tableA, $inner->tableB, $inner->conditions);
+            $innerText = $innerText.innerSQL($inner->tableB, $inner->conditions);
             $position++;
         }
         return $innerText;
     }
     //new
-    function innerSQL($a, $b, $conditions)
+    function innerSQL($b, $conditions)
     {
-        return ' INNER JOIN '.$b.' '.$b[0].$b[1].' ON '.$a[0].$a[1].'.'.$conditions->column.' = '.$b[0].$b[1].'.'.$conditions->value;
+        return ' INNER JOIN '.$b.' ON '.$conditions->column.' = '.$conditions->value;
+    }
+    //new
+    function orderBySQL($orderBy)
+    {
+        return ' ORDER BY '.implode(', ', $orderBy->fields).' '.$orderBy->order;
     }
 ?>
