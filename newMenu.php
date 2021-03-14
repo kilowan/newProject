@@ -112,9 +112,6 @@ include 'newFunctions.php';
             $obj = getPostData();
             showFn(updateIncidenceFn($obj->incidenceId, $obj->userId, $obj->note, $obj->pieces, $obj->close));
             break;
-        case'updateEmployee':
-            showFn(updateEmployeeFn(connectionFn(), $_GET['dni'], $_GET['name'], $_GET['surname1'], $_GET['surname2'], $_GET['type'], $_GET['dni']));
-            break;
         case 'updateWorker':
             $obj = getPostData();
             showFn(updateWorker($obj->fields, $obj->values, $obj->dni));

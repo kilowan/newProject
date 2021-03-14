@@ -240,17 +240,6 @@ include 'classes.php';
         }
         return $permissions;
     }
-    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $old)
-    {
-        $oldUser = getEmployeeByUsernameFn($old);
-        if ($oldUser == null) {
-            return 'El usuario no existe';
-        } else {
-            $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $oldUser->id);
-            updateEmployeeSql($conexion, $user, setPermissionsFn($type));
-            return $user;
-        }
-    }
     function setPermissionsFn($tipo)
     {
         $permissions = null;
@@ -508,8 +497,45 @@ include 'classes.php';
     function updateWorker($fields, $values, $dni)
     {
         $conexion = connectionFn();
-        updateSQL($conexion, 'empleados', makeConditionsFn($fields, $values), makeConditionFn('dni', $dni));
-        return 'OK';
+        $oldUser = getEmployeeByUsernameFn($dni);
+        if ($oldUser == null) {
+            return 'El usuario no existe';
+        } else {
+            $newfields = [];
+            $newValues = [];
+            $position = 0;
+            foreach ($fields as $field) {
+                if(checkField('Empleados', $field))
+                {
+                    array_push($newfields, $field);
+                    array_push($newValues, $values[$position]);
+                }
+                $position++;
+            }
+            if (count($newfields) >0) {
+                updateSQL($conexion, 'empleados', makeConditionsFn($newfields, $newValues), makeConditionFn('dni', $dni));
+                $columns = makeConditionsFn(['dni'], [$dni]);
+                $con = selectSQL($conexion, ['Empleados'], ['*'], $columns);
+                $fila = $con->fetch_array(MYSQLI_ASSOC);
+                return getUserFn($dni, $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], setPermissionsFn($fila['tipo']), $fila['borrado'], $fila['id']);
+            }
+            else {
+                return 'Los campos introducidos no son coorrectos';
+            }
+        }
+    }
+    function checkField($table, $field)
+    {
+        $fields = null;
+        switch ($table) {
+            case 'Empleados':
+                $fields = ['nombre', 'apellido1', 'apellido2', 'tipo', 'borrado'];
+                return in_array($field, $fields);
+                break;
+            
+            default:
+                break;
+        }
     }
     function makeConditionFn($field, $value, $key = null)
     {
