@@ -83,4 +83,26 @@
 		public ?string $pieceName = null;
 		public ?string $pieceNumber = null;
 	}
+	class dictionary
+	{
+		public $column = '';
+		public $key = null;
+		public $value = '';
+	}
+	class innerJoin
+	{
+		public $tableA = '';
+		public $tableB = '';
+		public $conditions = null;
+	}
+	class table
+	{
+		public $name = '';
+		public $fields = null;
+	}
+	class order
+	{
+		public $order = null;
+		public $fields = null;
+	}
 ?>

@@ -61,12 +61,11 @@ include 'classes.php';
         $credentials = new credentials($username, $password);
         $olduser = getEmployeeByUsernameFn($username);
         
-
         if (count($olduser) >0)
         {
             //update
             $user = updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser);
-            updateCredentialsSql($conexion, $credentials, $olduser->id);
+            updateSQL($conexion, 'credentials', makeConditionsFn(['username', 'password'], [$credentials->username, $credentials->password]), makeConditionsFn(['employee'], [$user->id]));
         } 
         else 
         {
@@ -132,7 +131,6 @@ include 'classes.php';
     }
     function getEmployeeByUsernameFn($username)
     {
-        $empty = [];
         $users = getEmpolyeeListFn();
         $_SESSION['var'] = $username;
         $users = getEmpolyeeListFn();
@@ -140,12 +138,12 @@ include 'classes.php';
             return ($array->dni == $_SESSION['var']);
         });
 
-        return count($new_array) == 0 || $new_array == null? $empty : array_pop($new_array);
+        return count($new_array) == 0 || $new_array == null? null : array_pop($new_array);
     }
     function getIncidencesListFn()
     {
         $conexion = connectionFn();
-        $con = selectIncidencesSql($conexion);
+        $con = selectSQL($conexion, ['parte'], ['*']);
         $incidences = null;
         $incidence_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
@@ -153,7 +151,8 @@ include 'classes.php';
             
             $noteList = null;
             $count = 0;
-            $con2 = selectNotesSql($conexion, $fila['id_part']);
+            $columns = makeConditionsFn(['incidence'], [$fila['id_part']]);
+            $con2 = selectSQL($conexion, ['notes'], ['*'], $columns);
             $inf_part = '';
             while ($notes = $con2->fetch_array(MYSQLI_ASSOC)) {
                 $note = new note();
@@ -183,7 +182,8 @@ include 'classes.php';
     function getEmpolyeeListFn()
     {
         $conexion = connectionFn();
-        $con = getAllEmployeeDataSql($conexion);
+        $columns = makeConditionsFn(['borrado'], [0]);
+        $con = selectSQL($conexion, ['Empleados'], ['*'], $columns);
         $employees = null;
         $employee_count = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -218,7 +218,7 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $user = getEmployeeByIdFn($_GET['id']);
-        deleteEmployeeSql($conexion, $user);
+        updateSQL($conexion, 'empleados', makeConditionFn('borrado', 1), makeConditionFn('id', $_GET['id']));
         return $user;
     }
     function addEmployeeFn($username, $password, $dni, $name, $surname1, $surname2, $type)
@@ -229,7 +229,8 @@ include 'classes.php';
     function getPermissionsFn($id)
     {
         $conexion = connectionFn();
-        $con = getPermissionsSql($conexion, $id);
+        $columns = makeConditionsFn(['employee'], [$id]);
+        $con = selectSQL($conexion, ['employee_permissions'], ['*'], $columns);
         $permission = 0;
         $permissions = null;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) 
@@ -239,11 +240,16 @@ include 'classes.php';
         }
         return $permissions;
     }
-    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $olduser)
+    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $old)
     {
-        $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $olduser->id);
-        updateEmployeeSql($conexion, $user, setPermissionsFn($type));
-        return $user;
+        $oldUser = getEmployeeByUsernameFn($old);
+        if ($oldUser == null) {
+            return 'El usuario no existe';
+        } else {
+            $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $oldUser->id);
+            updateEmployeeSql($conexion, $user, setPermissionsFn($type));
+            return $user;
+        }
     }
     function setPermissionsFn($tipo)
     {
@@ -287,12 +293,11 @@ include 'classes.php';
     function getPieceByIdFn($id)
     {
         $conexion = connectionFn();
-        $con = getPieceByIdSql($conexion, $id);
+        $columns = makeConditionsFn(['id'], [$id]);
+        $con = selectSQL($conexion, ['piece'], ['*'], $columns);
         $fila = $con->fetch_array(MYSQLI_ASSOC);
         $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-        $con2 = getPieceTypeSql($conexion, $fila['type']);
-        $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
-        $type = makePieceType($fila2['name'], $fila2['description']);
+        $type = getPieceTypeFn($conexion, $fila['type']);
         $piece->type = $type;
         return $piece;
     }
@@ -301,12 +306,11 @@ include 'classes.php';
         $conexion = connectionFn();
         $counter = 0;
         foreach ($pieces as $piece) {
-            $con = getPieceByIdSql($conexion, $piece);
+            $columns = makeConditionsFn(['id'], [$piece]);
+            $con = selectSQL($conexion, ['piece'], ['*'], $columns);
             $fila = $con->fetch_array(MYSQLI_ASSOC);
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-            $con2 = getPieceTypeSql($conexion, $fila['type']);
-            $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
-            $type = makePieceType($fila2['name'], $fila2['description']);
+            $type = getPieceTypeFn($conexion, $fila['type']);
             $piece->type = $type;
             $pieces[$counter] = $piece;
             $counter++;
@@ -316,27 +320,36 @@ include 'classes.php';
     function getPiecesListFn()
     {
         $conexion = connectionFn();
-        $con = getPiecesListSql($conexion);
+        $con = selectSQL($conexion, ['piece'], ['*']);
         $pieces = null;
         $counter = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC))
         {
             $piece = makePiece($fila['id'], $fila['name'], $fila['price'], $fila['description']);
-            $con2 = getPieceTypeSql($conexion, $fila['type']);
-            $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
-            $type = makePieceType($fila2['name'], $fila2['description']);
+            $type = getPieceTypeFn($conexion, $fila['type']);
             $piece->type = $type;
             $pieces[$counter] = $piece;
             $counter++;
         }
         return $pieces;
     }
+    function getPieceTypeFn($conexion, $type)
+    {
+        $con2 = selectSQL($conexion, ['piece_type'], ['*'], makeConditionFn('id', $type));
+        $fila2 = $con2->fetch_array(MYSQLI_ASSOC);
+        $type = makePieceType($fila2['name'], $fila2['description']);
+        return $type;
+    }
+
     function addIncidenceFn($obj)
     {
         $conexion = connectionFn();
         $owner = getEmployeeByIdFn($obj->ownerId);
-        $id = insertIncidenceSql($conexion, $owner);
-        insertNoteSql($conexion, $id, $owner->id, 'Employee', $obj->issueDesc);
+        insertSQL($conexion, 'parte', ['emp_crea', 'state'], [$owner->id, 1]);
+        $con = selectSQL($conexion, ['parte'], ["MAX(id_part) AS 'id_part'"]);
+        $fila = $con->fetch_array(MYSQLI_ASSOC);
+        $id = $fila['id_part'];
+        insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$owner->id, $id, 'Employee', $obj->issueDesc]);
         insertPiecesSql($conexion, $obj->pieces, $id);
         return getIncidenceByIdFn($id);
     }
@@ -381,7 +394,11 @@ include 'classes.php';
     function getStatisticsFn($id)
     {
         $conexion = connectionFn();
-        $con = tiempoMedioSql($conexion, getEmployeeByIdFn($id));
+        $conditions = makeNewConditionFn('tec_res', $id);
+        $orderBy = new order();
+        $orderBy->order = 'DESC';
+        $orderBy->fields = ['ROUND(AVG(Tiempo),0)'];
+        $con = selectSQL($conexion, ['Tiempo_resolucion'], ["ROUND(AVG(Tiempo),0) AS 'tiempo_medio'", "count(nom_tec) AS 'cantidad_partes'", 'nom_tec'], null, ['nom_tec'], null, $orderBy);
         $statistics = new statistics();
         if ($con->num_rows > 0) {
             $fila = $con->fetch_array(MYSQLI_ASSOC);
@@ -394,7 +411,13 @@ include 'classes.php';
     {
         $conexion = connectionFn();
         $reportedPieces = [];
-        $con = piecesCountSql($conexion);
+        $joins = [];
+        $inner = makeSingleInner('incidence_piece', 'piece', 'piece', 'id');
+        array_push($joins, $inner);
+        $inner = makeSingleInner('incidence_piece', 'parte', 'incidence', 'id_part');
+        array_push($joins, $inner);
+        $conditions = makeConditionFn('par.state', '(3, 4)', 'IN');
+        $con = selectSQL($conexion, ['incidence_piece', 'piece', 'parte'], ['pie.name AS pieceName', "COUNT(inc.piece) AS 'pieceNumber'"], $conditions, ['piece'], $joins);
         $number = 0;
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
             $reportedPiece = new reportedPiece();
@@ -410,7 +433,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $number = 0;
         $globalData = [];
-        $con = tiempoMedioAdminSql($conexion);
+        $con = selectSQL($conexion, ['Tiempo_resolucion'], ["ROUND(AVG(Tiempo),0) AS 'tiempo_medio'", 'nom_tec'], null, ['nom_tec']);
         while ($fila = $con->fetch_array(MYSQLI_ASSOC)) {
             
             $globalStatistics = new statistics();
@@ -426,7 +449,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $incidence = getIncidenceByIdFn($id);
         if ($incidence->state == 4 && $incidence->owner->id == $userId) {
-            showHiddenParteSql($conexion, $id);
+            updateSQL($conexion, 'parte', makeConditionFn('state', 3), makeConditionFn('id_part', $id));
             return getIncidenceByIdFn($id);
         } else {
             return 'Error de inserción';
@@ -437,7 +460,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $incidence = getIncidenceByIdFn($id);
         if ($incidence->state == 3 && $incidence->owner->id == $userId) {
-            hideParteSql($conexion, $id);
+            updateSQL($conexion, 'parte', makeConditionFn('state', 4), makeConditionFn('id_part', $id));
             return getIncidenceByIdFn($id);
         } else {
             return 'Error de inserción';
@@ -452,19 +475,19 @@ include 'classes.php';
     function insertemployeeNoteFn($NoteDesc, $incidencesId, $userId)
     {
         $conexion = connectionFn();
-        insertNoteSql($conexion, $incidencesId, $userId, 'Technician', $NoteDesc);
+        insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Employee', $NoteDesc]);
         return 'OK';
     }
     function inserttechnicianNoteFn($NoteDesc, $incidencesId, $userId)
     {
         $conexion = connectionFn();
-        insertNoteSql($conexion, $incidencesId, $userId, 'Employee', $NoteDesc);
+        insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Technician', $NoteDesc]);
         return 'OK';
     }
     function deleteIncidenceFn($id_part, $userId)
     {
         $conexion = connectionFn();
-        deleteIncidenceSql($conexion, $id_part, $userId);
+        updateSQL($conexion, 'parte', makeConditionsFn(['state'], [5]), makeConditionsFn(['id_part', 'emp_crea', 'state'], [$id_part, $userId, 1]));
     }
     function updateIncidenceFn($incidenceId, $userId, $note, $pieces, $close)
     {
@@ -472,14 +495,52 @@ include 'classes.php';
         $incidence = getIncidenceByIdFn($incidenceId);
         if ($incidence->solver->id == $userId || $incidence->state == 1) {
             if ($close) {
-                closeIncidenceSql($conexion, $incidenceId, $userId);
+                updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state', fecha_resolucion, hora_resolucion], [$userId, 3, 'CURRENT_DATE()', 'CURRENT_TIME()']), makeConditionFn('id_part', $incidenceId));
             } else {
-                updateIncidenceSql($conexion, $incidenceId, $userId);
+                updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state'], [$userId, 2]), makeConditionFn('id_part', $incidenceId));
             }
-            insertNoteSql($conexion, $incidenceId, $userId, 'Technician', $note);
+            insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Technician', $NoteDesc]);
             insertPiecesSql($conexion, $pieces, $incidenceId);
             return getIncidenceByIdFn($userId);
         }
         return 'Inserción no satisfactoria';
+    }
+    function updateWorker($fields, $values, $dni)
+    {
+        $conexion = connectionFn();
+        updateSQL($conexion, 'empleados', makeConditionsFn($fields, $values), makeConditionFn('dni', $dni));
+        return 'OK';
+    }
+    function makeConditionFn($field, $value, $key = null)
+    {
+        $column = makeNewConditionFn($field, $value, $key);
+        $columns = [];
+        array_push($columns, $column);
+        return $columns;
+    }
+    function makeSingleInner($table1, $table2, $condition1, $condition2)
+    {
+        $inner = new innerJoin();
+        $inner->tableA = $table1.' '.$table1[0].$table1[1].$table1[2];
+        $inner->tableB = $table2.' '.$table2[0].$table2[1].$table2[2];
+        $inner->conditions = makeNewConditionFn($table1[0].$table1[1].$table1[2].'.'.$condition1, $table2[0].$table2[1].$table2[2].'.'.$condition2);
+        return $inner;
+    }
+    function makeNewConditionFn($field, $value, $key = null)
+    {
+        $column = new dictionary();
+        $column->column = $field;
+        $column->key = $key;
+        $column->value = $value;
+        return $column;
+    }
+    function makeConditionsFn($fields, $Values)
+    {
+        $columns = [];
+        for ($i=0; $i < count($fields); $i++) { 
+            $column = makeNewConditionFn($fields[$i], $Values[$i]);
+            array_push($columns, $column);
+        }
+        return $columns;
     }
 ?>
