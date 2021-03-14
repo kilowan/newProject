@@ -505,6 +505,12 @@ include 'classes.php';
         }
         return 'Inserción no satisfactoria';
     }
+    function updateWorker($fields, $values, $dni)
+    {
+        $conexion = connectionFn();
+        updateSQL($conexion, 'empleados', makeConditionsFn($fields, $values), makeConditionFn('dni', $dni));
+        return 'OK';
+    }
     function makeConditionFn($field, $value, $key = null)
     {
         $column = makeNewConditionFn($field, $value, $key);

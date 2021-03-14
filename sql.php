@@ -106,7 +106,7 @@
         $position = 0;
         foreach ($conditions as $condition) {
             if (!$condition->key) {
-                $result = $condition->column.' = '.$condition->value;
+                $result = $condition->column.' = "'.$condition->value.'"';
             } else {
                 $result = $condition->column.' '.$condition->key.' '.$condition->value;
             }
@@ -122,10 +122,10 @@
         $conditionsValues = [];
         $position = 0;
         foreach ($columns as $data) {
-            $conditionsValues[$position] = $data->column.' = '.$data->value;
+            $conditionsValues[$position] = $data->column.' = "'.$data->value.'"';
             $position++;
         }
-        $text = 'UPDATE '.$table.' SET '.implode(' AND ', $conditionsValues).whereSQL($conditions);
+        $text = 'UPDATE '.$table.' SET '.implode(', ', $conditionsValues).whereSQL($conditions);
         return $conexion->query($text);
     }
     //new
