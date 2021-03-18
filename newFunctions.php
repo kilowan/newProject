@@ -131,12 +131,20 @@ include 'classes.php';
     }
     function getEmployeeByUsernameFn($username)
     {
-        $users = getEmpolyeeListFn();
-        $_SESSION['var'] = $username;
-        $users = getEmpolyeeListFn();
-        $new_array = array_filter($users, function($array) {
-            return ($array->dni == $_SESSION['var']);
-        });
+        $conexion = connectionFn();
+        $columns = makeConditionsFn(['username'], [$username]);
+        $con = selectSQL($conexion, ['credentials'], ['*'], $columns);
+        if ($con->num_rows > 0)
+        {            
+            $fila = $con->fetch_array(MYSQLI_ASSOC);
+            $employee = $fila['employee'];
+            $users = getEmpolyeeListFn();
+            $_SESSION['var'] = $employee;
+            $users = getEmpolyeeListFn();
+            $new_array = array_filter($users, function($array) {
+                return ($array->id == $_SESSION['var']);
+            });
+        }
 
         return count($new_array) == 0 || $new_array == null? null : array_pop($new_array);
     }

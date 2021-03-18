@@ -106,7 +106,7 @@
         $position = 0;
         foreach ($conditions as $condition) {
             if (!$condition->key) {
-                $result = $condition->column.' = "'.$condition->value.'"';
+                $result = $condition->column." = '".$condition->value."'";
             } else {
                 $result = $condition->column.' '.$condition->key.' '.$condition->value;
             }
