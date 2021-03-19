@@ -496,9 +496,11 @@ include 'classes.php';
             } else {
                 updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state'], [$userId, 2]), makeConditionFn('id_part', $incidenceId));
             }
-            insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Technician', $NoteDesc]);
-            insertPiecesSql($conexion, $pieces, $incidenceId);
-            return getIncidenceByIdFn($userId);
+            insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr', 'date'], [$userId, $incidenceId, "'Technician'", "'".$note->noteStr."'", 'CURRENT_TIMESTAMP']);
+            if (count($pieces) >0) {
+                insertPiecesSql($conexion, $pieces, $incidenceId);
+            }
+            return getIncidenceByIdFn($incidenceId);
         }
         return 'Inserción no satisfactoria';
     }
