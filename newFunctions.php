@@ -131,12 +131,20 @@ include 'classes.php';
     }
     function getEmployeeByUsernameFn($username)
     {
-        $users = getEmpolyeeListFn();
-        $_SESSION['var'] = $username;
-        $users = getEmpolyeeListFn();
-        $new_array = array_filter($users, function($array) {
-            return ($array->dni == $_SESSION['var']);
-        });
+        $conexion = connectionFn();
+        $columns = makeConditionsFn(['username'], [$username]);
+        $con = selectSQL($conexion, ['credentials'], ['*'], $columns);
+        if ($con->num_rows > 0)
+        {            
+            $fila = $con->fetch_array(MYSQLI_ASSOC);
+            $employee = $fila['employee'];
+            $users = getEmpolyeeListFn();
+            $_SESSION['var'] = $employee;
+            $users = getEmpolyeeListFn();
+            $new_array = array_filter($users, function($array) {
+                return ($array->id == $_SESSION['var']);
+            });
+        }
 
         return count($new_array) == 0 || $new_array == null? null : array_pop($new_array);
     }
@@ -239,17 +247,6 @@ include 'classes.php';
             $permission++;
         }
         return $permissions;
-    }
-    function updateEmployeeFn($conexion, $dni, $name, $surname1, $surname2, $type, $old)
-    {
-        $oldUser = getEmployeeByUsernameFn($old);
-        if ($oldUser == null) {
-            return 'El usuario no existe';
-        } else {
-            $user = getUserFn($dni, $name, $surname1, $surname2, $type, setPermissionsFn($type), 0, $oldUser->id);
-            updateEmployeeSql($conexion, $user, setPermissionsFn($type));
-            return $user;
-        }
     }
     function setPermissionsFn($tipo)
     {
@@ -489,6 +486,7 @@ include 'classes.php';
         $conexion = connectionFn();
         updateSQL($conexion, 'parte', makeConditionsFn(['state'], [5]), makeConditionsFn(['id_part', 'emp_crea', 'state'], [$id_part, $userId, 1]));
     }
+    
     function updateIncidenceFn($incidenceId, $userId, $note, $pieces, $close)
     {
         $conexion = connectionFn();
@@ -499,17 +497,56 @@ include 'classes.php';
             } else {
                 updateSQL($conexion, 'parte', makeConditionsFn(['tec_res', 'state'], [$userId, 2]), makeConditionFn('id_part', $incidenceId));
             }
-            insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr'], [$userId, $incidenceId, 'Technician', $NoteDesc]);
-            insertPiecesSql($conexion, $pieces, $incidenceId);
-            return getIncidenceByIdFn($userId);
+            insertSQL($conexion, 'notes', ['employee', 'incidence', 'noteType', 'noteStr', 'date'], [$userId, $incidenceId, "'Technician'", "'".$note->noteStr."'", 'CURRENT_TIMESTAMP']);
+            if (count($pieces) >0) {
+                insertPiecesSql($conexion, $pieces, $incidenceId);
+            }
+            return getIncidenceByIdFn($incidenceId);
         }
         return 'Inserción no satisfactoria';
     }
     function updateWorker($fields, $values, $dni)
     {
         $conexion = connectionFn();
-        updateSQL($conexion, 'empleados', makeConditionsFn($fields, $values), makeConditionFn('dni', $dni));
-        return 'OK';
+        $oldUser = getEmployeeByUsernameFn($dni);
+        if ($oldUser == null) {
+            return 'El usuario no existe';
+        } else {
+            $newfields = [];
+            $newValues = [];
+            $position = 0;
+            foreach ($fields as $field) {
+                if(checkField('Empleados', $field))
+                {
+                    array_push($newfields, $field);
+                    array_push($newValues, $values[$position]);
+                }
+                $position++;
+            }
+            if (count($newfields) >0) {
+                updateSQL($conexion, 'empleados', makeConditionsFn($newfields, $newValues), makeConditionFn('dni', $dni));
+                $columns = makeConditionsFn(['dni'], [$dni]);
+                $con = selectSQL($conexion, ['Empleados'], ['*'], $columns);
+                $fila = $con->fetch_array(MYSQLI_ASSOC);
+                return getUserFn($dni, $fila['nombre'], $fila['apellido1'], $fila['apellido2'], $fila['tipo'], setPermissionsFn($fila['tipo']), $fila['borrado'], $fila['id']);
+            }
+            else {
+                return 'Los campos introducidos no son coorrectos';
+            }
+        }
+    }
+    function checkField($table, $field)
+    {
+        $fields = null;
+        switch ($table) {
+            case 'Empleados':
+                $fields = ['nombre', 'apellido1', 'apellido2', 'tipo', 'borrado'];
+                return in_array($field, $fields);
+                break;
+            
+            default:
+                break;
+        }
     }
     function makeConditionFn($field, $value, $key = null)
     {
