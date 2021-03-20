@@ -486,6 +486,7 @@ include 'classes.php';
         $conexion = connectionFn();
         updateSQL($conexion, 'parte', makeConditionsFn(['state'], [5]), makeConditionsFn(['id_part', 'emp_crea', 'state'], [$id_part, $userId, 1]));
     }
+    
     function updateIncidenceFn($incidenceId, $userId, $note, $pieces, $close)
     {
         $conexion = connectionFn();
