@@ -134,6 +134,7 @@ include 'classes.php';
         $conexion = connectionFn();
         $columns = makeConditionsFn(['username'], [$username]);
         $con = selectSQL($conexion, ['credentials'], ['*'], $columns);
+        $new_array = [];
         if ($con->num_rows > 0)
         {            
             $fila = $con->fetch_array(MYSQLI_ASSOC);
