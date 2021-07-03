@@ -91,9 +91,4 @@ include 'newFunctions.php';
         echo json_encode($new_array);
         exit();
     }
-    function getPostData()
-    {
-        $json = file_get_contents('php://input');
-        return json_decode($json);
-    }
 ?>
