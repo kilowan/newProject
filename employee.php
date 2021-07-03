@@ -27,7 +27,7 @@ include 'newFunctions.php';
             break;
     }
     if(checkMethod('GET', $funcion) == false) {
-        echo checkMethod('GET', $funcion);
+        echo 'Method Not allowed';
         exit();
     } else {
         switch ($funcion) {
@@ -72,7 +72,7 @@ include 'newFunctions.php';
     function checkMethod($permitted, $used)
     {
         if ($permitted !== $used) {
-            return 'Method Not allowed';
+            return false;
         } else {
             return true;
         }
