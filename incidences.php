@@ -26,82 +26,76 @@ include 'newFunctions.php';
         default:
             break;
     }
-    if(checkMethod('GET', $funcion) == false) {
-        echo 'Method Not allowed';
-        exit();
-    } else {
-        switch ($funcion) {
-    
-            case 'getAllincidences':
-                showFn(getIncidencesListFn());
-                break;
-            case 'getOwnNewIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getOwnIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getOwnOldIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getOwnHiddenIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getNewIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getOtherIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getOtherOldIncidences':
-                showFn(filterFn(getIncidencesListFn()));
-                break;
-            case 'getIncidenceById':
-                showFn(getIncidenceByIdFn($_GET['id_part']));
-                break;
-            case 'addIncidence':
-                showFn(addIncidenceFn(getPostData()));
-                break;
-            case 'getPieces':
-                showFn(getPiecesFn($_GET['id']));
-                break;
-            case 'getPiecesByIds':
-                showFn(getPiecesByIdsFn(getPostData()->pieces));
-                break;
-            case 'getPiecesList':
-                showFn(getPiecesListFn());
-                break;
-            case 'getPieceById':
-                showFn(getPieceByIdFn($_GET['id']));
-                break;
-            case 'showIncidence':
-                showFn(showIncidenceFn($_GET['incidenceId'], $_GET['userId']));
-                break;
-            case 'hideIncidence':
-                showFn(hideIncidenceFn($_GET['incidenceId'], $_GET['userId']));
-                break;
-            case 'updateNotes':
-                $obj = getPostData();
-                showFn(updateNoteFn($obj->incidenceDesc, $obj->incidenceId, $obj->employeeId));
-                break;
-            case 'insertemployeeNote':
-                $obj = getPostData();
-                insertemployeeNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId);
-                break;
-            case 'inserttechnicianNote':
-                $obj = getPostData();
-                showFn(inserttechnicianNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId));
-                break;
-            case 'deleteIncidence':
-                showFn(deleteIncidenceFn($_GET['incidenceId'], $_GET['userId']));
-                break;
-            case 'updateIncidence':
-                $obj = getPostData();
-                showFn(updateIncidenceFn($obj->incidenceId, $obj->userId, $obj->note, $obj->pieces, $obj->close));
-                break;
-            default:
-                break;
-        }
+    switch ($funcion) {
+        case 'getAllincidences':
+            showFn(getIncidencesListFn());
+            break;
+        case 'getOwnNewIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getOwnIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getOwnOldIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getOwnHiddenIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getNewIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getOtherIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getOtherOldIncidences':
+            showFn(filterFn(getIncidencesListFn()));
+            break;
+        case 'getIncidenceById':
+            showFn(getIncidenceByIdFn($_GET['id_part']));
+            break;
+        case 'addIncidence':
+            showFn(addIncidenceFn(getPostData()));
+            break;
+        case 'getPieces':
+            showFn(getPiecesFn($_GET['id']));
+            break;
+        case 'getPiecesByIds':
+            showFn(getPiecesByIdsFn(getPostData()->pieces));
+            break;
+        case 'getPiecesList':
+            showFn(getPiecesListFn());
+            break;
+        case 'getPieceById':
+            showFn(getPieceByIdFn($_GET['id']));
+            break;
+        case 'showIncidence':
+            showFn(showIncidenceFn($_GET['incidenceId'], $_GET['userId']));
+            break;
+        case 'hideIncidence':
+            showFn(hideIncidenceFn($_GET['incidenceId'], $_GET['userId']));
+            break;
+        case 'updateNotes':
+            $obj = getPostData();
+            showFn(updateNoteFn($obj->incidenceDesc, $obj->incidenceId, $obj->employeeId));
+            break;
+        case 'insertemployeeNote':
+            $obj = getPostData();
+            insertemployeeNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId);
+            break;
+        case 'inserttechnicianNote':
+            $obj = getPostData();
+            showFn(inserttechnicianNoteFn($obj->NoteDesc, $obj->incidencesId, $obj->userId));
+            break;
+        case 'deleteIncidence':
+            showFn(deleteIncidenceFn($_GET['incidenceId'], $_GET['userId']));
+            break;
+        case 'updateIncidence':
+            $obj = getPostData();
+            showFn(updateIncidenceFn($obj->incidenceId, $obj->userId, $obj->note, $obj->pieces, $obj->close));
+            break;
+        default:
+            break;
     }
 
     function checkMethod($permitted, $used)

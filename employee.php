@@ -26,47 +26,42 @@ include 'newFunctions.php';
         default:
             break;
     }
-    if(checkMethod('GET', $funcion) == false) {
-        echo 'Method Not allowed';
-        exit();
-    } else {
-        switch ($funcion) {
-            case 'getEmployeeById':
-                showFn(getEmployeeByIdFn($obj['id']));
-                break;
-            case 'getEmployeeByUsername':
-                showFn(getEmployeeByUsernameFn($_GET['username']));
-                break;
-            case 'addEmployee':
-                showFn(addEmployeeFn($obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type));
-                break;
-            case 'removeEmployee':
-                showFn(removeEmployeeFn());
-                break;
-            case 'getPermissions':
-                showFn(getEmployeeByIdFn($obj['id'])->permissions);
-                break;
-            case 'checkCredentials':
-                showFn(checkCredentialsFn($obj['username'], $obj['pass']));
-                break;
-            case 'getStatistics':
-                showFn(getStatisticsFn($obj['id']));
-                break;
-            case 'getReportedPieces':
-                showFn(getReportedPiecesFn());
-                break;
-            case 'getGlobalStatistics':
-                showFn(getGlobalStatisticsFn());
-                break;
-            case 'getEmpolyeeList':
-                showFn(getEmpolyeeListFn());
-                break;
-            case 'updateWorker':
-                showFn(updateWorker($obj->fields, $obj->values, $obj->dni));
-                break;
-            default:
-                break;
-        }
+    switch ($funcion) {
+        case 'getEmployeeById':
+            showFn(getEmployeeByIdFn($obj['id']));
+            break;
+        case 'getEmployeeByUsername':
+            showFn(getEmployeeByUsernameFn($_GET['username']));
+            break;
+        case 'addEmployee':
+            showFn(addEmployeeFn($obj->username, $obj->password, $obj->dni, $obj->name, $obj->surname1, $obj->surname2, $obj->type));
+            break;
+        case 'removeEmployee':
+            showFn(removeEmployeeFn());
+            break;
+        case 'getPermissions':
+            showFn(getEmployeeByIdFn($obj['id'])->permissions);
+            break;
+        case 'checkCredentials':
+            showFn(checkCredentialsFn($obj['username'], $obj['pass']));
+            break;
+        case 'getStatistics':
+            showFn(getStatisticsFn($obj['id']));
+            break;
+        case 'getReportedPieces':
+            showFn(getReportedPiecesFn());
+            break;
+        case 'getGlobalStatistics':
+            showFn(getGlobalStatisticsFn());
+            break;
+        case 'getEmpolyeeList':
+            showFn(getEmpolyeeListFn());
+            break;
+        case 'updateWorker':
+            showFn(updateWorker($obj->fields, $obj->values, $obj->dni));
+            break;
+        default:
+            break;
     }
 
     function checkMethod($permitted, $used)
